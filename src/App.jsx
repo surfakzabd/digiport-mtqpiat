@@ -16,18 +16,18 @@ import {
 
 // --- CONFIGURATION ---
 const firebaseConfig = {
-    apiKey: "AIzaSyAOH9Ep7itgTz1RMmxMF2ko2KCl8tL73tw",
-    authDomain: "digiport-mtqpiat.firebaseapp.com",
-    projectId: "digiport-mtqpiat",
-    storageBucket: "digiport-mtqpiat.firebasestorage.app",
-    messagingSenderId: "913919068993",
-    appId: "1:913919068993:web:418e76ba44641e0ec4afc0",
-    measurementId: "G-2GG96J583V"
-}
+  apiKey: "AIzaSyAOH9Ep7itgTz1RMmxMF2ko2KCl8tL73tw",
+  authDomain: "digiport-mtqpiat.firebaseapp.com",
+  projectId: "digiport-mtqpiat",
+  storageBucket: "digiport-mtqpiat.firebasestorage.app",
+  messagingSenderId: "913919068993",
+  appId: "1:913919068993:web:418e76ba44641e0ec4afc0",
+  measurementId: "G-2GG96J583V"
+};
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'markaz-digiport';
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'digiport-mtqpiat';
 
 // Tema Warna
 const theme = {
