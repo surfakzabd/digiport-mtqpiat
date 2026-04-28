@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Users, BookOpen, Calendar, Settings, LogOut, 
   Download, Printer, Plus, Minus, Check, X, ChevronDown, ChevronUp,
-  Award, AlertCircle, CheckCircle2, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User
+  Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User
 } from 'lucide-react';
 import { 
   initializeApp, getApps 
@@ -16,14 +16,14 @@ import {
 
 // --- CONFIGURATION ---
 const firebaseConfig = {
-  apiKey: "AIzaSyAOH9Ep7itgTz1RMmxMF2ko2KCl8tL73tw",
-  authDomain: "digiport-mtqpiat.firebaseapp.com",
-  projectId: "digiport-mtqpiat",
-  storageBucket: "digiport-mtqpiat.firebasestorage.app",
-  messagingSenderId: "913919068993",
-  appId: "1:913919068993:web:418e76ba44641e0ec4afc0",
-  measurementId: "G-2GG96J583V"
-};
+    apiKey: "AIzaSyAOH9Ep7itgTz1RMmxMF2ko2KCl8tL73tw",
+    authDomain: "digiport-mtqpiat.firebaseapp.com",
+    projectId: "digiport-mtqpiat",
+    storageBucket: "digiport-mtqpiat.firebasestorage.app",
+    messagingSenderId: "913919068993",
+    appId: "1:913919068993:web:418e76ba44641e0ec4afc0",
+    measurementId: "G-2GG96J583V"
+  };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
@@ -74,20 +74,30 @@ const getLocalYYYYMMDD = (dateObj) => {
    return `${y}-${m}-${d}`;
 };
 
+// Fungsi aman untuk memformat nama surat agar tidak pernah crash (Mencegah Blank Screen)
+const formatZiyadahSurahSafe = (z) => {
+  if (!z || z.fromSurah == null || z.toSurah == null) return '-';
+  const s1 = QURAN_SURAHS[z.fromSurah]?.[0] || 'Unknown';
+  const s2 = QURAN_SURAHS[z.toSurah]?.[0] || 'Unknown';
+  return z.fromSurah === z.toSurah 
+    ? `${s1} ay ${z.fromAyah}-${z.toAyah}` 
+    : `${s1} ay ${z.fromAyah} - ${s2} ay ${z.toAyah}`;
+};
+
 // --- CUSTOM MODALS ---
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "Hapus Data" }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm sm:max-w-md p-5 sm:p-6 lg:p-8 animate-in fade-in zoom-in duration-200">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm sm:max-w-md p-5 sm:p-6 animate-in fade-in zoom-in duration-200">
         <div className="flex items-center gap-3 text-red-600 mb-3 sm:mb-4">
-          <AlertTriangle className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">{title}</h3>
+          <AlertTriangle className="w-6 h-6 sm:w-7 sm:h-7" />
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">{title}</h3>
         </div>
-        <p className="text-sm sm:text-base lg:text-lg text-gray-600 mb-5 sm:mb-6 lg:mb-8 leading-relaxed">{message}</p>
-        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 lg:gap-4 justify-end">
-          <button onClick={onCancel} className="w-full sm:w-auto px-4 py-2.5 sm:py-3 lg:px-6 rounded-xl text-sm sm:text-base lg:text-lg font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition">Batal</button>
-          <button onClick={onConfirm} className="w-full sm:w-auto px-4 py-2.5 sm:py-3 lg:px-6 rounded-xl text-sm sm:text-base lg:text-lg font-semibold bg-red-500 text-white hover:bg-red-600 shadow-md transition">{confirmText}</button>
+        <p className="text-sm sm:text-base text-gray-600 mb-5 sm:mb-6 leading-relaxed">{message}</p>
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end">
+          <button onClick={onCancel} className="w-full sm:w-auto px-4 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition">Batal</button>
+          <button onClick={onConfirm} className="w-full sm:w-auto px-4 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-semibold bg-red-500 text-white hover:bg-red-600 shadow-md transition">{confirmText}</button>
         </div>
       </div>
     </div>
@@ -111,51 +121,79 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
     onSave({
       ...formData,
       ...(isStudent && {
-        semester: parseInt(formData.semester),
-        juzTercapai: parseInt(formData.juzTercapai)
+        semester: parseInt(formData.semester || 1),
+        juzTercapai: parseInt(formData.juzTercapai || 0)
       })
     });
   };
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[90%] sm:max-w-md lg:max-w-lg p-5 sm:p-6 lg:p-8 animate-in fade-in zoom-in duration-200 border-t-8 my-auto" style={{ borderColor: theme.primary }}>
-        <div className="flex items-center justify-between mb-5 sm:mb-6 lg:mb-8">
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2 lg:gap-3">
-            <Edit className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" style={{ color: theme.primary }}/> 
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[90%] sm:max-w-md p-5 sm:p-6 animate-in fade-in zoom-in duration-200 border-t-8 my-auto" style={{ borderColor: theme.primary }}>
+        <div className="flex items-center justify-between mb-5 sm:mb-6">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+            <Edit className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: theme.primary }}/> 
             Edit {isStudent ? 'Data Santri' : 'Data Pengampu'}
           </h3>
-          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 sm:p-1.5 bg-gray-100 rounded-full"><X className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"/></button>
+          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 sm:p-1.5 bg-gray-100 rounded-full"><X className="w-4 h-4 sm:w-5 sm:h-5"/></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 lg:space-y-5">
-          <div><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1 lg:mb-1.5">Nama</label><input required type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2.5 sm:p-3 lg:p-4 border border-gray-200 rounded-xl bg-gray-50 text-sm sm:text-base lg:text-lg outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: theme.secondary }} /></div>
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+          <div>
+            <label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Nama</label>
+            <input required type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm sm:text-base outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: theme.secondary }} />
+          </div>
           
           {isStudent && (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
-                <div><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1 lg:mb-1.5">Kelas</label><select name="kelas" value={formData.kelas || '1'} onChange={handleChange} className="w-full p-2.5 sm:p-3 lg:p-4 border border-gray-200 rounded-xl text-sm sm:text-base lg:text-lg bg-gray-50 outline-none focus:ring-2 focus:bg-white"><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
-                <div><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1 lg:mb-1.5">Semester</label><select name="semester" value={formData.semester || '1'} onChange={handleChange} className="w-full p-2.5 sm:p-3 lg:p-4 border border-gray-200 rounded-xl text-sm sm:text-base lg:text-lg bg-gray-50 outline-none focus:ring-2 focus:bg-white">{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Kelas</label>
+                  <select name="kelas" value={formData.kelas || '1'} onChange={handleChange} className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl text-sm sm:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white">
+                    <option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Semester</label>
+                  <select name="semester" value={formData.semester || '1'} onChange={handleChange} className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl text-sm sm:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white">
+                    {[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
-                <div><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1 lg:mb-1.5">Halaqah</label>
-                  <select name="pengampuId" value={formData.pengampuId || ''} onChange={handleChange} className="w-full p-2.5 sm:p-3 lg:p-4 border border-gray-200 rounded-xl text-sm sm:text-base lg:text-lg bg-gray-50 outline-none focus:ring-2 focus:bg-white">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Halaqah</label>
+                  <select name="pengampuId" value={formData.pengampuId || ''} onChange={handleChange} className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl text-sm sm:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white">
                     {pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </div>
-                <div><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1 lg:mb-1.5">Target Tercapai</label><div className="flex"><input type="number" min="0" max="30" name="juzTercapai" value={formData.juzTercapai || 0} onChange={handleChange} className="w-full p-2.5 sm:p-3 lg:p-4 border border-gray-200 border-r-0 rounded-l-xl text-sm sm:text-base lg:text-lg bg-gray-50 outline-none focus:ring-2 focus:bg-white" /><span className="bg-gray-100 p-2.5 sm:p-3 lg:p-4 border border-gray-200 border-l-0 rounded-r-xl text-[10px] sm:text-sm lg:text-base text-gray-500 font-medium">Juz</span></div></div>
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Target Tercapai</label>
+                  <div className="flex">
+                    <input type="number" min="0" max="30" name="juzTercapai" value={formData.juzTercapai || 0} onChange={handleChange} className="w-full p-2.5 sm:p-3 border border-gray-200 border-r-0 rounded-l-xl text-sm sm:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white" />
+                    <span className="bg-gray-100 p-2.5 sm:p-3 border border-gray-200 border-l-0 rounded-r-xl text-[10px] sm:text-sm text-gray-500 font-medium">Juz</span>
+                  </div>
+                </div>
               </div>
             </>
           )}
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
-            <div><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1 lg:mb-1.5">Username</label><input required type="text" name="username" value={formData.username || ''} onChange={handleChange} className="w-full p-2.5 sm:p-3 lg:p-4 border border-gray-200 rounded-xl text-sm sm:text-base lg:text-lg bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" /></div>
-            <div><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1 lg:mb-1.5">Password</label><input required type="text" name="password" value={formData.password || ''} onChange={handleChange} className="w-full p-2.5 sm:p-3 lg:p-4 border border-gray-200 rounded-xl text-sm sm:text-base lg:text-lg bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" /></div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username</label>
+              <input required type="text" name="username" value={formData.username || ''} onChange={handleChange} className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl text-sm sm:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" />
+            </div>
+            <div>
+              <label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Password</label>
+              <input required type="text" name="password" value={formData.password || ''} onChange={handleChange} className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl text-sm sm:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" />
+            </div>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 lg:gap-4 justify-end pt-4 sm:pt-5 lg:pt-6 mt-5 sm:mt-6 lg:mt-8 border-t border-gray-100">
-            <button type="button" onClick={onCancel} className="px-5 lg:px-8 py-2.5 sm:py-3 lg:py-4 rounded-xl font-bold text-sm sm:text-base lg:text-lg text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full sm:w-auto">Batal</button>
-            <button type="submit" className="px-5 lg:px-8 py-2.5 sm:py-3 lg:py-4 rounded-xl font-bold text-sm sm:text-base lg:text-lg text-white shadow-md hover:shadow-lg transition-transform w-full sm:w-auto flex justify-center items-center gap-2 lg:gap-3" style={{ backgroundColor: theme.primary }}><Check className="w-5 h-5 lg:w-6 lg:h-6"/> Simpan Perubahan</button>
+          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end pt-4 sm:pt-5 mt-5 sm:mt-6 border-t border-gray-100">
+            <button type="button" onClick={onCancel} className="px-5 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full sm:w-auto">Batal</button>
+            <button type="submit" className="px-5 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base text-white shadow-md hover:shadow-lg transition-transform w-full sm:w-auto flex justify-center items-center gap-2" style={{ backgroundColor: theme.primary }}>
+              <Check className="w-5 h-5"/> Simpan Perubahan
+            </button>
           </div>
         </form>
       </div>
@@ -176,7 +214,7 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
     
     if (role === 'admin') {
       if (username === 'MinDigi' && password === 'J4diJar1yah') {
-        onLogin({ role: 'admin', name: 'Admin Pusat' });
+        onLogin({ role: 'admin', name: 'Admin Pusat', id: 'admin' });
       } else {
         setError('Username atau password admin salah.');
       }
@@ -198,42 +236,41 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8" style={{ backgroundColor: theme.bg }}>
-      <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl shadow-2xl w-full max-w-[90%] sm:max-w-md lg:max-w-lg border-t-8 transform transition-all" style={{ borderColor: theme.primary }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-gray-50">
+      <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-[90%] sm:max-w-md border-t-8" style={{ borderColor: theme.primary }}>
         <div className="text-center mb-6 sm:mb-8">
-          <BookOpen className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4 lg:mb-5" style={{ color: theme.primary }} />
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-800 tracking-tight">Markaz Digiport</h1>
-          <p className="text-sm sm:text-base lg:text-lg text-gray-500 font-medium mt-1 lg:mt-2">Sistem Presensi & Mutaba'ah</p>
+          <BookOpen className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 sm:mb-4" style={{ color: theme.primary }} />
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Markaz Digiport</h1>
+          <p className="text-sm sm:text-base text-gray-500 font-medium mt-1">Sistem Presensi & Mutaba'ah</p>
         </div>
 
-        {/* Role Selector */}
         <div className="flex bg-gray-100 p-1 rounded-xl sm:rounded-2xl mb-6 sm:mb-8">
-          <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm lg:text-base font-bold rounded-lg sm:rounded-xl transition-all ${role === 'wali' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
-          <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm lg:text-base font-bold rounded-lg sm:rounded-xl transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
-          <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm lg:text-base font-bold rounded-lg sm:rounded-xl transition-all ${role === 'admin' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
+          <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all ${role === 'wali' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
+          <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
+          <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl transition-all ${role === 'admin' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
         </div>
 
         {error && (
-           <div className="mb-4 sm:mb-5 p-3 lg:p-4 bg-red-50 text-red-600 rounded-xl text-xs sm:text-sm font-bold border border-red-100 flex items-center gap-2 animate-in fade-in"><AlertCircle size={18}/> {error}</div>
+           <div className="mb-4 sm:mb-5 p-3 bg-red-50 text-red-600 rounded-xl text-xs sm:text-sm font-bold border border-red-100 flex items-center gap-2"><AlertCircle size={18}/> {error}</div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 lg:space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
           <div>
-             <label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1.5 lg:mb-2">Username</label>
+             <label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Username</label>
              <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none"><User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" /></div>
-                <input required type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 lg:py-3.5 border border-gray-200 rounded-xl lg:rounded-2xl bg-gray-50 text-sm sm:text-base lg:text-lg outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan username" />
+                <input required type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm sm:text-base outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan username" />
              </div>
           </div>
           <div>
-             <label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1.5 lg:mb-2">Password</label>
+             <label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Password</label>
              <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none"><Lock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" /></div>
-                <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 lg:py-3.5 border border-gray-200 rounded-xl lg:rounded-2xl bg-gray-50 text-sm sm:text-base lg:text-lg outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan password" />
+                <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm sm:text-base outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan password" />
              </div>
           </div>
           
-          <button type="submit" className="w-full mt-2 sm:mt-4 p-3.5 sm:p-4 lg:p-4.5 rounded-xl lg:rounded-2xl text-gray-800 text-sm sm:text-base lg:text-lg font-bold transition-transform hover:scale-[1.02] shadow-md hover:shadow-lg text-white" style={{ backgroundColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c' }}>
+          <button type="submit" className="w-full mt-2 sm:mt-4 p-3.5 sm:p-4 rounded-xl text-gray-800 text-sm sm:text-base font-bold shadow-md hover:shadow-lg text-white" style={{ backgroundColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c' }}>
             Masuk
           </button>
         </form>
@@ -282,15 +319,18 @@ const App = () => {
              setAppUser(savedData);
              setActiveTab(savedData.role === 'admin' ? 'admin' : savedData.role === 'wali' ? 'dashboard' : 'harian');
           }
-       } catch (error) { console.error("Gagal memeriksa sesi", error); } 
-       finally { setSessionChecked(true); }
+       } catch (error) { 
+          console.error("Gagal memeriksa sesi", error); 
+       } finally { 
+          setSessionChecked(true); 
+       }
     };
     checkSession();
 
-    const unsubPengampus = onSnapshot(collection(db, getCollectionPath('pengampus')), (snap) => setPengampus(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))), (err) => console.error(err));
-    const unsubStudents = onSnapshot(collection(db, getCollectionPath('students')), (snap) => setStudents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))), (err) => console.error(err));
-    const unsubRecords = onSnapshot(collection(db, getCollectionPath('records')), (snap) => setRecords(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))), (err) => console.error(err));
-    const unsubRecapNotes = onSnapshot(collection(db, getCollectionPath('recap_notes')), (snap) => setRecapNotes(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))), (err) => console.error(err));
+    const unsubPengampus = onSnapshot(collection(db, getCollectionPath('pengampus')), (snap) => setPengampus(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
+    const unsubStudents = onSnapshot(collection(db, getCollectionPath('students')), (snap) => setStudents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
+    const unsubRecords = onSnapshot(collection(db, getCollectionPath('records')), (snap) => setRecords(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
+    const unsubRecapNotes = onSnapshot(collection(db, getCollectionPath('recap_notes')), (snap) => setRecapNotes(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
 
     return () => { unsubPengampus(); unsubStudents(); unsubRecords(); unsubRecapNotes(); };
   }, [firebaseUser]);
@@ -312,7 +352,7 @@ const App = () => {
      setAppUser(null);
   };
 
-  if (!sessionChecked) return <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.bg }}><div className="animate-spin rounded-full h-12 w-12 border-b-4" style={{ borderColor: theme.primary }}></div></div>;
+  if (!sessionChecked) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-4" style={{ borderColor: theme.primary }}></div></div>;
   if (!appUser) return <LoginScreen onLogin={handleLogin} pengampus={pengampus} students={students} />;
 
   const visibleStudents = appUser.role === 'pengampu' ? students.filter(s => s.pengampuId === appUser.id) : students;
@@ -320,42 +360,51 @@ const App = () => {
 
   return (
     <div className="h-screen flex bg-gray-50 font-sans overflow-hidden">
-      <div className="lg:hidden fixed top-0 left-0 w-full h-14 sm:h-16 flex items-center gap-3 sm:gap-4 px-4 sm:px-6 text-white z-40 shadow-md" style={{ backgroundColor: theme.primary }}>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 bg-white/10 rounded-lg active:scale-95 transition-transform">{isMobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}</button>
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 w-full h-14 sm:h-16 flex items-center gap-3 px-4 text-white z-40 shadow-md" style={{ backgroundColor: theme.primary }}>
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 bg-white/10 rounded-lg">
+          {isMobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
+        </button>
         <span className="font-bold text-sm sm:text-base tracking-wide">Markaz Digiport</span>
       </div>
 
       {isMobileMenuOpen && <div className="lg:hidden fixed inset-0 bg-gray-900/60 z-40 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)} />}
 
-      <div className={`fixed lg:static inset-y-0 left-0 w-64 sm:w-72 lg:w-64 xl:w-72 text-white flex flex-col shadow-2xl lg:shadow-xl z-50 shrink-0 transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`} style={{ backgroundColor: theme.primary }}>
-        <div className="hidden lg:flex p-6 xl:p-8 items-center gap-3 xl:gap-4 font-bold text-xl xl:text-2xl border-b border-white/10"><BookOpen className="w-6 h-6 xl:w-8 xl:h-8" style={{ color: theme.accent }} /><span>Sistem Tahfidz</span></div>
-        <div className="lg:hidden p-5 sm:p-6 flex items-center justify-between border-b border-white/10"><span className="font-bold text-lg sm:text-xl">Menu Utama</span><button className="p-1.5 sm:p-2 rounded-lg bg-white/10 text-white/80 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}><X className="w-5 h-5 sm:w-6 sm:h-6"/></button></div>
+      {/* Sidebar */}
+      <div className={`fixed lg:static inset-y-0 left-0 w-64 sm:w-72 lg:w-64 text-white flex flex-col shadow-2xl z-50 shrink-0 transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`} style={{ backgroundColor: theme.primary }}>
+        <div className="hidden lg:flex p-6 items-center gap-3 font-bold text-xl border-b border-white/10">
+          <BookOpen className="w-6 h-6" style={{ color: theme.accent }} />
+          <span>Markaz Digiport</span>
+        </div>
         
-        <div className="p-4 sm:p-5 xl:p-6 flex-1 space-y-2 xl:space-y-3 overflow-y-auto">
-          <div className="mb-5 sm:mb-6 xl:mb-8 p-4 sm:p-5 rounded-xl xl:rounded-2xl bg-white/10 shadow-inner border border-white/5">
-            <p className="opacity-70 mb-0.5 xl:mb-1 text-[10px] sm:text-xs xl:text-sm">Masuk sebagai:</p>
-            <p className="font-bold text-base sm:text-lg xl:text-xl truncate" style={{ color: theme.accent }}>{appUser.name}</p>
-            <p className="text-[10px] sm:text-xs xl:text-sm capitalize bg-white/20 inline-block px-2 py-1 rounded-md mt-1.5 font-semibold">{appUser.role}</p>
+        <div className="p-4 sm:p-5 flex-1 space-y-2 overflow-y-auto mt-14 lg:mt-0">
+          <div className="mb-5 p-4 rounded-xl bg-white/10 shadow-inner border border-white/5">
+            <p className="opacity-70 text-[10px] sm:text-xs">Masuk sebagai:</p>
+            <p className="font-bold text-base sm:text-lg truncate" style={{ color: theme.accent }}>{appUser.name}</p>
+            <p className="text-[10px] sm:text-xs capitalize bg-white/20 inline-block px-2 py-1 rounded-md mt-1.5 font-semibold">{appUser.role}</p>
           </div>
 
           {appUser.role === 'wali' ? (
-             <button onClick={() => handleTabChange('dashboard')} className={`w-full flex items-center gap-3 xl:gap-4 p-3 sm:p-3.5 xl:p-4 rounded-xl xl:rounded-2xl text-sm sm:text-base xl:text-lg transition-all ${activeTab === 'dashboard' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}><Calendar className="w-5 h-5 xl:w-6 xl:h-6"/> <span>Dashboard Anak</span></button>
+             <button onClick={() => handleTabChange('dashboard')} className={`w-full flex items-center gap-3 p-3 sm:p-3.5 rounded-xl text-sm sm:text-base transition-all ${activeTab === 'dashboard' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}><Calendar className="w-5 h-5"/> <span>Dashboard Anak</span></button>
           ) : (
             <>
-              {appUser.role === 'admin' && <button onClick={() => handleTabChange('admin')} className={`w-full flex items-center gap-3 xl:gap-4 p-3 sm:p-3.5 xl:p-4 rounded-xl text-sm sm:text-base xl:text-lg transition-all ${activeTab === 'admin' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}><Settings className="w-5 h-5 xl:w-6 xl:h-6"/> <span>Kelola Data</span></button>}
-              <button onClick={() => handleTabChange('harian')} className={`w-full flex items-center gap-3 xl:gap-4 p-3 sm:p-3.5 xl:p-4 rounded-xl text-sm sm:text-base xl:text-lg transition-all ${activeTab === 'harian' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}><Calendar className="w-5 h-5 xl:w-6 xl:h-6"/> <span>Laporan Harian</span></button>
-              <button onClick={() => handleTabChange('rekap')} className={`w-full flex items-center gap-3 xl:gap-4 p-3 sm:p-3.5 xl:p-4 rounded-xl text-sm sm:text-base xl:text-lg transition-all ${activeTab === 'rekap' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}><Download className="w-5 h-5 xl:w-6 xl:h-6"/> <span>Rekap Bulanan</span></button>
+              {appUser.role === 'admin' && <button onClick={() => handleTabChange('admin')} className={`w-full flex items-center gap-3 p-3 sm:p-3.5 rounded-xl text-sm sm:text-base transition-all ${activeTab === 'admin' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}><Settings className="w-5 h-5"/> <span>Kelola Data</span></button>}
+              <button onClick={() => handleTabChange('harian')} className={`w-full flex items-center gap-3 p-3 sm:p-3.5 rounded-xl text-sm sm:text-base transition-all ${activeTab === 'harian' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}><Calendar className="w-5 h-5"/> <span>Laporan Harian</span></button>
+              <button onClick={() => handleTabChange('rekap')} className={`w-full flex items-center gap-3 p-3 sm:p-3.5 rounded-xl text-sm sm:text-base transition-all ${activeTab === 'rekap' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}><Download className="w-5 h-5"/> <span>Rekap Bulanan</span></button>
             </>
           )}
         </div>
-        <div className="p-4 sm:p-5 xl:p-6 border-t border-white/10"><button onClick={handleLogout} className="w-full flex items-center gap-3 xl:gap-4 p-3 sm:p-3.5 xl:p-4 rounded-xl hover:bg-red-500/20 text-red-300 font-semibold text-sm sm:text-base xl:text-lg transition-colors"><LogOut className="w-5 h-5 xl:w-6 xl:h-6"/> <span>Keluar</span></button></div>
+        <div className="p-4 border-t border-white/10">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/20 text-red-300 font-semibold text-sm transition-colors"><LogOut className="w-5 h-5"/> <span>Keluar</span></button>
+        </div>
       </div>
 
-      <div className="flex-1 h-full overflow-y-auto pt-16 sm:pt-20 lg:pt-0 p-3 sm:p-5 lg:p-8 xl:p-10 relative bg-gray-100">
-        <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full">
+      {/* Main Content */}
+      <div className="flex-1 h-full overflow-y-auto pt-16 lg:pt-0 p-4 sm:p-6 lg:p-8 bg-gray-100">
+        <div className="max-w-7xl mx-auto w-full">
           {activeTab === 'admin' && <AdminView pengampus={pengampus} students={students} />}
           {activeTab === 'dashboard' && appUser.role === 'wali' && <WaliDashboardView students={students} records={records} user={appUser} />}
-          {activeTab === 'harian' && <HarianView students={visibleStudents} records={records} pengampus={pengampus} userRole={appUser.role} />}
+          {activeTab === 'harian' && <HarianView students={visibleStudents} records={records} pengampus={pengampus} user={appUser} />}
           {activeTab === 'rekap' && <RekapView students={visibleStudents} records={records} pengampus={pengampus} userRole={appUser.role} recapNotes={recapNotes} />}
         </div>
       </div>
@@ -363,8 +412,7 @@ const App = () => {
   );
 };
 
-// --- ADMIN VIEW ---
-// [Logika AdminView tidak berubah, hanya pengelolaan User / Santri biasa]
+// --- ADMIN VIEW (KELOLA DATA) ---
 const AdminView = ({ pengampus, students }) => {
   const [newPengampu, setNewPengampu] = useState({ name: '', username: '', password: '' });
   const [newStudent, setNewStudent] = useState({ name: '', kelas: '1', semester: '1', username: '', password: '', juzTercapai: 0 });
@@ -413,83 +461,76 @@ const AdminView = ({ pengampus, students }) => {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 lg:space-y-8 pb-10">
+    <div className="space-y-4 sm:space-y-6 pb-10">
       <ConfirmModal isOpen={deleteTarget !== null} title={`Hapus ${deleteTarget?.type === 'pengampu' ? 'Pengampu' : 'Santri'}?`} message={`Apakah Anda yakin ingin menghapus data "${deleteTarget?.name}"? Tindakan ini tidak dapat dibatalkan.`} onConfirm={executeDelete} onCancel={() => setDeleteTarget(null)} />
       <EditModal isOpen={editTarget !== null} target={editTarget} pengampus={pengampus} onSave={executeEdit} onCancel={() => setEditTarget(null)} />
 
-      <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm border-t-4" style={{ borderColor: theme.primary }}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 lg:gap-5 mb-4 sm:mb-6 lg:mb-8">
-           <div className="p-2.5 sm:p-3 lg:p-4 bg-gray-50 rounded-xl sm:rounded-2xl border border-gray-100 shadow-inner"><UserPlus className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" style={{ color: theme.primary }}/></div>
-           <div><h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">Tambah Pengampu (Halaqah)</h2><p className="text-xs sm:text-sm lg:text-base text-gray-500 mt-1">Buat akun untuk musyrif/pengampu baru.</p></div>
+      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border-t-4" style={{ borderColor: theme.primary }}>
+        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+           <div className="p-2 sm:p-3 bg-gray-50 rounded-xl border border-gray-100 shadow-inner"><UserPlus className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: theme.primary }}/></div>
+           <div><h2 className="text-lg sm:text-xl font-bold text-gray-800">Tambah Pengampu</h2><p className="text-xs sm:text-sm text-gray-500 mt-1">Buat akun untuk musyrif/pengampu baru.</p></div>
         </div>
-        {formError && <div className="p-3 lg:p-4 bg-red-50 text-red-700 rounded-xl mb-4 text-xs sm:text-sm lg:text-base font-medium border border-red-100">{formError}</div>}
-        <form onSubmit={handleAddPengampu} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 items-end">
-          <div className="w-full"><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1.5 lg:mb-2">Nama Pengampu</label><input required type="text" value={newPengampu.name} onChange={e=>setNewPengampu({...newPengampu, name: e.target.value})} className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white" placeholder="Ust. Fulan" /></div>
-          <div className="w-full"><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1.5 lg:mb-2">Username (usn)</label><input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white" placeholder="usn_pengampu" /></div>
-          <div className="w-full"><label className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 uppercase tracking-wide block mb-1.5 lg:mb-2">Password</label><input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white" placeholder="***" /></div>
-          <button type="submit" className="w-full p-2.5 sm:p-3 px-4 rounded-xl text-white font-bold transition-transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-md h-[42px] sm:h-[50px]" style={{ backgroundColor: theme.primary }}><Plus className="w-5 h-5"/> Tambah</button>
+        {formError && <div className="p-3 bg-red-50 text-red-700 rounded-xl mb-4 text-xs font-medium border border-red-100">{formError}</div>}
+        <form onSubmit={handleAddPengampu} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
+          <div className="w-full"><label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase block mb-1.5">Nama Pengampu</label><input required type="text" value={newPengampu.name} onChange={e=>setNewPengampu({...newPengampu, name: e.target.value})} className="w-full p-2.5 sm:p-3 border rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white" placeholder="Ust. Fulan" /></div>
+          <div className="w-full"><label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase block mb-1.5">Username</label><input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className="w-full p-2.5 sm:p-3 border rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white" placeholder="usn_pengampu" /></div>
+          <div className="w-full"><label className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase block mb-1.5">Password</label><input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} className="w-full p-2.5 sm:p-3 border rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white" placeholder="***" /></div>
+          <button type="submit" className="w-full p-2.5 sm:p-3 rounded-xl text-white font-bold transition-transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-md h-[42px] sm:h-[50px]" style={{ backgroundColor: theme.primary }}><Plus className="w-5 h-5"/> Tambah</button>
         </form>
       </div>
 
-      <div className="space-y-3 sm:space-y-4 lg:space-y-6">
-        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 px-2 flex items-center gap-2"><Users className="w-5 h-5 lg:w-6 lg:h-6" style={{ color: theme.primary }}/> Daftar Halaqah & Santri</h2>
+      <div className="space-y-3 sm:space-y-4">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800 px-2 flex items-center gap-2"><Users className="w-5 h-5" style={{ color: theme.primary }}/> Daftar Halaqah & Santri</h2>
         {pengampus.map(pengampu => {
             const isExpanded = expandedPengampuId === pengampu.id;
             const pengampuStudents = students.filter(s => s.pengampuId === pengampu.id);
             return (
-              <div key={pengampu.id} className={`bg-white rounded-2xl sm:rounded-3xl shadow-sm border transition-all duration-300 overflow-hidden ${isExpanded ? 'border-green-200 shadow-md' : 'border-gray-100 hover:border-gray-300'}`}>
-                <div className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white cursor-pointer gap-4" onClick={() => setExpandedPengampuId(isExpanded ? null : pengampu.id)}>
-                  <div className="flex items-center gap-3 sm:gap-5 flex-1 w-full">
-                     <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md shrink-0" style={{ backgroundColor: theme.primary }}>{pengampu.name.charAt(0)}</div>
+              <div key={pengampu.id} className={`bg-white rounded-2xl shadow-sm border transition-all duration-300 overflow-hidden ${isExpanded ? 'border-green-200 shadow-md' : 'border-gray-100'}`}>
+                <div className="p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white cursor-pointer gap-4" onClick={() => setExpandedPengampuId(isExpanded ? null : pengampu.id)}>
+                  <div className="flex items-center gap-3 sm:gap-4 flex-1 w-full">
+                     <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md shrink-0" style={{ backgroundColor: theme.primary }}>{pengampu.name.charAt(0)}</div>
                      <div>
-                        <h3 className="text-base sm:text-xl font-bold text-gray-800 leading-tight">{pengampu.name}</h3>
-                        <div className="flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500 mt-1.5">
-                           <span className="bg-gray-100 px-2 py-1 rounded-lg border border-gray-200">USN: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
-                           <span className="bg-gray-100 px-2 py-1 rounded-lg border border-gray-200">Pass: <span className="font-bold text-gray-700">{pengampu.password}</span></span>
+                        <h3 className="text-base sm:text-lg font-bold text-gray-800">{pengampu.name}</h3>
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500 mt-1">
+                           <span className="bg-gray-100 px-2 py-1 rounded border">USN: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
+                           <span className="bg-gray-100 px-2 py-1 rounded border">Pass: <span className="font-bold text-gray-700">{pengampu.password}</span></span>
                         </div>
                      </div>
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-none border-gray-100">
-                     <div className="text-xs sm:text-sm font-bold text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg shadow-inner">{pengampuStudents.length} Santri</div>
+                     <div className="text-xs font-bold text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg shadow-inner">{pengampuStudents.length} Santri</div>
                      <div className="flex items-center gap-1">
-                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-blue-500 p-2 hover:bg-blue-50 rounded-full"><Edit className="w-4 h-4 sm:w-5 sm:h-5"/></button>
-                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-400 p-2 hover:bg-red-50 hover:text-red-600 rounded-full"><Trash2 className="w-4 h-4 sm:w-5 sm:h-5"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-blue-500 p-2 hover:bg-blue-50 rounded-full"><Edit className="w-4 h-4"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-400 p-2 hover:bg-red-50 hover:text-red-600 rounded-full"><Trash2 className="w-4 h-4"/></button>
                         <div className={`p-1.5 sm:p-2 rounded-full transition-colors ml-1 ${isExpanded ? 'bg-gray-100' : 'text-gray-400'}`}>{isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}</div>
                      </div>
                   </div>
                 </div>
+                
                 {isExpanded && (
-                  <div className="border-t border-gray-100 bg-gray-50 p-3 sm:p-6 animate-in slide-in-from-top-4 duration-200">
-                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white p-3 sm:p-5 rounded-xl shadow-sm border border-gray-200 mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end relative overflow-hidden">
+                  <div className="border-t border-gray-100 bg-gray-50 p-3 sm:p-5">
+                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-1.5 h-full" style={{ backgroundColor: theme.secondary }}></div>
-                      <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] sm:text-xs uppercase font-bold text-gray-400 mb-1.5 block">Nama Santri Baru</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className="w-full p-2 sm:p-2.5 border border-gray-200 rounded-lg text-xs sm:text-sm outline-none focus:ring-2 focus:border-transparent bg-gray-50 focus:bg-white" placeholder="Nama..." /></div>
-                      <div className="col-span-1 lg:col-span-1"><label className="text-[10px] sm:text-xs uppercase font-bold text-gray-400 mb-1.5 block">Kls/Smt</label><div className="flex gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className="w-1/2 p-2 sm:p-2.5 border border-gray-200 rounded-lg text-xs sm:text-sm bg-gray-50"><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className="w-1/2 p-2 sm:p-2.5 border border-gray-200 rounded-lg text-xs sm:text-sm bg-gray-50">{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
-                      <div className="col-span-1 lg:col-span-1"><label className="text-[10px] sm:text-xs uppercase font-bold text-gray-400 mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className="w-full p-2 sm:p-2.5 border border-gray-200 border-r-0 rounded-l-lg text-xs sm:text-sm bg-gray-50" /><span className="bg-gray-100 p-2 sm:p-2.5 border border-gray-200 border-l-0 rounded-r-lg text-[10px] text-gray-500 font-medium">Juz</span></div></div>
-                      <div className="col-span-1 lg:col-span-1"><label className="text-[10px] sm:text-xs uppercase font-bold text-gray-400 mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className="w-full p-2 sm:p-2.5 border border-gray-200 rounded-lg text-xs sm:text-sm bg-gray-50" placeholder="usn..." /></div>
-                      <div className="col-span-1 lg:col-span-1"><label className="text-[10px] sm:text-xs uppercase font-bold text-gray-400 mb-1.5 block">Password</label><div className="flex gap-2"><input required type="text" value={newStudent.password} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className="w-full p-2 sm:p-2.5 border border-gray-200 rounded-lg text-xs sm:text-sm bg-gray-50" placeholder="pass" /><button type="submit" className="p-2 sm:p-2.5 rounded-lg text-white font-bold transition-transform hover:scale-105 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary }}><Plus className="w-5 h-5"/></button></div></div>
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Nama Santri Baru</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className="w-full p-2 border rounded-lg text-xs outline-none bg-gray-50 focus:bg-white" placeholder="Nama..." /></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Kls/Smt</label><div className="flex gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className="w-1/2 p-2 border rounded-lg text-xs bg-gray-50"><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className="w-1/2 p-2 border rounded-lg text-xs bg-gray-50">{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className="w-full p-2 border border-r-0 rounded-l-lg text-xs bg-gray-50" /><span className="bg-gray-100 p-2 border border-l-0 rounded-r-lg text-[10px] text-gray-500 font-medium">Juz</span></div></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className="w-full p-2 border rounded-lg text-xs bg-gray-50" placeholder="usn..." /></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Password</label><div className="flex gap-2"><input required type="text" value={newStudent.password} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className="w-full p-2 border rounded-lg text-xs bg-gray-50" placeholder="pass" /><button type="submit" className="p-2 rounded-lg text-white font-bold transition-transform hover:scale-105 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary }}><Plus className="w-5 h-5"/></button></div></div>
                     </form>
                     
-                    <div className="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm w-full max-w-full">
+                    <div className="overflow-x-auto bg-white rounded-xl border shadow-sm w-full">
                        <table className="w-full text-left whitespace-nowrap min-w-[600px] lg:min-w-0">
-                          <thead className="bg-gray-50 text-gray-500 border-b border-gray-200 text-[10px] sm:text-sm">
-                             <tr>
-                                <th className="p-3 sm:p-4 font-bold">Nama Santri</th>
-                                <th className="p-3 sm:p-4 font-bold">Kls/Smt</th>
-                                <th className="p-3 sm:p-4 font-bold">Juz</th>
-                                <th className="p-3 sm:p-4 font-bold">Akun (USN / Pass)</th>
-                                <th className="p-3 sm:p-4 font-bold text-center">Aksi</th>
-                             </tr>
+                          <thead className="bg-gray-50 text-gray-500 border-b text-[10px] sm:text-xs">
+                             <tr><th className="p-3 font-bold">Nama Santri</th><th className="p-3 font-bold">Kls/Smt</th><th className="p-3 font-bold">Juz</th><th className="p-3 font-bold">Akun (USN / Pass)</th><th className="p-3 font-bold text-center">Aksi</th></tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-100 text-xs sm:text-sm">
+                          <tbody className="divide-y text-xs sm:text-sm">
                              {pengampuStudents.length === 0 ? <tr><td colSpan="5" className="p-4 text-center text-gray-400 italic">Belum ada santri.</td></tr> : pengampuStudents.map(s => (
                                 <tr key={s.id} className="hover:bg-gray-50/50">
-                                   <td className="p-3 sm:p-4 font-bold text-gray-800">{s.name}</td>
-                                   <td className="p-3 sm:p-4 text-gray-600 font-medium">{s.kelas} / {s.semester}</td>
-                                   <td className="p-3 sm:p-4 font-bold" style={{ color: theme.secondary }}>{s.juzTercapai} Juz</td>
-                                   <td className="p-3 sm:p-4">
-                                      <div className="flex gap-1.5"><span className="bg-gray-100 px-2 py-1 rounded text-[10px] font-semibold text-gray-600 border border-gray-200">{s.username}</span><span className="bg-gray-100 px-2 py-1 rounded text-[10px] font-semibold text-gray-600 border border-gray-200">{s.password}</span></div>
-                                   </td>
-                                   <td className="p-3 sm:p-4 text-center">
+                                   <td className="p-3 font-bold text-gray-800">{s.name}</td>
+                                   <td className="p-3 text-gray-600 font-medium">{s.kelas} / {s.semester}</td>
+                                   <td className="p-3 font-bold" style={{ color: theme.secondary }}>{s.juzTercapai} Juz</td>
+                                   <td className="p-3"><div className="flex gap-1.5"><span className="bg-gray-100 px-2 py-1 rounded text-[10px] font-semibold text-gray-600 border">{s.username}</span><span className="bg-gray-100 px-2 py-1 rounded text-[10px] font-semibold text-gray-600 border">{s.password}</span></div></td>
+                                   <td className="p-3 text-center">
                                       <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-blue-500 hover:text-blue-600 p-1.5 hover:bg-blue-50 rounded-full mr-1"><Edit className="w-4 h-4"/></button>
                                       <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-full"><Trash2 className="w-4 h-4"/></button>
                                    </td>
@@ -509,38 +550,32 @@ const AdminView = ({ pengampus, students }) => {
 };
 
 // --- HARIAN VIEW ---
-const HarianView = ({ students, records, pengampus, userRole }) => {
+const HarianView = ({ students, records, pengampus, user }) => {
   const [selectedDate, setSelectedDate] = useState(getLocalYYYYMMDD(new Date()));
   const [expandedStudent, setExpandedStudent] = useState(null);
   const [selectedPengampuId, setSelectedPengampuId] = useState('semua');
   const [recordToDelete, setRecordToDelete] = useState(null);
   const sweepDoneRef = useRef(false);
 
-  // AUTOMASI 1: Smart Sweeper untuk Auto-Alpha
+  // BUGFIX: Menggunakan `user` bukan `userRole` agar bisa membaca `user.id` untuk filter Sweeper.
   useEffect(() => {
-    // Hanya berjalan jika diakses oleh admin/pengampu, dan hanya berjalan SEKALI saat halaman ini dibuka
-    if (sweepDoneRef.current || students.length === 0 || userRole === 'wali') return;
+    if (sweepDoneRef.current || students.length === 0 || user.role === 'wali') return;
     
     const runAutoAlphaSweeper = async () => {
-       sweepDoneRef.current = true; // Tandai sudah disapu
+       sweepDoneRef.current = true;
        const today = new Date();
        const yesterday = new Date(today);
-       yesterday.setDate(yesterday.getDate() - 1); // Cek tepat 1 hari ke belakang
+       yesterday.setDate(yesterday.getDate() - 1);
        
-       // 1. Abaikan jika kemarin adalah hari Minggu (0)
-       if (yesterday.getDay() === 0) return;
+       if (yesterday.getDay() === 0) return; // Abaikan hari minggu
 
        const yesterdayStr = getLocalYYYYMMDD(yesterday);
+       const relevantStudents = user.role === 'pengampu' ? students.filter(s => s.pengampuId === user.id) : students;
 
-       // Tentukan murid yang relevan untuk user yang sedang login
-       const relevantStudents = userRole === 'pengampu' ? students.filter(s => s.pengampuId === userRole.id) : students;
-
-       // 2. Abaikan jika hari kemarin SAMA SEKALI KOSONG untuk halaqah ini (mengantisipasi pengampu izin/libur)
        const hasAnyRecordYesterday = records.some(r => r.date === yesterdayStr && relevantStudents.some(s => s.id === r.studentId));
        if (!hasAnyRecordYesterday) return;
 
        let autoAlphaCount = 0;
-       
        for (const student of relevantStudents) {
           const hasRecord = records.some(r => r.studentId === student.id && r.date === yesterdayStr);
           if (!hasRecord) {
@@ -555,20 +590,18 @@ const HarianView = ({ students, records, pengampus, userRole }) => {
              try {
                 await setDoc(doc(db, getCollectionPath('records'), recordId), payload);
                 autoAlphaCount++;
-             } catch (e) { console.error("Gagal auto-alpha", e); }
+             } catch (e) {}
           }
        }
-       if (autoAlphaCount > 0) console.log(`Menyapu ${autoAlphaCount} santri menjadi Alpha untuk tanggal ${yesterdayStr}`);
     };
     
-    // Beri sedikit jeda agar tidak membebani render pertama
     setTimeout(() => { runAutoAlphaSweeper(); }, 1000);
-  }, [students, records, userRole]);
+  }, [students, records, user]);
 
   const filteredStudents = useMemo(() => {
-    if (userRole !== 'admin' || selectedPengampuId === 'semua') return students;
+    if (user.role !== 'admin' || selectedPengampuId === 'semua') return students;
     return students.filter(s => s.pengampuId === selectedPengampuId);
-  }, [students, selectedPengampuId, userRole]);
+  }, [students, selectedPengampuId, user.role]);
 
   const groupedStudents = useMemo(() => {
     const groups = pengampus.map(p => ({
@@ -586,32 +619,23 @@ const HarianView = ({ students, records, pengampus, userRole }) => {
   const executeDeleteRecord = async () => {
     if (!recordToDelete) return;
     try { await deleteDoc(doc(db, getCollectionPath('records'), recordToDelete)); } 
-    catch (error) { console.error("Error deleting record"); } finally { setRecordToDelete(null); }
-  };
-
-  const formatZiyadahSurah = (z) => {
-    if (!z) return null;
-    const s1 = QURAN_SURAHS[z.fromSurah][0];
-    const s2 = QURAN_SURAHS[z.toSurah][0];
-    return z.fromSurah === z.toSurah 
-      ? `${s1} ${z.fromAyah}-${z.toAyah}` 
-      : `${s1} ${z.fromAyah} - ${s2} ${z.toAyah}`;
+    catch (error) {} finally { setRecordToDelete(null); }
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 lg:space-y-8 pb-10">
+    <div className="space-y-4 sm:space-y-6 pb-10">
       <ConfirmModal isOpen={recordToDelete !== null} title="Ulang Laporan?" message="Menghapus laporan akan mengosongkan kembali form setoran hari ini." confirmText="Kosongkan Form" onConfirm={executeDeleteRecord} onCancel={() => setRecordToDelete(null)} />
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-6 rounded-2xl shadow-sm">
         <div><h2 className="text-xl sm:text-2xl font-bold text-gray-800">Laporan Harian</h2><p className="text-xs sm:text-sm text-gray-500 mt-1">Isi presensi, ziyadah, dan muraja'ah santri.</p></div>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-          {userRole === 'admin' && (
-            <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100 w-full sm:w-auto">
+          {user.role === 'admin' && (
+            <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border w-full sm:w-auto">
               <Filter className="text-gray-400 ml-2 w-4 h-4" />
               <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-xs sm:text-sm font-bold text-gray-600 p-1 cursor-pointer w-full"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
             </div>
           )}
-          <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100 w-full sm:w-auto">
+          <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border w-full sm:w-auto">
              <label className="text-xs sm:text-sm font-bold text-gray-600 px-2">Tanggal:</label>
              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="border-none bg-white rounded-lg p-2 text-xs sm:text-sm outline-none font-medium shadow-sm w-full"/>
           </div>
@@ -624,7 +648,7 @@ const HarianView = ({ students, records, pengampus, userRole }) => {
         ) : (
           groupedStudents.map(group => (
             <div key={group.pengampu.id} className="space-y-3">
-              {userRole === 'admin' && selectedPengampuId === 'semua' && (
+              {user.role === 'admin' && selectedPengampuId === 'semua' && (
                 <div className="flex items-center gap-3 pt-2 pb-1">
                    <div className="h-px bg-gray-300 flex-1"></div>
                    <span className="font-bold text-gray-600 uppercase text-[10px] px-3 py-1 bg-white rounded-full border shadow-sm"><BookOpen className="w-3.5 h-3.5 inline mr-1" style={{ color: theme.primary }}/> Halaqah {group.pengampu.name}</span>
@@ -634,11 +658,11 @@ const HarianView = ({ students, records, pengampus, userRole }) => {
               {group.students.map(student => {
                 const todayRecord = records.find(r => r.studentId === student.id && r.date === selectedDate);
                 
-                // Cari History Ziyadah & Murajaah terakhir untuk fitur Auto-Continue
-                const pastZiyadahs = records.filter(r => r.studentId === student.id && r.date < selectedDate && r.ziyadah?.toSurah !== undefined).sort((a,b) => b.date.localeCompare(a.date));
+                // Cari History
+                const pastZiyadahs = records.filter(r => r.studentId === student.id && r.date < selectedDate && r.ziyadah && r.ziyadah.toSurah != null).sort((a,b) => b.date.localeCompare(a.date));
                 const lastZiyadah = pastZiyadahs.length > 0 ? pastZiyadahs[0].ziyadah : null;
 
-                const pastMurajaahs = records.filter(r => r.studentId === student.id && r.date < selectedDate && r.murajaah?.toJuz !== undefined).sort((a,b) => b.date.localeCompare(a.date));
+                const pastMurajaahs = records.filter(r => r.studentId === student.id && r.date < selectedDate && r.murajaah && r.murajaah.toJuz != null).sort((a,b) => b.date.localeCompare(a.date));
                 const lastMurajaah = pastMurajaahs.length > 0 ? pastMurajaahs[0].murajaah : null;
 
                 const isExpanded = expandedStudent === student.id;
@@ -648,9 +672,9 @@ const HarianView = ({ students, records, pengampus, userRole }) => {
                     <div className={`p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 ${!isExpanded ? 'hover:bg-gray-50 cursor-pointer' : ''}`} onClick={() => !todayRecord && setExpandedStudent(isExpanded ? null : student.id)}>
                       
                       <div className="flex items-center gap-3 w-full sm:w-auto" onClick={(e) => { if(todayRecord) { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); } }}>
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-inner shrink-0" style={{ backgroundColor: theme.primary }}>{student.name.charAt(0)}</div>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-inner shrink-0" style={{ backgroundColor: theme.primary }}>{student.name ? student.name.charAt(0) : '?'}</div>
                         <div>
-                           <h3 className="text-base font-bold text-gray-800">{student.name}</h3>
+                           <h3 className="text-base font-bold text-gray-800">{student.name || 'Unknown'}</h3>
                            <p className="text-[10px] font-medium text-gray-500">Kelas {student.kelas} • Smt {student.semester}</p>
                         </div>
                       </div>
@@ -662,7 +686,7 @@ const HarianView = ({ students, records, pengampus, userRole }) => {
                               <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase mb-1 ${todayRecord.presensi === 'Hadir' ? 'bg-green-100 text-green-700' : todayRecord.presensi === 'Alpha' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{todayRecord.presensi}</span>
                               {todayRecord.presensi === 'Hadir' && (
                                 <div className="text-[10px] font-medium text-gray-600 flex flex-col gap-0.5">
-                                  {todayRecord.ziyadah && (<div><span className="font-bold text-green-600">Z:</span> {formatZiyadahSurah(todayRecord.ziyadah)} <span className="font-bold text-green-700">[{todayRecord.ziyadah.finalScore}]</span></div>)}
+                                  {todayRecord.ziyadah && (<div><span className="font-bold text-green-600">Z:</span> {formatZiyadahSurahSafe(todayRecord.ziyadah)} <span className="font-bold text-green-700">[{todayRecord.ziyadah.finalScore}]</span></div>)}
                                   {todayRecord.murajaah && (<div><span className="font-bold text-yellow-600">M:</span> Juz {todayRecord.murajaah.fromJuz === todayRecord.murajaah.toJuz ? todayRecord.murajaah.fromJuz : `${todayRecord.murajaah.fromJuz}-${todayRecord.murajaah.toJuz}`} <span className="font-bold text-yellow-700">[{todayRecord.murajaah.finalScore}]</span></div>)}
                                 </div>
                               )}
@@ -696,25 +720,24 @@ const HarianView = ({ students, records, pengampus, userRole }) => {
 const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMurajaah, onSaveSuccess }) => {
   const getAyahCount = (surahIdx) => QURAN_SURAHS[surahIdx]?.[1] || 0;
 
-  // AUTOMASI 2: Kalkulator cerdas untuk menentukan default form berlanjut
+  // BUGFIX: Menambahkan proteksi angka pada Auto-Continue
   const calcNextZiyadah = () => {
-     if (!lastZiyadah) return { surah: 0, ayah: 1 };
-     let nextSurah = lastZiyadah.toSurah;
-     let nextAyah = lastZiyadah.toAyah + 1; // Lanjut ke ayat berikutnya dari terakhir disetor
+     if (!lastZiyadah || lastZiyadah.toSurah == null || lastZiyadah.toAyah == null) return { surah: 0, ayah: 1 };
+     let nextSurah = Number(lastZiyadah.toSurah);
+     let nextAyah = Number(lastZiyadah.toAyah) + 1;
      
-     // Jika ayat berikutnya melebihi jumlah ayat di surat tersebut, otomatis pindah ke surat berikutnya ayat 1
      if (nextAyah > getAyahCount(nextSurah)) {
         nextSurah += 1;
         nextAyah = 1;
-        if (nextSurah >= QURAN_SURAHS.length) nextSurah = 0; // Jika sudah An-Nas, kembali ke Al-Fatihah
+        if (nextSurah >= QURAN_SURAHS.length) nextSurah = 0;
      }
      return { surah: nextSurah, ayah: nextAyah };
   };
 
   const calcNextMurajaah = () => {
-     if (!lastMurajaah) return 1;
-     let nextJuz = lastMurajaah.toJuz + 1; // Lanjut ke juz berikutnya
-     if (nextJuz > 30) nextJuz = 1; // Jika juz 30 sudah selesai, kembali ke juz 1
+     if (!lastMurajaah || lastMurajaah.toJuz == null) return 1;
+     let nextJuz = Number(lastMurajaah.toJuz) + 1;
+     if (nextJuz > 30) nextJuz = 1;
      return nextJuz;
   };
 
@@ -853,31 +876,57 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
   );
 };
 
-// --- REKAP VIEW & WALI DASHBOARD ---
-// [Logika tidak berubah, hanya saya persingkat agar muat tanpa membuang fungsionalitas]
 
-const EditableSelectCell = ({ value, options, onSave }) => (<select value={value || ''} onChange={(e) => onSave(e.target.value)} className="w-20 p-1.5 border rounded-md text-xs font-bold text-gray-700 bg-gray-50"><option value="">- SP -</option>{options.map(o => <option key={o} value={o}>{o}</option>)}</select>);
-const EditableInputCell = ({ value, onSave, placeholder }) => { const [val, setVal] = useState(value || ''); useEffect(() => setVal(value || ''), [value]); return (<input type="text" value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => onSave(val)} className="w-28 p-1.5 border rounded-md text-xs text-gray-700 bg-gray-50" placeholder={placeholder} />);};
+// --- REKAP VIEW ---
+const EditableSelectCell = ({ value, options, onSave }) => (
+  <select value={value || ''} onChange={(e) => onSave(e.target.value)} className="w-20 p-1.5 border rounded-md text-xs font-bold text-gray-700 bg-gray-50 outline-none">
+    <option value="">- SP -</option>{options.map(o => <option key={o} value={o}>{o}</option>)}
+  </select>
+);
+const EditableInputCell = ({ value, onSave, placeholder }) => { 
+  const [val, setVal] = useState(value || ''); 
+  useEffect(() => setVal(value || ''), [value]); 
+  return (
+    <input type="text" value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => onSave(val)} className="w-28 p-1.5 border rounded-md text-xs text-gray-700 bg-gray-50 outline-none" placeholder={placeholder} />
+  );
+};
 
 const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
   const [selectedMonth, setSelectedMonth] = useState(getLocalYYYYMMDD(new Date()).slice(0, 7));
   const [selectedPengampuId, setSelectedPengampuId] = useState('semua');
-  const filteredStudents = useMemo(() => { if (userRole !== 'admin' || selectedPengampuId === 'semua') return students; return students.filter(s => s.pengampuId === selectedPengampuId); }, [students, selectedPengampuId, userRole]);
+
+  const filteredStudents = useMemo(() => { 
+    if (userRole !== 'admin' || selectedPengampuId === 'semua') return students; 
+    return students.filter(s => s.pengampuId === selectedPengampuId); 
+  }, [students, selectedPengampuId, userRole]);
+
+  // BUGFIX: Perhitungan zStart dan zEnd kini jauh lebih aman, menghindari mutasi array secara langsung.
   const recapData = useMemo(() => {
     return filteredStudents.map(student => {
       const studentRecords = records.filter(r => r.studentId === student.id && r.date.startsWith(selectedMonth));
       const kehadiran = studentRecords.filter(r => r.presensi === 'Hadir').length;
       const totalHari = studentRecords.length;
+      
       const zRecs = studentRecords.filter(r => r.presensi === 'Hadir' && r.ziyadah);
       const mRecs = studentRecords.filter(r => r.presensi === 'Hadir' && r.murajaah);
-      const zStart = zRecs.length > 0 ? zRecs.sort((a,b)=>a.date.localeCompare(b.date))[0].ziyadah : null;
-      const zEnd = zRecs.length > 0 ? zRecs.sort((a,b)=>b.date.localeCompare(a.date))[0].ziyadah : null;
-      const avgZiyadah = zRecs.length > 0 ? (zRecs.reduce((acc, r) => acc + r.ziyadah.finalScore, 0) / zRecs.length).toFixed(1) : 0;
-      const mStart = mRecs.length > 0 ? mRecs.sort((a,b)=>a.date.localeCompare(b.date))[0].murajaah : null;
-      const mEnd = mRecs.length > 0 ? mRecs.sort((a,b)=>b.date.localeCompare(a.date))[0].murajaah : null;
-      const avgMurajaah = mRecs.length > 0 ? (mRecs.reduce((acc, r) => acc + r.murajaah.finalScore, 0) / mRecs.length).toFixed(1) : 0;
+      
+      const sortedZRecsAsc = [...zRecs].sort((a,b)=>a.date.localeCompare(b.date));
+      const sortedZRecsDesc = [...zRecs].sort((a,b)=>b.date.localeCompare(a.date));
+      
+      const sortedMRecsAsc = [...mRecs].sort((a,b)=>a.date.localeCompare(b.date));
+      const sortedMRecsDesc = [...mRecs].sort((a,b)=>b.date.localeCompare(a.date));
+
+      const zStart = sortedZRecsAsc.length > 0 ? sortedZRecsAsc[0].ziyadah : null;
+      const zEnd = sortedZRecsDesc.length > 0 ? sortedZRecsDesc[0].ziyadah : null;
+      const avgZiyadah = zRecs.length > 0 ? (zRecs.reduce((acc, r) => acc + (Number(r.ziyadah.finalScore) || 0), 0) / zRecs.length).toFixed(1) : 0;
+      
+      const mStart = sortedMRecsAsc.length > 0 ? sortedMRecsAsc[0].murajaah : null;
+      const mEnd = sortedMRecsDesc.length > 0 ? sortedMRecsDesc[0].murajaah : null;
+      const avgMurajaah = mRecs.length > 0 ? (mRecs.reduce((acc, r) => acc + (Number(r.murajaah.finalScore) || 0), 0) / mRecs.length).toFixed(1) : 0;
+      
       const targetJuz = TARGET_HAFALAN[student.semester] || 30;
-      const persentase = Math.min(100, Math.round(((student.juzTercapai || 0) / targetJuz) * 100));
+      const persentase = Math.min(100, Math.round(((Number(student.juzTercapai) || 0) / targetJuz) * 100));
+      
       return { ...student, kehadiran, totalHari, zStart, zEnd, avgZiyadah, mStart, mEnd, avgMurajaah, persentase };
     });
   }, [filteredStudents, records, selectedMonth]);
@@ -886,45 +935,33 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
     return pengampus.map(p => ({ pengampu: p, data: recapData.filter(r => r.pengampuId === p.id) })).filter(g => g.data.length > 0);
   }, [recapData, pengampus]);
 
-  const handleSaveNote = async (studentId, field, value) => { try { await setDoc(doc(db, getCollectionPath('recap_notes'), `${studentId}_${selectedMonth}`), { studentId, month: selectedMonth, [field]: value }, { merge: true }); } catch (err) { } };
+  const handleSaveNote = async (studentId, field, value) => { 
+    try { await setDoc(doc(db, getCollectionPath('recap_notes'), `${studentId}_${selectedMonth}`), { studentId, month: selectedMonth, [field]: value }, { merge: true }); } catch (err) { console.error(err) } 
+  };
 
-  // FUNGSI BARU: Ekspor Rekap Bulanan ke CSV (Bisa dibuka di Excel)
   const handleDownloadExcel = () => {
-    // 1. Buat Header Kolom Excel
     const headers = ["Halaqah", "Nama Santri", "Kelas", "Semester", "Kehadiran", "Total Hari", "Persentase", "Awal Ziyadah", "Akhir Ziyadah", "Rata-rata Ziyadah", "Awal Muraja'ah", "Akhir Muraja'ah", "Rata-rata Muraja'ah", "Surat Peringatan", "Keterangan"];
     let csvLines = [headers.join(",")];
 
-    // 2. Masukkan data tiap anak ke dalam format baris (row)
     groupedRecap.forEach(group => {
       group.data.forEach(row => {
         const sn = recapNotes.find(n => n.studentId === row.id && n.month === selectedMonth) || {};
-        const zStartStr = row.zStart ? `${QURAN_SURAHS[row.zStart.fromSurah][0]} ${row.zStart.fromAyah}` : '-';
-        const zEndStr = row.zEnd ? `${QURAN_SURAHS[row.zEnd.toSurah][0]} ${row.zEnd.toAyah}` : '-';
+        const zStartStr = row.zStart ? formatZiyadahSurahSafe(row.zStart) : '-';
+        const zEndStr = row.zEnd ? formatZiyadahSurahSafe(row.zEnd) : '-';
         const mStartStr = row.mStart ? `Juz ${row.mStart.fromJuz}` : '-';
         const mEndStr = row.mEnd ? `Juz ${row.mEnd.toJuz}` : '-';
 
         const rowData = [
-          `"${group.pengampu.name}"`,
-          `"${row.name}"`,
-          `"${row.kelas}"`,
-          `"${row.semester}"`,
-          row.kehadiran,
-          row.totalHari,
-          `"${row.persentase}%"`,
-          `"${zStartStr}"`,
-          `"${zEndStr}"`,
-          row.avgZiyadah,
-          `"${mStartStr}"`,
-          `"${mEndStr}"`,
-          row.avgMurajaah,
-          `"${sn.sp || ''}"`,
-          `"${sn.keterangan || ''}"`
+          `"${group.pengampu.name}"`, `"${row.name}"`, `"${row.kelas}"`, `"${row.semester}"`,
+          row.kehadiran, row.totalHari, `"${row.persentase}%"`,
+          `"${zStartStr}"`, `"${zEndStr}"`, row.avgZiyadah,
+          `"${mStartStr}"`, `"${mEndStr}"`, row.avgMurajaah,
+          `"${sn.sp || ''}"`, `"${sn.keterangan || ''}"`
         ];
         csvLines.push(rowData.join(","));
       });
     });
 
-    // 3. Konversi dan Picu Download Browser
     const csvContent = csvLines.join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -938,20 +975,237 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
 
   return (
     <div className="space-y-4 pb-10">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl shadow-sm print:hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-sm print:hidden">
         <div><h2 className="text-xl font-bold text-gray-800">Rekapitulasi Bulanan</h2></div>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-          {userRole === 'admin' && (<div className="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border"><Filter className="text-gray-400 w-4 h-4 ml-2" /><select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-xs font-bold text-gray-600 p-1 w-full sm:w-40"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>)}
-          <div className="flex gap-2 w-full sm:w-auto">
-             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="border bg-gray-50 rounded-xl p-2 px-3 text-xs outline-none font-bold text-gray-700" />
-             <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-green-700 transition-colors"><Download className="w-4 h-4"/> Excel (CSV)</button>
-             <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 text-white text-xs font-bold rounded-xl shadow-md"><Printer className="w-4 h-4"/> Cetak</button>
+          {userRole === 'admin' && (
+            <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border w-full sm:w-auto">
+              <Filter className="text-gray-400 w-4 h-4 ml-2" />
+              <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-xs font-bold text-gray-600 p-1 w-full sm:w-40"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="border bg-gray-50 rounded-xl p-2 px-3 text-xs outline-none font-bold text-gray-700 flex-1 sm:flex-none" />
+             <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-green-700 flex-1 sm:flex-none"><Download className="w-4 h-4"/> Excel (CSV)</button>
+             <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 text-white text-xs font-bold rounded-xl shadow-md flex-1 sm:flex-none"><Printer className="w-4 h-4"/> Cetak</button>
           </div>
         </div>
       </div>
+      
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden border">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left whitespace-nowrap min-w-[800px]">
+            <thead className="text-white" style={{ backgroundColor: theme.primary }}>
+              <tr className="text-xs">
+                <th className="p-3 font-bold">Nama Santri</th><th className="p-3 font-bold">Kls/Smt</th><th className="p-3 font-bold">Presensi</th><th className="p-3 font-bold">%</th><th className="p-3 font-bold">Ziyadah (Awal - Akhir)</th><th className="p-3 font-bold">Rata Z</th><th className="p-3 font-bold">Muraja'ah (Awal - Akhir)</th><th className="p-3 font-bold">Rata M</th><th className="p-3 font-bold">S.P</th><th className="p-3 font-bold">Ket</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y text-xs">
+              {groupedRecap.length === 0 ? (
+                <tr><td colSpan="10" className="p-10 text-center text-gray-400 italic">Tidak ada data.</td></tr>
+              ) : (
+                groupedRecap.map(group => (
+                  <React.Fragment key={group.pengampu.id}>
+                    {userRole === 'admin' && selectedPengampuId === 'semua' && (
+                      <tr className="bg-gray-100/80">
+                        <td colSpan="10" className="p-2 px-3 font-bold text-gray-700 text-[10px] uppercase"><Users className="w-3.5 h-3.5 inline mr-1" style={{color: theme.primary}}/> Halaqah {group.pengampu.name}</td>
+                      </tr>
+                    )}
+                    {group.data.map(row => {
+                        const sn = recapNotes.find(n => n.studentId === row.id && n.month === selectedMonth) || {};
+                        return (
+                          <tr key={row.id} className="hover:bg-gray-50/50">
+                            <td className="p-3 font-bold text-gray-800">{row.name || 'Unknown'}</td>
+                            <td className="p-3 text-gray-600">{row.kelas} / {row.semester}</td>
+                            <td className="p-3"><span className="bg-green-100 text-green-700 px-2 py-1 rounded-md font-bold">{row.kehadiran}</span> / {row.totalHari}</td>
+                            <td className="p-3 font-black text-blue-600">{row.persentase}%</td>
+                            <td className="p-3 text-[10px]">
+                              <div className="flex flex-col gap-1">
+                                <span>A: {row.zStart ? formatZiyadahSurahSafe(row.zStart) : '-'}</span>
+                                <span>Z: {row.zEnd ? formatZiyadahSurahSafe(row.zEnd) : '-'}</span>
+                              </div>
+                            </td>
+                            <td className="p-3 font-black text-blue-600">{row.avgZiyadah}</td>
+                            <td className="p-3 text-[10px]">
+                              <div className="flex flex-col gap-1">
+                                <span>A: {row.mStart ? `Juz ${row.mStart.fromJuz}` : '-'}</span>
+                                <span>Z: {row.mEnd ? `Juz ${row.mEnd.toJuz}` : '-'}</span>
+                              </div>
+                            </td>
+                            <td className="p-3 font-black text-blue-600">{row.avgMurajaah}</td>
+                            <td className="p-2"><EditableSelectCell value={sn.sp} options={SP_OPTIONS} onSave={(val) => handleSaveNote(row.id, 'sp', val)} /></td>
+                            <td className="p-2"><EditableInputCell value={sn.keterangan} placeholder="Ket..." onSave={(val) => handleSaveNote(row.id, 'keterangan', val)} /></td>
+                          </tr>
+                        )
+                    })}
+                  </React.Fragment>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// --- WALI DASHBOARD VIEW ---
+const WaliDashboardView = ({ students, records, user }) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [selectedDateStr, setSelectedDateStr] = useState('');
+  
+  const student = students.find(s => s.id === user.studentId) || students[0];
+  
+  // BUGFIX: Menangani kondisi jika student sama sekali tidak ada di database
+  if (!student) return <div className="p-6 text-center bg-white rounded-xl shadow-sm text-gray-500 mt-10 mx-4">Data anak tidak ditemukan atau telah dihapus.</div>;
+  
+  const targetJuz = TARGET_HAFALAN[student.semester] || 30;
+  const persentase = Math.min(100, Math.round(((Number(student.juzTercapai) || 0) / targetJuz) * 100));
+  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
+
+  // Helper untuk mengubah tanggal "YYYY-MM-DD" menjadi bahasa Indonesia
+  const formatIndoDate = (dateString) => {
+     return new Date(dateString).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  return (
+    <div className="space-y-4 sm:space-y-6 pb-10">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm">
+         <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Dashboard Ananda</h2>
+         <p className="text-xs sm:text-sm text-gray-500 mt-1">Pantau perkembangan tahfidz dan mutaba'ah harian.</p>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+        <div className="lg:col-span-4 space-y-4 sm:space-y-6">
+           <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border-t-4" style={{ borderColor: theme.primary }}>
+              <div className="flex items-center gap-3 sm:gap-4 mb-5">
+                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-white font-bold text-xl sm:text-2xl shadow-md shrink-0" style={{ backgroundColor: theme.primary }}>{student.name ? student.name.charAt(0) : '?'}</div>
+                 <div>
+                    <h3 className="font-bold text-lg sm:text-xl text-gray-800 leading-tight">{student.name}</h3>
+                    <p className="text-[10px] sm:text-xs font-medium text-gray-500 mt-1">Kls {student.kelas} • Smt {student.semester}</p>
+                 </div>
+              </div>
+              <div>
+                 <div className="flex justify-between items-end text-xs sm:text-sm mb-2">
+                    <span className="font-bold text-gray-600">Pencapaian Hafalan</span>
+                    <span className="font-bold text-base sm:text-lg" style={{ color: theme.primary }}>{persentase}%</span>
+                 </div>
+                 <div className="w-full h-3 sm:h-4 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+                    <div className="h-full transition-all duration-1000" style={{ width: `${persentase}%`, backgroundColor: persentase >= 100 ? theme.secondary : theme.accent }}></div>
+                 </div>
+                 <p className="text-[10px] sm:text-xs font-semibold text-gray-500 mt-2 text-right">{student.juzTercapai || 0} Juz tercapai dari target {targetJuz} Juz</p>
+              </div>
+           </div>
+        </div>
+        
+        <div className="lg:col-span-8 h-full">
+           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm h-full flex flex-col">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5 sm:mb-6">
+                 <h3 className="font-bold text-lg sm:text-xl text-gray-800 flex items-center gap-2"><Calendar className="w-6 h-6" style={{ color: theme.primary }}/> Mutaba'ah Harian</h3>
+                 <div className="flex items-center justify-between gap-3 bg-gray-50 p-1.5 sm:p-2 rounded-xl border w-full sm:w-auto">
+                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-1.5 sm:p-2 hover:bg-white rounded-lg shadow-sm"><ChevronDown className="rotate-90 text-gray-600 w-5 h-5" /></button>
+                    <span className="font-bold text-sm sm:text-base w-28 text-center text-gray-700">{["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
+                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-1.5 sm:p-2 hover:bg-white rounded-lg shadow-sm"><ChevronDown className="-rotate-90 text-gray-600 w-5 h-5" /></button>
+                 </div>
+              </div>
+            
+            <div className="grid grid-cols-7 gap-2 sm:gap-3 flex-1 content-start">
+              {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => <div key={d} className="text-center text-xs sm:text-sm font-bold text-gray-400 py-1 uppercase">{d}</div>)}
+              {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} className="p-2 sm:p-3"></div>)}
+              
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const day = i + 1; 
+                const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const record = records.find(r => r.studentId === student.id && r.date === dateStr);
+                const isToday = dateStr === getLocalYYYYMMDD(new Date());
+                
+                let statusColor = "bg-gray-50 border-gray-100 text-gray-400"; 
+                if (record) { 
+                   if (record.presensi === 'Hadir') statusColor = "bg-green-100 border-green-200 text-green-700 shadow-sm"; 
+                   else if (record.presensi === 'Alpha') statusColor = "bg-red-100 border-red-200 text-red-700 shadow-sm"; 
+                   else statusColor = "bg-yellow-100 border-yellow-200 text-yellow-700 shadow-sm"; 
+                }
+
+                return (
+                  <div 
+                     key={day} 
+                     onClick={() => {
+                        if(record) { 
+                           setSelectedRecord(record); 
+                           setSelectedDateStr(dateStr); 
+                           setDetailModalOpen(true); 
+                        }
+                     }}
+                     className={`relative flex items-center justify-center aspect-square w-full rounded-xl sm:rounded-2xl border-2 ${statusColor} ${isToday ? 'border-blue-400 shadow-md ring-2 ring-blue-100' : ''} ${record ? 'cursor-pointer hover:scale-105 active:scale-95' : ''} transition-all`}
+                  >
+                    <span className="text-sm sm:text-lg font-bold">{day}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* BUGFIX: Modal Detail yang dihidupkan kembali dengan perlindungan komponen aman */}
       {detailModalOpen && selectedRecord && (
-         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900/60" onClick={() => setDetailModalOpen(false)}>
-            <div className="bg-white rounded-3xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}><div className="flex justify-between items-center mb-5"><h3 className="font-bold text-lg">{selectedRecord.date}</h3><button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-100 rounded-full"><X className="w-5 h-5"/></button></div><div className="text-center text-lg font-black">{selectedRecord.presensi}</div></div>
+         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm" onClick={() => setDetailModalOpen(false)}>
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm sm:max-w-md p-6 sm:p-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+               <div className="flex justify-between items-center mb-5 sm:mb-6 border-b border-gray-100 pb-4">
+                  <div>
+                     <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Detail Mutaba'ah</p>
+                     <h3 className="text-sm sm:text-base font-bold text-gray-800" style={{ color: theme.primary }}>{formatIndoDate(selectedDateStr)}</h3>
+                  </div>
+                  <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-100 text-gray-500 hover:text-gray-800 rounded-full"><X className="w-5 h-5"/></button>
+               </div>
+               
+               <div className="mb-5 flex justify-center">
+                  <span className={`inline-flex px-5 py-1.5 rounded-xl text-sm font-black uppercase tracking-widest border-2 ${selectedRecord.presensi === 'Hadir' ? 'bg-green-50 text-green-700 border-green-200' : selectedRecord.presensi === 'Alpha' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>{selectedRecord.presensi}</span>
+               </div>
+
+               {selectedRecord.presensi === 'Hadir' && (
+                  <div className="space-y-4">
+                     {selectedRecord.ziyadah ? (
+                        <div className="bg-green-50 p-4 rounded-2xl border border-green-100 relative overflow-hidden">
+                           <div className="absolute -right-4 -bottom-4 opacity-10"><BookOpen className="w-20 h-20" style={{ color: theme.primary }}/></div>
+                           <p className="text-[10px] font-bold text-green-600 uppercase tracking-wider mb-1">Setoran Ziyadah</p>
+                           <p className="text-sm font-semibold text-gray-800 mb-3 relative z-10">{formatZiyadahSurahSafe(selectedRecord.ziyadah)}</p>
+                           <div className="flex justify-between items-end border-t border-green-200/50 pt-3 relative z-10">
+                              <span className="text-xs text-green-700 font-medium">Nilai Akhir:</span>
+                              <span className="text-2xl font-black text-green-600">{selectedRecord.ziyadah.finalScore}</span>
+                           </div>
+                        </div>
+                     ) : (
+                        <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Ziyadah</div>
+                     )}
+                     
+                     {selectedRecord.murajaah ? (
+                        <div className="bg-yellow-50/50 p-4 rounded-2xl border border-yellow-100 relative overflow-hidden">
+                           <div className="absolute -right-4 -bottom-4 opacity-10"><RotateCcw className="w-20 h-20" style={{ color: theme.secondary }}/></div>
+                           <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-1">Setoran Muraja'ah</p>
+                           <p className="text-sm font-semibold text-gray-800 mb-3 relative z-10">Juz {selectedRecord.murajaah.fromJuz} - Juz {selectedRecord.murajaah.toJuz}</p>
+                           <div className="flex justify-between items-end border-t border-yellow-200/50 pt-3 relative z-10">
+                              <span className="text-xs text-yellow-700 font-medium">Nilai Akhir:</span>
+                              <span className="text-2xl font-black text-yellow-600">{selectedRecord.murajaah.finalScore}</span>
+                           </div>
+                        </div>
+                     ) : (
+                        <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Muraja'ah</div>
+                     )}
+                  </div>
+               )}
+
+               {selectedRecord.presensi === 'Izin/Sakit' && (
+                  <div className="bg-yellow-50 p-5 rounded-2xl border border-yellow-100 text-center">
+                     <p className="text-xs font-bold text-yellow-600 uppercase tracking-wider mb-2">Keterangan Izin/Sakit</p>
+                     <p className="text-base font-bold text-gray-800">{selectedRecord.keterangan || '-'}</p>
+                  </div>
+               )}
+            </div>
          </div>
       )}
     </div>
