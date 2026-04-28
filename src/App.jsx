@@ -24,10 +24,11 @@ const firebaseConfig = {
   appId: "1:913919068993:web:418e76ba44641e0ec4afc0",
   measurementId: "G-2GG96J583V"
 };
+
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'digiport-mtqpiat';
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'tasmi-app';
 
 // Tema Warna
 const theme = {
@@ -285,7 +286,7 @@ const App = () => {
     };
     checkSession();
 
-    // B. Listener Data Secara Realtime (Tidak menggunakan Mock Data lagi)
+    // B. Listener Data Secara Realtime
     const unsubPengampus = onSnapshot(collection(db, getCollectionPath('pengampus')), (snap) => {
       setPengampus(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (err) => console.error(err));
@@ -305,7 +306,7 @@ const App = () => {
     return () => { unsubPengampus(); unsubStudents(); unsubRecords(); unsubRecapNotes(); };
   }, [firebaseUser]);
 
-  // Fungsi Login (Menyimpan sesi ke database pengguna private)
+  // Fungsi Login
   const handleLogin = async (userData) => {
     setAppUser(userData);
     setActiveTab(userData.role === 'admin' ? 'admin' : userData.role === 'wali' ? 'dashboard' : 'harian');
@@ -316,7 +317,7 @@ const App = () => {
     }
   };
 
-  // Fungsi Logout (Menghapus sesi dari database)
+  // Fungsi Logout
   const handleLogout = async () => {
      if (firebaseUser) {
         try {
@@ -326,7 +327,6 @@ const App = () => {
      setAppUser(null);
   };
 
-  // Layar Loading sebelum cek sesi selesai
   if (!sessionChecked) {
      return (
         <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.bg }}>
@@ -335,7 +335,6 @@ const App = () => {
      );
   }
 
-  // Jika tidak ada user yang login
   if (!appUser) return <LoginScreen onLogin={handleLogin} pengampus={pengampus} students={students} />;
 
   const visibleStudents = appUser.role === 'pengampu' 
@@ -350,12 +349,12 @@ const App = () => {
   return (
     <div className="h-screen flex bg-gray-50 font-sans overflow-hidden">
       
-      {/* Mobile Header (muncul < lg) */}
+      {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 w-full h-14 sm:h-16 flex items-center gap-3 sm:gap-4 px-4 sm:px-6 text-white z-40 shadow-md" style={{ backgroundColor: theme.primary }}>
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 bg-white/10 rounded-lg active:scale-95 transition-transform">
           {isMobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
         </button>
-        <span className="font-bold text-sm sm:text-base tracking-wide">Markaz Digiport</span>
+        <span className="font-bold text-sm sm:text-base tracking-wide">Sistem Tahfidz</span>
       </div>
 
       {/* Mobile Overlay */}
@@ -363,14 +362,13 @@ const App = () => {
         <div className="lg:hidden fixed inset-0 bg-gray-900/60 z-40 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)} />
       )}
 
-      {/* Sidebar (Samping tetap di desktop >= lg, Drawer di mobile) */}
+      {/* Sidebar */}
       <div className={`fixed lg:static inset-y-0 left-0 w-64 sm:w-72 lg:w-64 xl:w-72 text-white flex flex-col shadow-2xl lg:shadow-xl z-50 shrink-0 transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`} style={{ backgroundColor: theme.primary }}>
         <div className="hidden lg:flex p-6 xl:p-8 items-center gap-3 xl:gap-4 font-bold text-xl xl:text-2xl border-b border-white/10">
           <BookOpen className="w-6 h-6 xl:w-8 xl:h-8" style={{ color: theme.accent }} />
           <span>Sistem Tahfidz</span>
         </div>
         
-        {/* Header di Sidebar untuk Mobile saat drawer terbuka */}
         <div className="lg:hidden p-5 sm:p-6 flex items-center justify-between border-b border-white/10">
            <span className="font-bold text-lg sm:text-xl">Menu Utama</span>
            <button className="p-1.5 sm:p-2 rounded-lg bg-white/10 text-white/80 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>
@@ -405,7 +403,6 @@ const App = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 h-full overflow-y-auto pt-16 sm:pt-20 lg:pt-0 p-3 sm:p-5 lg:p-8 xl:p-10 relative bg-gray-100">
-        
         <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto w-full">
           {activeTab === 'admin' && <AdminView pengampus={pengampus} students={students} />}
           {activeTab === 'dashboard' && appUser.role === 'wali' && <WaliDashboardView students={students} records={records} user={appUser} />}
@@ -417,7 +414,8 @@ const App = () => {
   );
 };
 
-// --- ADMIN VIEW (KELOLA PENGAMPU & SANTRI) ---
+// --- ADMIN VIEW ---
+// [Isi AdminView tetap sama persis, tidak ada perubahan logika, hanya memastikan UI konsisten]
 const AdminView = ({ pengampus, students }) => {
   const [newPengampu, setNewPengampu] = useState({ name: '', username: '', password: '' });
   const [newStudent, setNewStudent] = useState({ name: '', kelas: '1', semester: '1', username: '', password: '', juzTercapai: 0 });
@@ -713,26 +711,44 @@ const HarianView = ({ students, records, pengampus, userRole }) => {
 const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, onSaveSuccess }) => {
   const [presensi, setPresensi] = useState(existingRecord?.presensi || '');
   const [keterangan, setKeterangan] = useState(existingRecord?.keterangan || '');
+  
+  // State untuk Data Setoran
   const [ziyadah, setZiyadah] = useState(existingRecord?.ziyadah || { fromSurah: lastZiyadah?.toSurah || 0, fromAyah: lastZiyadah ? lastZiyadah.toAyah + 1 : 1, toSurah: lastZiyadah?.toSurah || 0, toAyah: lastZiyadah ? lastZiyadah.toAyah + 1 : 1, tajwid: 0, lupa: 0, lupaBimbingan: 0, manualScore: '' });
   const [murajaah, setMurajaah] = useState(existingRecord?.murajaah || { fromJuz: 1, toJuz: 1, tajwid: 0, lupa: 0, lupaBimbingan: 0, manualScore: '' });
+  
+  // State Baru: Toggle On/Off untuk masing-masing tipe setoran
+  const [isZiyadahActive, setIsZiyadahActive] = useState(existingRecord ? !!existingRecord.ziyadah : true);
+  const [isMurajaahActive, setIsMurajaahActive] = useState(existingRecord ? !!existingRecord.murajaah : true);
+
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  
   const getAyahCount = (surahIdx) => QURAN_SURAHS[surahIdx]?.[1] || 0;
 
   const handleSave = async () => {
     if (!presensi) { setErrorMsg("Pilih status presensi terlebih dahulu."); return; }
     if (presensi === 'Izin/Sakit' && !keterangan.trim()) { setErrorMsg("Mohon isi keterangan izin atau sakit."); return; }
+    
     setErrorMsg(''); setSaving(true);
+    
     const zScore = calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan);
     const mScore = calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan);
     const recordId = existingRecord?.id || `${student.id}_${date}`;
+    
+    // Payload cerdas: hanya menyimpan objek yang "Active"
     const payload = { 
       studentId: student.id, date, presensi, 
-      ...(presensi === 'Hadir' ? { ziyadah: { ...ziyadah, finalScore: ziyadah.manualScore !== '' ? parseInt(ziyadah.manualScore) : zScore }, murajaah: { ...murajaah, finalScore: murajaah.manualScore !== '' ? parseInt(murajaah.manualScore) : mScore } } : {}),
+      ...(presensi === 'Hadir' && isZiyadahActive ? { ziyadah: { ...ziyadah, finalScore: ziyadah.manualScore !== '' ? parseInt(ziyadah.manualScore) : zScore } } : {}),
+      ...(presensi === 'Hadir' && isMurajaahActive ? { murajaah: { ...murajaah, finalScore: murajaah.manualScore !== '' ? parseInt(murajaah.manualScore) : mScore } } : {}),
       ...(presensi === 'Izin/Sakit' ? { keterangan } : {})
     };
-    try { await setDoc(doc(db, getCollectionPath('records'), recordId), payload); onSaveSuccess(); } 
-    catch (error) { setErrorMsg("Gagal menyimpan data."); setSaving(false); }
+
+    try { 
+       await setDoc(doc(db, getCollectionPath('records'), recordId), payload); 
+       onSaveSuccess(); 
+    } catch (error) { 
+       setErrorMsg("Gagal menyimpan data."); setSaving(false); 
+    }
   };
 
   const ErrorRow = ({ label, penalty, value, onChange, colorTheme }) => {
@@ -789,81 +805,109 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, onSaveSu
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 animate-in slide-in-from-top-2">
           
           {/* ZIYADAH BLOCK */}
-          <div className="bg-white p-4 sm:p-5 lg:p-6 xl:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl border border-gray-100 shadow-sm flex flex-col">
-             <h4 className="font-bold text-sm sm:text-base lg:text-xl text-gray-800 mb-3 sm:mb-5 lg:mb-6 flex items-center gap-2 lg:gap-3"><div className="p-1.5 sm:p-2 rounded-lg bg-green-50"><BookOpen className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" style={{ color: theme.primary }}/></div> Setoran Ziyadah</h4>
+          <div className={`bg-white p-4 sm:p-5 lg:p-6 xl:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl border shadow-sm flex flex-col transition-all duration-300 ${!isZiyadahActive ? 'border-gray-200 bg-gray-50/50' : 'border-gray-100'}`}>
+             <div className="flex justify-between items-center mb-3 sm:mb-5 lg:mb-6">
+                <h4 className={`font-bold text-sm sm:text-base lg:text-xl flex items-center gap-2 lg:gap-3 transition-colors ${!isZiyadahActive ? 'text-gray-400' : 'text-gray-800'}`}>
+                   <div className={`p-1.5 sm:p-2 rounded-lg transition-colors ${!isZiyadahActive ? 'bg-gray-100' : 'bg-green-50'}`}><BookOpen className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" style={{ color: !isZiyadahActive ? '#9ca3af' : theme.primary }}/></div> 
+                   Setoran Ziyadah
+                </h4>
+                <button type="button" onClick={() => setIsZiyadahActive(!isZiyadahActive)} className={`w-10 h-5 sm:w-12 sm:h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner ${isZiyadahActive ? 'bg-green-500' : 'bg-gray-300'}`}>
+                   <div className={`bg-white w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow transform transition-transform ${isZiyadahActive ? 'translate-x-5 sm:translate-x-6' : 'translate-x-0'}`}></div>
+                </button>
+             </div>
              
-             <div className="space-y-3 sm:space-y-4 lg:space-y-6 flex-1 flex flex-col">
-                <div className="space-y-2 sm:space-y-3 lg:space-y-4 bg-gray-50 p-3 sm:p-4 lg:p-5 rounded-xl lg:rounded-2xl border border-gray-100">
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
-                      <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Dari Surat</label><select value={ziyadah.fromSurah} onChange={(e) => setZiyadah({...ziyadah, fromSurah: parseInt(e.target.value), fromAyah: 1})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
-                      <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Ayat</label><select value={ziyadah.fromAyah} onChange={(e) => setZiyadah({...ziyadah, fromAyah: parseInt(e.target.value)})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{Array.from({length: getAyahCount(ziyadah.fromSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
-                   </div>
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
-                      <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Sampai Surat</label><select value={ziyadah.toSurah} onChange={(e) => setZiyadah({...ziyadah, toSurah: parseInt(e.target.value), toAyah: 1})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
-                      <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Ayat</label><select value={ziyadah.toAyah} onChange={(e) => setZiyadah({...ziyadah, toAyah: parseInt(e.target.value)})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{Array.from({length: getAyahCount(ziyadah.toSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
-                   </div>
-                </div>
-                
-                <div className="flex-1 mt-2 sm:mt-0">
-                   <p className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 sm:mb-2 lg:mb-3 px-1 lg:px-2">Kesalahan Hafalan</p>
-                   <div className="bg-gray-50/50 rounded-xl sm:rounded-2xl lg:rounded-3xl px-3 sm:px-4 lg:px-6 border border-gray-100 py-1 lg:py-2">
-                      <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={ziyadah.tajwid} onChange={(v) => setZiyadah({...ziyadah, tajwid: v})} colorTheme="green" />
-                      <ErrorRow label="Lupa / Tersendat" penalty="-1" value={ziyadah.lupa} onChange={(v) => setZiyadah({...ziyadah, lupa: v})} colorTheme="yellow" />
-                      <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={ziyadah.lupaBimbingan} onChange={(v) => setZiyadah({...ziyadah, lupaBimbingan: v})} colorTheme="red" />
-                   </div>
-                </div>
-
-                <div className="mt-3 sm:mt-4 lg:mt-6 p-3 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl lg:rounded-3xl border-2 transition-all flex items-center justify-between relative overflow-hidden bg-white shadow-sm hover:shadow-md" style={{ borderColor: theme.primary }}>
-                   <div className="absolute top-0 right-0 w-24 sm:w-32 lg:w-40 h-24 sm:h-32 lg:h-40 opacity-5 rounded-bl-full pointer-events-none" style={{ backgroundColor: theme.primary }}></div>
-                   <div className="z-10">
-                      <p className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5 lg:mb-1">Skor Penilaian</p>
-                      <div className="flex items-baseline gap-1.5 lg:gap-2">
-                         <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter" style={{ color: theme.primary }}>{ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}</span>
-                         <span className="text-xs sm:text-sm lg:text-base font-bold text-gray-400">/ 100</span>
+             {isZiyadahActive ? (
+                <div className="space-y-3 sm:space-y-4 lg:space-y-6 flex-1 flex flex-col animate-in slide-in-from-top-2">
+                   <div className="space-y-2 sm:space-y-3 lg:space-y-4 bg-gray-50 p-3 sm:p-4 lg:p-5 rounded-xl lg:rounded-2xl border border-gray-100">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
+                         <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Dari Surat</label><select value={ziyadah.fromSurah} onChange={(e) => setZiyadah({...ziyadah, fromSurah: parseInt(e.target.value), fromAyah: 1})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
+                         <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Ayat</label><select value={ziyadah.fromAyah} onChange={(e) => setZiyadah({...ziyadah, fromAyah: parseInt(e.target.value)})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{Array.from({length: getAyahCount(ziyadah.fromSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
+                         <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Sampai Surat</label><select value={ziyadah.toSurah} onChange={(e) => setZiyadah({...ziyadah, toSurah: parseInt(e.target.value), toAyah: 1})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
+                         <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Ayat</label><select value={ziyadah.toAyah} onChange={(e) => setZiyadah({...ziyadah, toAyah: parseInt(e.target.value)})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{Array.from({length: getAyahCount(ziyadah.toSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
                       </div>
                    </div>
-                   <div className="z-10 flex flex-col items-end">
-                      <label className="text-[8px] sm:text-[9px] lg:text-xs font-bold text-gray-400 uppercase mb-1 lg:mb-2">Ubah Manual</label>
-                      <input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="-" className="w-16 sm:w-20 lg:w-24 px-2 py-1.5 lg:py-2.5 text-sm sm:text-base lg:text-lg font-bold text-center border-2 border-gray-200 rounded-lg lg:rounded-xl outline-none focus:border-transparent transition-all bg-gray-50 focus:bg-white placeholder-gray-400" style={{ focusRingColor: theme.secondary, focusRingWidth: '2px' }} />
+                   
+                   <div className="flex-1 mt-2 sm:mt-0">
+                      <p className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 sm:mb-2 lg:mb-3 px-1 lg:px-2">Kesalahan Hafalan</p>
+                      <div className="bg-gray-50/50 rounded-xl sm:rounded-2xl lg:rounded-3xl px-3 sm:px-4 lg:px-6 border border-gray-100 py-1 lg:py-2">
+                         <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={ziyadah.tajwid} onChange={(v) => setZiyadah({...ziyadah, tajwid: v})} colorTheme="green" />
+                         <ErrorRow label="Lupa / Tersendat" penalty="-1" value={ziyadah.lupa} onChange={(v) => setZiyadah({...ziyadah, lupa: v})} colorTheme="yellow" />
+                         <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={ziyadah.lupaBimbingan} onChange={(v) => setZiyadah({...ziyadah, lupaBimbingan: v})} colorTheme="red" />
+                      </div>
+                   </div>
+
+                   <div className="mt-3 sm:mt-4 lg:mt-6 p-3 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl lg:rounded-3xl border-2 transition-all flex items-center justify-between relative overflow-hidden bg-white shadow-sm hover:shadow-md" style={{ borderColor: theme.primary }}>
+                      <div className="absolute top-0 right-0 w-24 sm:w-32 lg:w-40 h-24 sm:h-32 lg:h-40 opacity-5 rounded-bl-full pointer-events-none" style={{ backgroundColor: theme.primary }}></div>
+                      <div className="z-10">
+                         <p className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5 lg:mb-1">Skor Penilaian</p>
+                         <div className="flex items-baseline gap-1.5 lg:gap-2">
+                            <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter" style={{ color: theme.primary }}>{ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}</span>
+                            <span className="text-xs sm:text-sm lg:text-base font-bold text-gray-400">/ 100</span>
+                         </div>
+                      </div>
+                      <div className="z-10 flex flex-col items-end">
+                         <label className="text-[8px] sm:text-[9px] lg:text-xs font-bold text-gray-400 uppercase mb-1 lg:mb-2">Ubah Manual</label>
+                         <input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="-" className="w-16 sm:w-20 lg:w-24 px-2 py-1.5 lg:py-2.5 text-sm sm:text-base lg:text-lg font-bold text-center border-2 border-gray-200 rounded-lg lg:rounded-xl outline-none focus:border-transparent transition-all bg-gray-50 focus:bg-white placeholder-gray-400" style={{ focusRingColor: theme.secondary, focusRingWidth: '2px' }} />
+                      </div>
                    </div>
                 </div>
-             </div>
+             ) : (
+                <div className="flex-1 flex items-center justify-center py-6 sm:py-8 lg:py-10">
+                   <p className="text-xs sm:text-sm lg:text-base text-gray-400 font-semibold italic">Pengisian Ziyadah Dinonaktifkan.</p>
+                </div>
+             )}
           </div>
           
           {/* MURAJAAH BLOCK */}
-          <div className="bg-white p-4 sm:p-5 lg:p-6 xl:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl border border-gray-100 shadow-sm flex flex-col">
-             <h4 className="font-bold text-sm sm:text-base lg:text-xl text-gray-800 mb-3 sm:mb-5 lg:mb-6 flex items-center gap-2 lg:gap-3"><div className="p-1.5 sm:p-2 rounded-lg bg-green-50"><RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" style={{ color: theme.secondary }}/></div> Setoran Muraja'ah</h4>
+          <div className={`bg-white p-4 sm:p-5 lg:p-6 xl:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl border shadow-sm flex flex-col transition-all duration-300 ${!isMurajaahActive ? 'border-gray-200 bg-gray-50/50' : 'border-gray-100'}`}>
+             <div className="flex justify-between items-center mb-3 sm:mb-5 lg:mb-6">
+                <h4 className={`font-bold text-sm sm:text-base lg:text-xl flex items-center gap-2 lg:gap-3 transition-colors ${!isMurajaahActive ? 'text-gray-400' : 'text-gray-800'}`}>
+                   <div className={`p-1.5 sm:p-2 rounded-lg transition-colors ${!isMurajaahActive ? 'bg-gray-100' : 'bg-green-50'}`}><RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" style={{ color: !isMurajaahActive ? '#9ca3af' : theme.secondary }}/></div> 
+                   Setoran Muraja'ah
+                </h4>
+                <button type="button" onClick={() => setIsMurajaahActive(!isMurajaahActive)} className={`w-10 h-5 sm:w-12 sm:h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner ${isMurajaahActive ? 'bg-yellow-500' : 'bg-gray-300'}`}>
+                   <div className={`bg-white w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow transform transition-transform ${isMurajaahActive ? 'translate-x-5 sm:translate-x-6' : 'translate-x-0'}`}></div>
+                </button>
+             </div>
              
-             <div className="space-y-3 sm:space-y-4 lg:space-y-6 flex-1 flex flex-col">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4 bg-gray-50 p-3 sm:p-4 lg:p-5 rounded-xl lg:rounded-2xl border border-gray-100">
-                   <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Dari Juz</label><select value={murajaah.fromJuz} onChange={(e) => setMurajaah({...murajaah, fromJuz: parseInt(e.target.value)})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
-                   <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Sampai Juz</label><select value={murajaah.toJuz} onChange={(e) => setMurajaah({...murajaah, toJuz: parseInt(e.target.value)})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
-                </div>
-                
-                <div className="flex-1 mt-2 sm:mt-0">
-                   <p className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 sm:mb-2 lg:mb-3 px-1 lg:px-2">Kesalahan Hafalan</p>
-                   <div className="bg-gray-50/50 rounded-xl sm:rounded-2xl lg:rounded-3xl px-3 sm:px-4 lg:px-6 border border-gray-100 py-1 lg:py-2">
-                      <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={murajaah.tajwid} onChange={(v) => setMurajaah({...murajaah, tajwid: v})} colorTheme="green" />
-                      <ErrorRow label="Lupa / Tersendat" penalty="-1" value={murajaah.lupa} onChange={(v) => setMurajaah({...murajaah, lupa: v})} colorTheme="yellow" />
-                      <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={murajaah.lupaBimbingan} onChange={(v) => setMurajaah({...murajaah, lupaBimbingan: v})} colorTheme="red" />
+             {isMurajaahActive ? (
+                <div className="space-y-3 sm:space-y-4 lg:space-y-6 flex-1 flex flex-col animate-in slide-in-from-top-2">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4 bg-gray-50 p-3 sm:p-4 lg:p-5 rounded-xl lg:rounded-2xl border border-gray-100">
+                      <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Dari Juz</label><select value={murajaah.fromJuz} onChange={(e) => setMurajaah({...murajaah, fromJuz: parseInt(e.target.value)})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
+                      <div><label className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 lg:mb-1.5 block">Sampai Juz</label><select value={murajaah.toJuz} onChange={(e) => setMurajaah({...murajaah, toJuz: parseInt(e.target.value)})} className="w-full p-2 sm:p-2.5 lg:p-3 border border-gray-200 rounded-lg lg:rounded-xl text-xs sm:text-sm lg:text-base bg-white outline-none font-medium">{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
                    </div>
-                </div>
-
-                <div className="mt-3 sm:mt-4 lg:mt-6 p-3 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl lg:rounded-3xl border-2 transition-all flex items-center justify-between relative overflow-hidden bg-white shadow-sm hover:shadow-md" style={{ borderColor: theme.secondary }}>
-                   <div className="absolute top-0 right-0 w-24 sm:w-32 lg:w-40 h-24 sm:h-32 lg:h-40 opacity-10 rounded-bl-full pointer-events-none" style={{ backgroundColor: theme.secondary }}></div>
-                   <div className="z-10">
-                      <p className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5 lg:mb-1">Skor Penilaian</p>
-                      <div className="flex items-baseline gap-1.5 lg:gap-2">
-                         <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter" style={{ color: theme.secondary }}>{murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}</span>
-                         <span className="text-xs sm:text-sm lg:text-base font-bold text-gray-400">/ 100</span>
+                   
+                   <div className="flex-1 mt-2 sm:mt-0">
+                      <p className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 sm:mb-2 lg:mb-3 px-1 lg:px-2">Kesalahan Hafalan</p>
+                      <div className="bg-gray-50/50 rounded-xl sm:rounded-2xl lg:rounded-3xl px-3 sm:px-4 lg:px-6 border border-gray-100 py-1 lg:py-2">
+                         <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={murajaah.tajwid} onChange={(v) => setMurajaah({...murajaah, tajwid: v})} colorTheme="green" />
+                         <ErrorRow label="Lupa / Tersendat" penalty="-1" value={murajaah.lupa} onChange={(v) => setMurajaah({...murajaah, lupa: v})} colorTheme="yellow" />
+                         <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={murajaah.lupaBimbingan} onChange={(v) => setMurajaah({...murajaah, lupaBimbingan: v})} colorTheme="red" />
                       </div>
                    </div>
-                   <div className="z-10 flex flex-col items-end">
-                      <label className="text-[8px] sm:text-[9px] lg:text-xs font-bold text-gray-400 uppercase mb-1 lg:mb-2">Ubah Manual</label>
-                      <input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="-" className="w-16 sm:w-20 lg:w-24 px-2 py-1.5 lg:py-2.5 text-sm sm:text-base lg:text-lg font-bold text-center border-2 border-gray-200 rounded-lg lg:rounded-xl outline-none focus:border-transparent transition-all bg-gray-50 focus:bg-white placeholder-gray-400" style={{ focusRingColor: theme.primary, focusRingWidth: '2px' }} />
+
+                   <div className="mt-3 sm:mt-4 lg:mt-6 p-3 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl lg:rounded-3xl border-2 transition-all flex items-center justify-between relative overflow-hidden bg-white shadow-sm hover:shadow-md" style={{ borderColor: theme.secondary }}>
+                      <div className="absolute top-0 right-0 w-24 sm:w-32 lg:w-40 h-24 sm:h-32 lg:h-40 opacity-10 rounded-bl-full pointer-events-none" style={{ backgroundColor: theme.secondary }}></div>
+                      <div className="z-10">
+                         <p className="text-[9px] sm:text-[10px] lg:text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5 lg:mb-1">Skor Penilaian</p>
+                         <div className="flex items-baseline gap-1.5 lg:gap-2">
+                            <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter" style={{ color: theme.secondary }}>{murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}</span>
+                            <span className="text-xs sm:text-sm lg:text-base font-bold text-gray-400">/ 100</span>
+                         </div>
+                      </div>
+                      <div className="z-10 flex flex-col items-end">
+                         <label className="text-[8px] sm:text-[9px] lg:text-xs font-bold text-gray-400 uppercase mb-1 lg:mb-2">Ubah Manual</label>
+                         <input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="-" className="w-16 sm:w-20 lg:w-24 px-2 py-1.5 lg:py-2.5 text-sm sm:text-base lg:text-lg font-bold text-center border-2 border-gray-200 rounded-lg lg:rounded-xl outline-none focus:border-transparent transition-all bg-gray-50 focus:bg-white placeholder-gray-400" style={{ focusRingColor: theme.primary, focusRingWidth: '2px' }} />
+                      </div>
                    </div>
                 </div>
-             </div>
+             ) : (
+                <div className="flex-1 flex items-center justify-center py-6 sm:py-8 lg:py-10">
+                   <p className="text-xs sm:text-sm lg:text-base text-gray-400 font-semibold italic">Pengisian Muraja'ah Dinonaktifkan.</p>
+                </div>
+             )}
           </div>
         </div>
       )}
