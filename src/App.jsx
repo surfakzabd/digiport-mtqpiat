@@ -23,7 +23,7 @@ const firebaseConfig = {
   messagingSenderId: "913919068993",
   appId: "1:913919068993:web:418e76ba44641e0ec4afc0",
   measurementId: "G-2GG96J583V"
-};
+}; 
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
@@ -74,7 +74,6 @@ const getLocalYYYYMMDD = (dateObj) => {
    return `${y}-${m}-${d}`;
 };
 
-// Fungsi aman untuk memformat nama surat (Mencegah Blank Screen)
 const formatZiyadahSurahSafe = (z) => {
   if (!z || z.fromSurah == null || z.toSurah == null) return '-';
   const s1 = QURAN_SURAHS[z.fromSurah]?.[0] || 'Unknown';
@@ -620,7 +619,6 @@ const HarianView = ({ students, records, pengampus, user }) => {
   const [recordToDelete, setRecordToDelete] = useState(null);
   const sweepDoneRef = useRef(false);
 
-  // AUTOMASI 1: Smart Sweeper untuk Auto-Alpha
   useEffect(() => {
     if (sweepDoneRef.current || students.length === 0 || user.role === 'wali') return;
     
@@ -655,7 +653,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
        }
     };
     
-    setTimeout(() => { runAutoAlphaSweeper(); }, 1500); // Sedikit jeda aman
+    setTimeout(() => { runAutoAlphaSweeper(); }, 1500);
   }, [students, records, user]);
 
   const filteredStudents = useMemo(() => {
@@ -782,7 +780,6 @@ const HarianView = ({ students, records, pengampus, user }) => {
 const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMurajaah, onSaveSuccess }) => {
   const getAyahCount = (surahIdx) => QURAN_SURAHS[surahIdx]?.[1] || 0;
 
-  // AUTOMASI 2: Aman dan Dinamis
   const calcNextZiyadah = () => {
      if (!lastZiyadah || lastZiyadah.toSurah == null || lastZiyadah.toAyah == null) return { surah: 0, ayah: 1 };
      let nextSurah = Number(lastZiyadah.toSurah);
@@ -875,7 +872,6 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
             <button key={status} onClick={() => {setPresensi(status); setErrorMsg('');}} className={`w-full py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-xs md:text-sm font-bold border-2 transition-all shadow-sm ${presensi === status ? 'text-white scale-[1.02] md:scale-105' : 'border-gray-200 text-gray-500 hover:bg-gray-50 bg-white'}`} style={presensi === status ? { backgroundColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, borderColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, color: '#fff' } : {}}>{status}</button>
           ))}
         </div>
-        {presensi === 'Izin/Sakit' && (<div className="mt-3 md:mt-5"><input type="text" value={keterangan} onChange={(e) => setKeterangan(e.target.value)} placeholder="Contoh: Sakit demam..." className="w-full p-3 md:p-4 text-xs md:text-sm border-2 border-yellow-200 rounded-lg md:rounded-xl outline-none bg-yellow-50/30 focus:border-yellow-400 transition-colors" /></div>)}
       </div>
 
       {presensi === 'Hadir' && (
@@ -939,6 +935,30 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
           </div>
         </div>
       )}
+
+      {presensi === 'Izin/Sakit' && (
+        <div className="bg-white p-4 md:p-5 lg:p-6 rounded-xl md:rounded-2xl border shadow-sm flex flex-col transition-all border-gray-100 animate-in slide-in-from-top-2">
+           <div className="flex justify-between items-center mb-3 md:mb-5">
+              <h4 className="font-bold text-sm md:text-base lg:text-lg flex items-center gap-2 md:gap-3 text-gray-800">
+                 <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-yellow-50">
+                    <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-500"/>
+                 </div> 
+                 Keterangan Izin / Sakit
+              </h4>
+           </div>
+           <div className="space-y-3 md:space-y-4 flex-1 flex flex-col">
+              <div className="bg-gray-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-gray-100">
+                 <textarea 
+                    value={keterangan} 
+                    onChange={(e) => setKeterangan(e.target.value)} 
+                    placeholder="Tuliskan alasan izin atau sakit di sini. (Contoh: Ananda sedang sakit demam dan batuk sejak semalam...)" 
+                    className="w-full p-3 md:p-4 text-xs md:text-sm border-2 border-gray-200 rounded-lg md:rounded-xl outline-none bg-white focus:border-gray-400 transition-colors resize-none h-24 md:h-28 font-medium text-gray-700" 
+                 />
+              </div>
+           </div>
+        </div>
+      )}
+
       <div className="flex justify-end pt-3 md:pt-4">
         <button onClick={handleSave} disabled={saving} className="w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3 px-6 md:px-8 py-3 md:py-4 rounded-xl text-sm md:text-base text-white font-bold shadow-lg hover:shadow-xl transition-all" style={{ backgroundColor: theme.primary }}>
           {saving ? <div className="animate-spin rounded-full h-5 w-5 md:h-6 md:w-6 border-b-2 border-white"></div> : <Check className="w-5 h-5 md:w-6 md:h-6"/>}
@@ -1266,7 +1286,7 @@ const WaliDashboardView = ({ students, records, user }) => {
                </div>
                
                <div className="mb-4 md:mb-6 flex justify-center">
-                  <span className={`inline-flex px-4 md:px-6 py-1.5 md:py-2 rounded-xl text-sm md:text-base font-black uppercase tracking-widest border-2 ${selectedRecord.presensi === 'Hadir' ? 'bg-green-50 text-green-700 border-green-200' : selectedRecord.presensi === 'Alpha' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>{selectedRecord.presensi}</span>
+                  <span className={`inline-flex px-4 md:px-6 py-1.5 md:py-2 rounded-xl text-sm md:text-base font-black uppercase tracking-widest border-2 shadow-sm ${selectedRecord.presensi === 'Hadir' ? 'bg-green-500 text-white border-green-600' : selectedRecord.presensi === 'Alpha' ? 'bg-red-500 text-white border-red-600' : 'bg-yellow-500 text-white border-yellow-600'}`}>{selectedRecord.presensi}</span>
                </div>
 
                {selectedRecord.presensi === 'Hadir' && (
@@ -1302,8 +1322,8 @@ const WaliDashboardView = ({ students, records, user }) => {
                )}
 
                {selectedRecord.presensi === 'Izin/Sakit' && (
-                  <div className="bg-yellow-50 p-5 md:p-6 rounded-xl md:rounded-2xl border border-yellow-100 text-center">
-                     <p className="text-[10px] md:text-xs font-bold text-yellow-600 uppercase tracking-wider mb-2 md:mb-3">Keterangan Izin/Sakit</p>
+                  <div className="bg-gray-50 p-5 md:p-6 rounded-xl md:rounded-2xl border border-gray-200 text-center">
+                     <p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 md:mb-3">Keterangan Izin/Sakit</p>
                      <p className="text-base md:text-lg font-bold text-gray-800">{selectedRecord.keterangan || '-'}</p>
                   </div>
                )}
