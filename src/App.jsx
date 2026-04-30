@@ -23,7 +23,7 @@ const firebaseConfig = {
   messagingSenderId: "913919068993",
   appId: "1:913919068993:web:418e76ba44641e0ec4afc0",
   measurementId: "G-2GG96J583V"
-}; 
+};
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
@@ -87,7 +87,7 @@ const formatZiyadahSurahSafe = (z) => {
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "Hapus Data" }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed top-0 left-0 w-full h-[100dvh] min-h-screen z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 md:p-6 animate-in fade-in zoom-in duration-200">
         <div className="flex items-center gap-3 text-red-600 mb-3 md:mb-4">
           <AlertTriangle className="w-6 h-6 md:w-7 md:h-7" />
@@ -127,7 +127,7 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-[100dvh] min-h-screen z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-5 md:p-6 animate-in fade-in zoom-in duration-200 border-t-4 md:border-t-8 my-auto" style={{ borderColor: theme.primary }}>
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -377,7 +377,7 @@ const App = () => {
 
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed top-0 left-0 w-full h-[100dvh] min-h-screen bg-gray-900/60 z-40 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)} />
+        <div className="lg:hidden fixed inset-0 bg-gray-900/60 z-40 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)} />
       )}
 
       {/* Sidebar */}
@@ -1275,7 +1275,7 @@ const WaliDashboardView = ({ students, records, user }) => {
 
       {/* Modal Detail Mutabaah */}
       {detailModalOpen && selectedRecord && (
-         <div className="fixed top-0 left-0 w-full h-[100dvh] min-h-screen z-[100] flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm" onClick={() => setDetailModalOpen(false)}>
+         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm" onClick={() => setDetailModalOpen(false)}>
             <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md p-6 sm:p-8 animate-in fade-in zoom-in duration-200 flex flex-col relative overflow-hidden" onClick={e => e.stopPropagation()}>
                
                {/* Header Decoration Line */}
