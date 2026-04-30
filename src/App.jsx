@@ -23,7 +23,7 @@ const firebaseConfig = {
   messagingSenderId: "913919068993",
   appId: "1:913919068993:web:418e76ba44641e0ec4afc0",
   measurementId: "G-2GG96J583V"
-}; 
+};
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
@@ -1276,59 +1276,93 @@ const WaliDashboardView = ({ students, records, user }) => {
       {/* Modal Detail Mutabaah */}
       {detailModalOpen && selectedRecord && (
          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm" onClick={() => setDetailModalOpen(false)}>
-            <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md p-5 md:p-6 sm:p-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-               <div className="flex justify-between items-center mb-4 md:mb-6 border-b border-gray-100 pb-4 md:pb-5">
+            <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md p-6 sm:p-8 animate-in fade-in zoom-in duration-200 flex flex-col relative overflow-hidden" onClick={e => e.stopPropagation()}>
+               
+               {/* Header Decoration Line */}
+               <div 
+                  className="absolute top-0 left-0 w-full h-2 md:h-3" 
+                  style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}
+               ></div>
+
+               <div className="flex justify-between items-start mb-6 pt-2">
                   <div>
-                     <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 md:mb-1.5">Detail Mutaba'ah</p>
-                     <h3 className="text-sm md:text-base sm:text-lg font-bold text-gray-800" style={{ color: theme.primary }}>{formatIndoDate(selectedDateStr)}</h3>
+                     <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tanggal Mutaba'ah</p>
+                     <h3 className="text-base sm:text-lg font-black text-gray-800">{formatIndoDate(selectedDateStr)}</h3>
                   </div>
-                  <button onClick={() => setDetailModalOpen(false)} className="p-1.5 md:p-2 sm:p-2.5 bg-gray-100 text-gray-500 hover:text-gray-800 rounded-full transition-colors"><X className="w-4 h-4 md:w-5 h-5 sm:w-6 sm:h-6"/></button>
+                  <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 rounded-full transition-colors"><X className="w-5 h-5"/></button>
                </div>
                
-               <div className="mb-4 md:mb-6 flex justify-center">
-                  <span className={`inline-flex px-4 md:px-6 py-1.5 md:py-2 rounded-xl text-sm md:text-base font-black uppercase tracking-widest border-2 shadow-sm ${selectedRecord.presensi === 'Hadir' ? 'bg-green-500 text-white border-green-600' : selectedRecord.presensi === 'Alpha' ? 'bg-red-500 text-white border-red-600' : 'bg-yellow-500 text-white border-yellow-600'}`}>{selectedRecord.presensi}</span>
+               <div className="mb-6 flex flex-col items-center bg-gray-50 py-4 md:py-5 rounded-2xl border border-gray-100">
+                  <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 md:mb-3">Status Presensi</p>
+                  <span 
+                     className="inline-flex px-6 md:px-8 py-2 md:py-2.5 rounded-full text-sm md:text-base font-black uppercase tracking-widest text-white shadow-md transition-transform"
+                     style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}
+                  >
+                     {selectedRecord.presensi}
+                  </span>
                </div>
 
                {selectedRecord.presensi === 'Hadir' && (
-                  <div className="space-y-4 md:space-y-5">
+                  <div className="space-y-4">
                      {selectedRecord.ziyadah ? (
-                        <div className="bg-green-50 p-4 md:p-5 rounded-xl md:rounded-2xl border border-green-100 relative overflow-hidden">
-                           <div className="absolute -right-4 -bottom-4 opacity-10"><BookOpen className="w-20 h-20 md:w-24 md:h-24" style={{ color: theme.primary }}/></div>
-                           <p className="text-[10px] md:text-xs font-bold text-green-600 uppercase tracking-wider mb-1.5 md:mb-2">Setoran Ziyadah</p>
-                           <p className="text-sm md:text-base font-semibold text-gray-800 mb-3 md:mb-4 relative z-10">{formatZiyadahSurahSafe(selectedRecord.ziyadah)}</p>
-                           <div className="flex justify-between items-end border-t border-green-200/50 pt-3 md:pt-4 relative z-10">
-                              <span className="text-xs md:text-sm text-green-700 font-medium">Nilai Akhir:</span>
-                              <span className="text-2xl md:text-3xl font-black text-green-600">{selectedRecord.ziyadah.finalScore}</span>
+                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden flex flex-row items-center justify-between gap-4 transition-colors hover:border-gray-300">
+                           <div className="flex items-center gap-3 md:gap-4">
+                              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.primary + '15' }}>
+                                 <BookOpen className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/>
+                              </div>
+                              <div>
+                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Ziyadah</p>
+                                 <p className="text-sm md:text-base font-bold text-gray-800">{formatZiyadahSurahSafe(selectedRecord.ziyadah)}</p>
+                              </div>
+                           </div>
+                           <div className="text-right shrink-0 border-l border-gray-100 pl-4">
+                              <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai</p>
+                              <span className="text-xl md:text-2xl font-black" style={{ color: theme.primary }}>{selectedRecord.ziyadah.finalScore}</span>
                            </div>
                         </div>
                      ) : (
-                        <div className="bg-gray-50 p-4 md:p-5 rounded-xl md:rounded-2xl border border-gray-100 text-center text-xs md:text-sm font-semibold text-gray-400">Tidak ada setoran Ziyadah</div>
+                        <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Ziyadah</div>
                      )}
                      
                      {selectedRecord.murajaah ? (
-                        <div className="bg-yellow-50/50 p-4 md:p-5 rounded-xl md:rounded-2xl border border-yellow-100 relative overflow-hidden">
-                           <div className="absolute -right-4 -bottom-4 opacity-10"><RotateCcw className="w-20 h-20 md:w-24 md:h-24" style={{ color: theme.secondary }}/></div>
-                           <p className="text-[10px] md:text-xs font-bold text-yellow-600 uppercase tracking-wider mb-1.5 md:mb-2">Setoran Muraja'ah</p>
-                           <p className="text-sm md:text-base font-semibold text-gray-800 mb-3 md:mb-4 relative z-10">Juz {selectedRecord.murajaah.fromJuz} - Juz {selectedRecord.murajaah.toJuz}</p>
-                           <div className="flex justify-between items-end border-t border-yellow-200/50 pt-3 md:pt-4 relative z-10">
-                              <span className="text-xs md:text-sm text-yellow-700 font-medium">Nilai Akhir:</span>
-                              <span className="text-2xl md:text-3xl font-black text-yellow-600">{selectedRecord.murajaah.finalScore}</span>
+                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden flex flex-row items-center justify-between gap-4 transition-colors hover:border-gray-300">
+                           <div className="flex items-center gap-3 md:gap-4">
+                              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary + '15' }}>
+                                 <RotateCcw className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.secondary }}/>
+                              </div>
+                              <div>
+                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Muraja'ah</p>
+                                 <p className="text-sm md:text-base font-bold text-gray-800">Juz {selectedRecord.murajaah.fromJuz} - Juz {selectedRecord.murajaah.toJuz}</p>
+                              </div>
+                           </div>
+                           <div className="text-right shrink-0 border-l border-gray-100 pl-4">
+                              <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai</p>
+                              <span className="text-xl md:text-2xl font-black" style={{ color: theme.secondary }}>{selectedRecord.murajaah.finalScore}</span>
                            </div>
                         </div>
                      ) : (
-                        <div className="bg-gray-50 p-4 md:p-5 rounded-xl md:rounded-2xl border border-gray-100 text-center text-xs md:text-sm font-semibold text-gray-400">Tidak ada setoran Muraja'ah</div>
+                        <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Muraja'ah</div>
                      )}
                   </div>
                )}
 
                {selectedRecord.presensi === 'Izin/Sakit' && (
-                  <div className="bg-gray-50 p-5 md:p-6 rounded-xl md:rounded-2xl border border-gray-200 text-center">
-                     <p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 md:mb-3">Keterangan Izin/Sakit</p>
-                     <p className="text-base md:text-lg font-bold text-gray-800">{selectedRecord.keterangan || '-'}</p>
+                  <div className="bg-yellow-50 p-5 rounded-2xl border border-yellow-100 flex flex-col items-center text-center mt-2">
+                     <AlertCircle className="w-6 h-6 text-yellow-500 mb-2"/>
+                     <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Izin/Sakit</p>
+                     <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || '-'}</p>
                   </div>
                )}
 
-               <button onClick={() => setDetailModalOpen(false)} className="mt-6 md:mt-8 w-full py-2.5 md:py-3.5 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Tutup Detail</button>
+               {selectedRecord.presensi === 'Alpha' && (
+                  <div className="bg-red-50 p-5 rounded-2xl border border-red-100 flex flex-col items-center text-center mt-2">
+                     <AlertTriangle className="w-6 h-6 text-red-500 mb-2"/>
+                     <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Alpha</p>
+                     <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || 'Tanpa keterangan'}</p>
+                  </div>
+               )}
+
+               <button onClick={() => setDetailModalOpen(false)} className="mt-8 w-full py-3 md:py-3.5 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Tutup Detail</button>
             </div>
          </div>
       )}
