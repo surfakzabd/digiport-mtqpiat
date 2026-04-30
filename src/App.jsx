@@ -79,8 +79,8 @@ const formatZiyadahSurahSafe = (z) => {
   const s1 = QURAN_SURAHS[z.fromSurah]?.[0] || 'Unknown';
   const s2 = QURAN_SURAHS[z.toSurah]?.[0] || 'Unknown';
   return z.fromSurah === z.toSurah 
-    ? `${s1} ay ${z.fromAyah}-${z.toAyah}` 
-    : `${s1} ay ${z.fromAyah} - ${s2} ay ${z.toAyah}`;
+    ? `${s1} : ${z.fromAyah}-${z.toAyah}` 
+    : `${s1} : ${z.fromAyah} - ${s2} : ${z.toAyah}`;
 };
 
 // --- CUSTOM MODALS ---
@@ -690,7 +690,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
 
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-10">
-      <ConfirmModal isOpen={recordToDelete !== null} title="Ulang Laporan?" message="Menghapus laporan akan mengosongkan kembali form setoran hari ini." confirmText="Kosongkan Form" onConfirm={executeDeleteRecord} onCancel={() => setRecordToDelete(null)} />
+      <ConfirmModal isOpen={recordToDelete !== null} title="Ulang Laporan?" message="Mengulang laporan akan mengosongkan kembali form yang telah diisi hari ini." confirmText="Kosongkan Form" onConfirm={executeDeleteRecord} onCancel={() => setRecordToDelete(null)} />
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4 bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm">
         <div>
