@@ -87,16 +87,19 @@ const formatZiyadahSurahSafe = (z) => {
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "Hapus Data" }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 md:p-6 animate-in fade-in zoom-in duration-200">
-        <div className="flex items-center gap-3 text-red-600 mb-3 md:mb-4">
-          <AlertTriangle className="w-6 h-6 md:w-7 md:h-7" />
-          <h3 className="text-lg md:text-xl font-bold text-gray-800">{title}</h3>
-        </div>
-        <p className="text-sm md:text-base text-gray-600 mb-5 md:mb-6 leading-relaxed">{message}</p>
-        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end">
-          <button onClick={onCancel} className="w-full sm:w-auto px-4 py-2 md:py-2.5 rounded-xl font-semibold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Batal</button>
-          <button onClick={onConfirm} className="w-full sm:w-auto px-4 py-2 md:py-2.5 rounded-xl font-semibold text-sm md:text-base bg-red-500 text-white hover:bg-red-600 shadow-md transition-colors">{confirmText}</button>
+    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+      <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+      <div className="flex min-h-full p-4 sm:p-6">
+        <div className="m-auto relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 md:p-6 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center gap-3 text-red-600 mb-3 md:mb-4">
+            <AlertTriangle className="w-6 h-6 md:w-7 md:h-7" />
+            <h3 className="text-lg md:text-xl font-bold text-gray-800">{title}</h3>
+          </div>
+          <p className="text-sm md:text-base text-gray-600 mb-5 md:mb-6 leading-relaxed">{message}</p>
+          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end">
+            <button onClick={onCancel} className="w-full sm:w-auto px-4 py-2 md:py-2.5 rounded-xl font-semibold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Batal</button>
+            <button onClick={onConfirm} className="w-full sm:w-auto px-4 py-2 md:py-2.5 rounded-xl font-semibold text-sm md:text-base bg-red-500 text-white hover:bg-red-600 shadow-md transition-colors">{confirmText}</button>
+          </div>
         </div>
       </div>
     </div>
@@ -127,74 +130,77 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-5 md:p-6 animate-in fade-in zoom-in duration-200 border-t-4 md:border-t-8 my-auto" style={{ borderColor: theme.primary }}>
-        <div className="flex items-center justify-between mb-4 md:mb-6">
-          <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Edit className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> 
-            Edit {isStudent ? 'Data Santri' : 'Data Pengampu'}
-          </h3>
-          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 md:p-1.5 bg-gray-100 rounded-full transition-colors"><X className="w-4 h-4 md:w-5 md:h-5"/></button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
-          <div>
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Nama</label>
-            <input required type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: theme.secondary }} />
+    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+      <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+      <div className="flex min-h-full p-4 sm:p-6">
+        <div className="m-auto relative bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-5 md:p-6 animate-in fade-in zoom-in duration-200 border-t-4 md:border-t-8" style={{ borderColor: theme.primary }} onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-4 md:mb-6">
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
+              <Edit className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> 
+              Edit {isStudent ? 'Data Santri' : 'Data Pengampu'}
+            </h3>
+            <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 md:p-1.5 bg-gray-100 rounded-full transition-colors"><X className="w-4 h-4 md:w-5 md:h-5"/></button>
           </div>
-          
-          {isStudent && (
-            <>
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div>
-                  <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Kelas</label>
-                  <select name="kelas" value={formData.kelas || '1'} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white">
-                    <option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Semester</label>
-                  <select name="semester" value={formData.semester || '1'} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white">
-                    {[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div>
-                  <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Halaqah</label>
-                  <select name="pengampuId" value={formData.pengampuId || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white">
-                    {pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Target Tercapai</label>
-                  <div className="flex">
-                    <input type="number" min="0" max="30" name="juzTercapai" value={formData.juzTercapai || 0} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 border-r-0 rounded-l-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white" />
-                    <span className="bg-gray-100 p-2.5 md:p-3 border border-gray-200 border-l-0 rounded-r-xl text-[10px] md:text-sm text-gray-500 font-medium">Juz</span>
+
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+            <div>
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Nama</label>
+              <input required type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: theme.secondary }} />
+            </div>
+            
+            {isStudent && (
+              <>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <div>
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Kelas</label>
+                    <select name="kelas" value={formData.kelas || '1'} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white">
+                      <option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Semester</label>
+                    <select name="semester" value={formData.semester || '1'} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white">
+                      {[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
                   </div>
                 </div>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <div>
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Halaqah</label>
+                    <select name="pengampuId" value={formData.pengampuId || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white">
+                      {pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Target Tercapai</label>
+                    <div className="flex">
+                      <input type="number" min="0" max="30" name="juzTercapai" value={formData.juzTercapai || 0} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 border-r-0 rounded-l-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white" />
+                      <span className="bg-gray-100 p-2.5 md:p-3 border border-gray-200 border-l-0 rounded-r-xl text-[10px] md:text-sm text-gray-500 font-medium">Juz</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
+              <div>
+                <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username</label>
+                <input required type="text" name="username" value={formData.username || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" />
               </div>
-            </>
-          )}
-
-          <div className="grid grid-cols-2 gap-3 md:gap-4">
-            <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username</label>
-              <input required type="text" name="username" value={formData.username || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" />
+              <div>
+                <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Password</label>
+                <input required type="text" name="password" value={formData.password || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" />
+              </div>
             </div>
-            <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Password</label>
-              <input required type="text" name="password" value={formData.password || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" />
-            </div>
-          </div>
 
-          <div className="flex flex-col-reverse sm:flex-row gap-2 md:gap-3 justify-end pt-4 md:pt-6 mt-4 md:mt-6 border-t border-gray-100">
-            <button type="button" onClick={onCancel} className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full sm:w-auto">Batal</button>
-            <button type="submit" className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-white shadow-md hover:shadow-lg transition-transform w-full sm:w-auto flex justify-center items-center gap-2" style={{ backgroundColor: theme.primary }}>
-              <Check className="w-4 h-4 md:w-5 md:h-5"/> Simpan
-            </button>
-          </div>
-        </form>
+            <div className="flex flex-col-reverse sm:flex-row gap-2 md:gap-3 justify-end pt-4 md:pt-6 mt-4 md:mt-6 border-t border-gray-100">
+              <button type="button" onClick={onCancel} className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full sm:w-auto">Batal</button>
+              <button type="submit" className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-white shadow-md hover:shadow-lg transition-transform w-full sm:w-auto flex justify-center items-center gap-2" style={{ backgroundColor: theme.primary }}>
+                <Check className="w-4 h-4 md:w-5 md:h-5"/> Simpan
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -364,7 +370,7 @@ const App = () => {
   };
 
   return (
-    <div className="h-[100dvh] min-h-screen flex bg-gray-50 font-sans overflow-hidden">
+    <div className="h-screen w-full flex bg-gray-50 font-sans overflow-hidden">
       {/* Mobile Header (Top Bar) */}
       <div className="lg:hidden fixed top-0 left-0 w-full h-14 md:h-16 flex items-center justify-between px-3 md:px-4 text-white z-40 shadow-md" style={{ backgroundColor: theme.primary }}>
         <div className="flex items-center gap-2 md:gap-3">
@@ -377,7 +383,9 @@ const App = () => {
 
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 bg-gray-900/60 z-40 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)} />
+        <div className="lg:hidden fixed inset-0 z-40">
+           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
+        </div>
       )}
 
       {/* Sidebar */}
@@ -429,9 +437,9 @@ const App = () => {
         </div>
       </div>
 
-      {/* Main Content Area - RESPONSIVE PADDING */}
+      {/* Main Content Area */}
       <div className="flex-1 h-full overflow-y-auto pt-16 md:pt-20 pb-8 px-3 md:px-6 lg:p-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto w-full">
+        <div className="max-w-7xl mx-auto w-full relative">
           {activeTab === 'admin' && <AdminView pengampus={pengampus} students={students} />}
           {activeTab === 'dashboard' && appUser.role === 'wali' && <WaliDashboardView students={students} records={records} user={appUser} />}
           {activeTab === 'harian' && <HarianView students={visibleStudents} records={records} pengampus={pengampus} user={appUser} />}
@@ -869,7 +877,7 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
         <label className="block text-xs md:text-sm font-bold text-gray-800 mb-2 md:mb-4 uppercase tracking-wider">Status Presensi</label>
         <div className="grid grid-cols-3 gap-1.5 md:gap-3">
           {['Hadir', 'Izin/Sakit', 'Alpha'].map(status => (
-            <button key={status} onClick={() => {setPresensi(status); setErrorMsg('');}} className={`w-full py-2 md:py-3.5 px-0.5 rounded-lg md:rounded-xl text-[10px] sm:text-xs md:text-sm font-bold border-2 transition-all shadow-sm ${presensi === status ? 'text-white scale-[1.02] md:scale-105' : 'border-gray-200 text-gray-500 hover:bg-gray-50 bg-white'}`} style={presensi === status ? { backgroundColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, borderColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, color: '#fff' } : {}}>{status}</button>
+            <button key={status} onClick={() => {setPresensi(status); setErrorMsg('');}} className={`w-full py-2.5 md:py-3.5 px-1 rounded-lg md:rounded-xl text-[11px] sm:text-xs md:text-sm font-bold border-2 transition-all shadow-sm ${presensi === status ? 'text-white scale-[1.02] md:scale-105' : 'border-gray-200 text-gray-500 hover:bg-gray-50 bg-white'}`} style={presensi === status ? { backgroundColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, borderColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, color: '#fff' } : {}}>{status}</button>
           ))}
         </div>
       </div>
@@ -1275,94 +1283,97 @@ const WaliDashboardView = ({ students, records, user }) => {
 
       {/* Modal Detail Mutabaah */}
       {detailModalOpen && selectedRecord && (
-         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-sm" onClick={() => setDetailModalOpen(false)}>
-            <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md p-6 sm:p-8 animate-in fade-in zoom-in duration-200 flex flex-col relative overflow-hidden" onClick={e => e.stopPropagation()}>
-               
-               {/* Header Decoration Line */}
-               <div 
-                  className="absolute top-0 left-0 w-full h-2 md:h-3" 
-                  style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}
-               ></div>
-
-               <div className="flex justify-between items-start mb-6 pt-2">
-                  <div>
-                     <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tanggal Mutaba'ah</p>
-                     <h3 className="text-base sm:text-lg font-black text-gray-800">{formatIndoDate(selectedDateStr)}</h3>
-                  </div>
-                  <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 rounded-full transition-colors"><X className="w-5 h-5"/></button>
-               </div>
-               
-               <div className="mb-6 flex flex-col items-center bg-gray-50 py-4 md:py-5 rounded-2xl border border-gray-100">
-                  <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 md:mb-3">Status Presensi</p>
-                  <span 
-                     className="inline-flex px-6 md:px-8 py-2 md:py-2.5 rounded-full text-sm md:text-base font-black uppercase tracking-widest text-white shadow-md transition-transform"
+         <div className="fixed inset-0 z-[9999] overflow-y-auto">
+            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
+            <div className="flex min-h-full p-4 sm:p-6">
+               <div className="m-auto relative bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md p-6 sm:p-8 animate-in fade-in zoom-in duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+                  
+                  {/* Header Decoration Line */}
+                  <div 
+                     className="absolute top-0 left-0 w-full h-2 md:h-3" 
                      style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}
-                  >
-                     {selectedRecord.presensi}
-                  </span>
+                  ></div>
+
+                  <div className="flex justify-between items-start mb-6 pt-2">
+                     <div>
+                        <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tanggal Mutaba'ah</p>
+                        <h3 className="text-base sm:text-lg font-black text-gray-800">{formatIndoDate(selectedDateStr)}</h3>
+                     </div>
+                     <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 rounded-full transition-colors"><X className="w-5 h-5"/></button>
+                  </div>
+                  
+                  <div className="mb-6 flex flex-col items-center bg-gray-50 py-4 md:py-5 rounded-2xl border border-gray-100">
+                     <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 md:mb-3">Status Presensi</p>
+                     <span 
+                        className="inline-flex px-6 md:px-8 py-2 md:py-2.5 rounded-full text-sm md:text-base font-black uppercase tracking-widest text-white shadow-md transition-transform"
+                        style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}
+                     >
+                        {selectedRecord.presensi}
+                     </span>
+                  </div>
+
+                  {selectedRecord.presensi === 'Hadir' && (
+                     <div className="space-y-4">
+                        {selectedRecord.ziyadah ? (
+                           <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden flex flex-row items-center justify-between gap-4 transition-colors hover:border-gray-300">
+                              <div className="flex items-center gap-3 md:gap-4">
+                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.primary + '15' }}>
+                                    <BookOpen className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/>
+                                 </div>
+                                 <div>
+                                    <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Ziyadah</p>
+                                    <p className="text-sm md:text-base font-bold text-gray-800">{formatZiyadahSurahSafe(selectedRecord.ziyadah)}</p>
+                                 </div>
+                              </div>
+                              <div className="text-right shrink-0 border-l border-gray-100 pl-4">
+                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai</p>
+                                 <span className="text-xl md:text-2xl font-black" style={{ color: theme.primary }}>{selectedRecord.ziyadah.finalScore}</span>
+                              </div>
+                           </div>
+                        ) : (
+                           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Ziyadah</div>
+                        )}
+                        
+                        {selectedRecord.murajaah ? (
+                           <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden flex flex-row items-center justify-between gap-4 transition-colors hover:border-gray-300">
+                              <div className="flex items-center gap-3 md:gap-4">
+                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary + '15' }}>
+                                    <RotateCcw className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.secondary }}/>
+                                 </div>
+                                 <div>
+                                    <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Muraja'ah</p>
+                                    <p className="text-sm md:text-base font-bold text-gray-800">Juz {selectedRecord.murajaah.fromJuz} - Juz {selectedRecord.murajaah.toJuz}</p>
+                                 </div>
+                              </div>
+                              <div className="text-right shrink-0 border-l border-gray-100 pl-4">
+                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai</p>
+                                 <span className="text-xl md:text-2xl font-black" style={{ color: theme.secondary }}>{selectedRecord.murajaah.finalScore}</span>
+                              </div>
+                           </div>
+                        ) : (
+                           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Muraja'ah</div>
+                        )}
+                     </div>
+                  )}
+
+                  {selectedRecord.presensi === 'Izin/Sakit' && (
+                     <div className="bg-yellow-50 p-5 rounded-2xl border border-yellow-100 flex flex-col items-center text-center mt-2">
+                        <AlertCircle className="w-6 h-6 text-yellow-500 mb-2"/>
+                        <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Izin/Sakit</p>
+                        <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || '-'}</p>
+                     </div>
+                  )}
+
+                  {selectedRecord.presensi === 'Alpha' && (
+                     <div className="bg-red-50 p-5 rounded-2xl border border-red-100 flex flex-col items-center text-center mt-2">
+                        <AlertTriangle className="w-6 h-6 text-red-500 mb-2"/>
+                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Alpha</p>
+                        <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || 'Tanpa keterangan'}</p>
+                     </div>
+                  )}
+
+                  <button onClick={() => setDetailModalOpen(false)} className="mt-8 w-full py-3 md:py-3.5 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Tutup Detail</button>
                </div>
-
-               {selectedRecord.presensi === 'Hadir' && (
-                  <div className="space-y-4">
-                     {selectedRecord.ziyadah ? (
-                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden flex flex-row items-center justify-between gap-4 transition-colors hover:border-gray-300">
-                           <div className="flex items-center gap-3 md:gap-4">
-                              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.primary + '15' }}>
-                                 <BookOpen className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/>
-                              </div>
-                              <div>
-                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Ziyadah</p>
-                                 <p className="text-sm md:text-base font-bold text-gray-800">{formatZiyadahSurahSafe(selectedRecord.ziyadah)}</p>
-                              </div>
-                           </div>
-                           <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                              <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai</p>
-                              <span className="text-xl md:text-2xl font-black" style={{ color: theme.primary }}>{selectedRecord.ziyadah.finalScore}</span>
-                           </div>
-                        </div>
-                     ) : (
-                        <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Ziyadah</div>
-                     )}
-                     
-                     {selectedRecord.murajaah ? (
-                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden flex flex-row items-center justify-between gap-4 transition-colors hover:border-gray-300">
-                           <div className="flex items-center gap-3 md:gap-4">
-                              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary + '15' }}>
-                                 <RotateCcw className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.secondary }}/>
-                              </div>
-                              <div>
-                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Muraja'ah</p>
-                                 <p className="text-sm md:text-base font-bold text-gray-800">Juz {selectedRecord.murajaah.fromJuz} - Juz {selectedRecord.murajaah.toJuz}</p>
-                              </div>
-                           </div>
-                           <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                              <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai</p>
-                              <span className="text-xl md:text-2xl font-black" style={{ color: theme.secondary }}>{selectedRecord.murajaah.finalScore}</span>
-                           </div>
-                        </div>
-                     ) : (
-                        <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Muraja'ah</div>
-                     )}
-                  </div>
-               )}
-
-               {selectedRecord.presensi === 'Izin/Sakit' && (
-                  <div className="bg-yellow-50 p-5 rounded-2xl border border-yellow-100 flex flex-col items-center text-center mt-2">
-                     <AlertCircle className="w-6 h-6 text-yellow-500 mb-2"/>
-                     <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Izin/Sakit</p>
-                     <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || '-'}</p>
-                  </div>
-               )}
-
-               {selectedRecord.presensi === 'Alpha' && (
-                  <div className="bg-red-50 p-5 rounded-2xl border border-red-100 flex flex-col items-center text-center mt-2">
-                     <AlertTriangle className="w-6 h-6 text-red-500 mb-2"/>
-                     <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Alpha</p>
-                     <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || 'Tanpa keterangan'}</p>
-                  </div>
-               )}
-
-               <button onClick={() => setDetailModalOpen(false)} className="mt-8 w-full py-3 md:py-3.5 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Tutup Detail</button>
             </div>
          </div>
       )}
