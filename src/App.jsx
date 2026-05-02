@@ -2,21 +2,20 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Users, BookOpen, Calendar, Settings, LogOut, 
   Download, Printer, Plus, Minus, Check, X, ChevronDown, ChevronUp,
-  Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User
+  Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User, ShieldCheck
 } from 'lucide-react';
 
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { initializeApp, getApps, deleteApp } from 'firebase/app';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 
-// --- PENGAMBILAN KONFIGURASI ANTI-CRASH SUPER AMAN ---
+// --- PENGAMBILAN KONFIGURASI ---
 let topLevelError = null;
 let isConfigValid = false;
 let app, auth, db;
 let firebaseConfig = {};
 
 try { 
-   // Mengambil env secara langsung dengan deklarasi terpisah agar compiler StackBlitz tidak bingung
    const envApiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) || "";
    const envAuthDomain = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "";
    const envProjectId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_PROJECT_ID) || "";
@@ -31,7 +30,8 @@ try {
       projectId: envProjectId,
       storageBucket: envStorageBucket,
       messagingSenderId: envSenderId,
-      appId: envAppId
+      appId: envAppId,
+      measurementId: envMeasurementId
    };
    
    if (firebaseConfig.apiKey && firebaseConfig.apiKey.length > 5) {
@@ -45,14 +45,8 @@ try {
 }
 
 // --- PERBAIKAN PATH DATABASE ---
-// Firebase mewajibkan Collection (Folder) memiliki jumlah segmen ganjil (cth: 5 segmen)
-// dan Document (File) memiliki jumlah segmen genap (cth: 6 segmen)
 const currentAppId = typeof __app_id !== 'undefined' ? __app_id : (firebaseConfig.appId || 'markaz-app');
-
-// Berjumlah 5 Segmen (Ganjil): artifacts / currentAppId / public / data / colName
 const getCollectionPath = (colName) => `artifacts/${currentAppId}/public/data/${colName}`;
-
-// Berjumlah 6 Segmen (Genap): artifacts / currentAppId / users / uid / session / current
 const getSessionPath = (uid) => `artifacts/${currentAppId}/users/${uid}/session/current`;
 
 
@@ -129,6 +123,7 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText
   );
 };
 
+// Edit Modal disesuaikan:
 const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
   const [formData, setFormData] = useState({});
 
@@ -205,15 +200,9 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
               </>
             )}
 
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
-              <div>
-                <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username</label>
-                <input required type="text" name="username" value={formData.username || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" />
-              </div>
-              <div>
-                <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Password</label>
-                <input required type="text" name="password" value={formData.password || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" />
-              </div>
+            <div>
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username <span className="lowercase font-medium">(Tidak bisa diubah)</span></label>
+              <input type="text" name="username" value={formData.username || ''} disabled className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-100 text-gray-500 cursor-not-allowed outline-none" />
             </div>
 
             <div className="flex flex-col-reverse sm:flex-row gap-2 md:gap-3 justify-end pt-4 md:pt-6 mt-4 md:mt-6 border-t border-gray-100">
@@ -229,38 +218,57 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
   );
 };
 
-// --- LOGIN SCREEN ---
+// --- LOGIN SCREEN (DENGAN FIREBASE AUTH) ---
 const LoginScreen = ({ onLogin, pengampus, students }) => {
   const [role, setRole] = useState('wali');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     
-    // Kredensial Admin Sementara
-    if (role === 'admin') {
-      if (username === 'MinDigi' && password === 'J4diJar1yah') {
-        onLogin({ role: 'admin', name: 'Admin Pusat', id: 'admin' });
-      } else {
-        setError('Username atau password admin salah.');
-      }
-    } else if (role === 'pengampu') {
-      const user = pengampus.find(p => p.username === username && p.password === password);
-      if (user) {
-        onLogin({ role: 'pengampu', name: user.name, id: user.id });
-      } else {
-        setError('Akun pengampu tidak ditemukan atau password salah.');
-      }
-    } else if (role === 'wali') {
-      const user = students.find(s => s.username === username && s.password === password);
-      if (user) {
-        onLogin({ role: 'wali', name: `Wali ${user.name}`, studentId: user.id });
-      } else {
-        setError('Akun santri tidak ditemukan atau password salah.');
-      }
+    // Fallback Aman (Safe Accessor)
+    const getEnv = (key, fallback) => { try { return import.meta.env[key] || fallback; } catch(err) { return fallback; } };
+    const adminUsername = getEnv('VITE_ADMIN_USERNAME');
+    const adminPassword = getEnv('VITE_ADMIN_PASSWORD');
+
+    try {
+       if (role === 'admin') {
+         if (username === adminUsername && password === adminPassword) {
+           await signInAnonymously(auth); // Admin login anonim untuk akses firestore
+           onLogin({ role: 'admin', name: 'Admin Pusat', id: 'admin' });
+         } else {
+           setError('Username atau password admin salah.');
+         }
+       } else {
+         // Login Pengampu & Wali
+         const authEmail = `${username}@markaz.app`.toLowerCase();
+         await signInWithEmailAndPassword(auth, authEmail, password);
+         
+         // Pastikan datanya ada di Firestore
+         if (role === 'pengampu') {
+           const user = pengampus.find(p => p.username === username);
+           if (user) onLogin({ role: 'pengampu', name: user.name, id: user.id });
+           else throw new Error("Akun Firebase valid, namun data profil pengampu tidak ditemukan di database.");
+         } else if (role === 'wali') {
+           const user = students.find(s => s.username === username);
+           if (user) onLogin({ role: 'wali', name: `Wali ${user.name}`, studentId: user.id });
+           else throw new Error("Akun Firebase valid, namun data profil santri tidak ditemukan di database.");
+         }
+       }
+    } catch (err) {
+       console.error("Login Error:", err);
+       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+          setError('Username atau sandi salah, atau akun belum terdaftar di Firebase.');
+       } else {
+          setError(err.message || 'Terjadi kesalahan saat mencoba masuk.');
+       }
+    } finally {
+       setLoading(false);
     }
   };
 
@@ -280,8 +288,8 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
         </div>
 
         {error && (
-           <div className="mb-4 md:mb-5 p-3 md:p-3.5 bg-red-50 text-red-600 rounded-xl text-xs md:text-sm font-bold border border-red-100 flex items-center gap-2">
-             <AlertCircle className="w-4 h-4 md:w-5 md:h-5 shrink-0"/> <span>{error}</span>
+           <div className="mb-4 md:mb-5 p-3 md:p-3.5 bg-red-50 text-red-600 rounded-xl text-xs md:text-sm font-bold border border-red-100 flex items-start gap-2">
+             <AlertCircle className="w-4 h-4 md:w-5 md:h-5 shrink-0 mt-0.5"/> <span className="leading-tight">{error}</span>
            </div>
         )}
 
@@ -290,7 +298,7 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Username</label>
              <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none"><User className="w-4 h-4 md:w-5 md:h-5 text-gray-400" /></div>
-                <input required type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full pl-9 md:pl-11 pr-4 py-2.5 md:py-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan username" />
+                <input required type="text" value={username} onChange={e => setUsername(e.target.value.replace(/\s+/g, ''))} className="w-full pl-9 md:pl-11 pr-4 py-2.5 md:py-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan username" />
              </div>
           </div>
           <div>
@@ -301,8 +309,8 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
              </div>
           </div>
           
-          <button type="submit" className="w-full mt-3 md:mt-4 p-3 md:p-4 rounded-xl text-white text-sm md:text-base font-bold shadow-md hover:shadow-lg transition-transform hover:scale-[1.02]" style={{ backgroundColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c' }}>
-            Masuk
+          <button type="submit" disabled={loading} className="w-full mt-3 md:mt-4 p-3 md:p-4 rounded-xl text-white text-sm md:text-base font-bold shadow-md hover:shadow-lg transition-transform hover:scale-[1.02] flex justify-center items-center" style={{ backgroundColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c', opacity: loading ? 0.7 : 1 }}>
+            {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk'}
           </button>
         </form>
       </div>
@@ -326,62 +334,57 @@ const MainApp = () => {
 
   useEffect(() => {
     if (!auth) return;
-    
-    // LOGIN FIREBASE ANONIM
-    const initAuth = async () => {
-      try {
-        await signInAnonymously(auth);
-      } catch (err) { 
-        console.error("Gagal login anonim ke Firebase:", err); 
-      }
-    };
-    initAuth();
-    
     const unsubscribe = onAuthStateChanged(auth, setFirebaseUser);
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (!firebaseUser || !db) return;
+    if (!db) return;
 
-    const checkSession = async () => {
-       try {
-          const docSnap = await getDoc(doc(db, getSessionPath(firebaseUser.uid)));
-          if (docSnap.exists()) {
-             const savedData = docSnap.data();
-             setAppUser(savedData);
-             setActiveTab(savedData.role === 'admin' ? 'admin' : savedData.role === 'wali' ? 'dashboard' : 'harian');
-          }
-       } catch (error) { 
-          console.error("Gagal memeriksa sesi", error); 
-       } finally { 
-          setSessionChecked(true); 
-       }
-    };
-    checkSession();
-
-    // MENGAMBIL DATA DARI DATABASE ASLI
+    // Fetch Database Secara Realtime
     const unsubPengampus = onSnapshot(collection(db, getCollectionPath('pengampus')), (snap) => setPengampus(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
     const unsubStudents = onSnapshot(collection(db, getCollectionPath('students')), (snap) => setStudents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
     const unsubRecords = onSnapshot(collection(db, getCollectionPath('records')), (snap) => setRecords(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
     const unsubRecapNotes = onSnapshot(collection(db, getCollectionPath('recap_notes')), (snap) => setRecapNotes(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
 
     return () => { unsubPengampus(); unsubStudents(); unsubRecords(); unsubRecapNotes(); };
+  }, []);
+
+  // Cek Sesi Ketika firebaseUser berubah
+  useEffect(() => {
+    if (!db) return;
+    const checkSession = async () => {
+       if (firebaseUser) {
+           try {
+              const docSnap = await getDoc(doc(db, getSessionPath(firebaseUser.uid)));
+              if (docSnap.exists()) {
+                 const savedData = docSnap.data();
+                 setAppUser(savedData);
+                 setActiveTab(savedData.role === 'admin' ? 'admin' : savedData.role === 'wali' ? 'dashboard' : 'harian');
+              }
+           } catch (error) { console.error("Gagal memeriksa sesi", error); }
+       }
+       setSessionChecked(true); 
+    };
+    checkSession();
   }, [firebaseUser]);
 
   const handleLogin = async (userData) => {
     setAppUser(userData);
     setActiveTab(userData.role === 'admin' ? 'admin' : userData.role === 'wali' ? 'dashboard' : 'harian');
-    if (firebaseUser && db) {
-       try { await setDoc(doc(db, getSessionPath(firebaseUser.uid)), userData); } 
+    // Karena login dilakukan SEBELUM onLogin dipanggil
+    if (auth.currentUser && db) {
+       try { await setDoc(doc(db, getSessionPath(auth.currentUser.uid)), userData); } 
        catch (err) { console.error("Gagal menyimpan sesi", err); }
     }
   };
 
   const handleLogout = async () => {
      if (firebaseUser && db) {
-        try { await deleteDoc(doc(db, getSessionPath(firebaseUser.uid))); } 
-        catch (err) { console.error("Gagal menghapus sesi", err); }
+        try { 
+           await deleteDoc(doc(db, getSessionPath(firebaseUser.uid))); 
+           await signOut(auth);
+        } catch (err) { console.error("Gagal menghapus sesi/logout", err); }
      }
      setAppUser(null);
   };
@@ -486,35 +489,71 @@ const AdminView = ({ pengampus, students }) => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editTarget, setEditTarget] = useState(null); 
   const [formError, setFormError] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Fungsi utilitas hebat untuk membuat user Firebase Auth TANPA me-logout admin
+  const createFirebaseAuthUser = async (username, password) => {
+    // Membuka "Aplikasi Firebase Kedua" sementara
+    const tempApp = initializeApp(firebaseConfig, 'TempApp_' + Date.now());
+    const tempAuth = getAuth(tempApp);
+    const email = `${username}@markaz.app`.toLowerCase();
+    
+    try {
+      const userCred = await createUserWithEmailAndPassword(tempAuth, email, password);
+      const uid = userCred.user.uid;
+      await signOut(tempAuth);
+      await deleteApp(tempApp); // Tutup dan hapus aplikasi sementara
+      return uid;
+    } catch (error) {
+      await deleteApp(tempApp);
+      throw error;
+    }
+  };
 
   const handleAddPengampu = async (e) => {
     e.preventDefault();
     if (!newPengampu.name || !newPengampu.username || !newPengampu.password) return;
+    setIsProcessing(true); setFormError('');
     try {
-      const id = "pengampu_" + Date.now();
-      await setDoc(doc(db, getCollectionPath('pengampus'), id), { id, ...newPengampu });
-      setNewPengampu({ name: '', username: '', password: '' }); setFormError('');
-    } catch (err) { setFormError("Gagal menyimpan Pengampu"); }
+      // 1. Buat user asli di Firebase Authentication
+      const authUid = await createFirebaseAuthUser(newPengampu.username.replace(/\s+/g, ''), newPengampu.password);
+      
+      // 2. Simpan profil ke Database (TANPA PASSWORD)
+      await setDoc(doc(db, getCollectionPath('pengampus'), authUid), { 
+        id: authUid, name: newPengampu.name, username: newPengampu.username.replace(/\s+/g, '') 
+      });
+      setNewPengampu({ name: '', username: '', password: '' });
+    } catch (err) { 
+      setFormError(err.code === 'auth/email-already-in-use' ? "Username tersebut sudah dipakai." : "Gagal menyimpan akun ke sistem Auth."); 
+    } finally { setIsProcessing(false); }
   };
 
   const handleAddStudent = async (e, pengampuId) => {
     e.preventDefault();
     if (!newStudent.name || !newStudent.username || !newStudent.password) return;
+    setIsProcessing(true); setFormError('');
     try {
-      const id = "santri_" + Date.now();
-      await setDoc(doc(db, getCollectionPath('students'), id), { 
-        id, pengampuId, ...newStudent, semester: parseInt(newStudent.semester), juzTercapai: parseInt(newStudent.juzTercapai) 
+      // 1. Buat user asli di Firebase Authentication
+      const authUid = await createFirebaseAuthUser(newStudent.username.replace(/\s+/g, ''), newStudent.password);
+
+      // 2. Simpan profil ke Database (TANPA PASSWORD)
+      await setDoc(doc(db, getCollectionPath('students'), authUid), { 
+        id: authUid, pengampuId, name: newStudent.name, username: newStudent.username.replace(/\s+/g, ''),
+        semester: parseInt(newStudent.semester), juzTercapai: parseInt(newStudent.juzTercapai), kelas: newStudent.kelas
       });
-      setNewStudent({ name: '', kelas: '1', semester: '1', username: '', password: '', juzTercapai: 0 }); setFormError('');
-    } catch (err) { setFormError("Gagal menyimpan Santri"); }
+      setNewStudent({ name: '', kelas: '1', semester: '1', username: '', password: '', juzTercapai: 0 });
+    } catch (err) { 
+      setFormError(err.code === 'auth/email-already-in-use' ? "Username tersebut sudah dipakai." : "Gagal menyimpan akun ke sistem Auth."); 
+    } finally { setIsProcessing(false); }
   };
 
   const executeDelete = async () => {
     if (!deleteTarget) return;
     try {
+      // Menghapus data dari Firestore. (Catatan: Auth user tidak bisa dihapus dari sisi client demi keamanan, namun datanya sudah putus).
       if (deleteTarget.type === 'pengampu') await deleteDoc(doc(db, getCollectionPath('pengampus'), deleteTarget.id));
       else if (deleteTarget.type === 'student') await deleteDoc(doc(db, getCollectionPath('students'), deleteTarget.id));
-    } catch (error) { setFormError("Gagal menghapus data."); } finally { setDeleteTarget(null); }
+    } catch (error) { setFormError("Gagal menghapus profil."); } finally { setDeleteTarget(null); }
   };
 
   const executeEdit = async (updatedData) => {
@@ -522,12 +561,12 @@ const AdminView = ({ pengampus, students }) => {
     try {
       const collectionName = editTarget.type === 'pengampu' ? 'pengampus' : 'students';
       await updateDoc(doc(db, getCollectionPath(collectionName), editTarget.data.id), updatedData);
-    } catch (error) { setFormError("Gagal memperbarui data."); } finally { setEditTarget(null); }
+    } catch (error) { setFormError("Gagal memperbarui profil."); } finally { setEditTarget(null); }
   };
 
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-10">
-      <ConfirmModal isOpen={deleteTarget !== null} title={`Hapus ${deleteTarget?.type === 'pengampu' ? 'Pengampu' : 'Santri'}?`} message={`Apakah Anda yakin ingin menghapus data "${deleteTarget?.name}"? Tindakan ini tidak dapat dibatalkan.`} onConfirm={executeDelete} onCancel={() => setDeleteTarget(null)} />
+      <ConfirmModal isOpen={deleteTarget !== null} title={`Hapus ${deleteTarget?.type === 'pengampu' ? 'Pengampu' : 'Santri'}?`} message={`Apakah Anda yakin ingin menghapus profil "${deleteTarget?.name}"?`} onConfirm={executeDelete} onCancel={() => setDeleteTarget(null)} />
       <EditModal isOpen={editTarget !== null} target={editTarget} pengampus={pengampus} onSave={executeEdit} onCancel={() => setEditTarget(null)} />
 
       <div className="bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm border-t-4" style={{ borderColor: theme.primary }}>
@@ -537,11 +576,11 @@ const AdminView = ({ pengampus, students }) => {
            </div>
            <div>
              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">Tambah Pengampu</h2>
-             <p className="text-[10px] md:text-sm text-gray-500 mt-0.5 md:mt-1">Buat akun untuk musyrif/pengampu baru.</p>
+             <p className="text-[10px] md:text-sm text-gray-500 mt-0.5 md:mt-1">Akun yang dibuat disini akan tersertifikasi oleh Firebase Auth.</p>
            </div>
         </div>
         
-        {formError && <div className="p-3 md:p-4 bg-red-50 text-red-700 rounded-xl mb-4 md:mb-5 text-xs md:text-sm font-medium border border-red-100">{formError}</div>}
+        {formError && <div className="p-3 md:p-4 bg-red-50 text-red-700 rounded-xl mb-4 md:mb-5 text-xs md:text-sm font-medium border border-red-100 flex items-center gap-2"><AlertCircle className="w-4 h-4"/> {formError}</div>}
         
         <form onSubmit={handleAddPengampu} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 items-end">
           <div className="w-full">
@@ -550,22 +589,28 @@ const AdminView = ({ pengampus, students }) => {
           </div>
           <div className="w-full">
             <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Username</label>
-            <input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="usn_pengampu" />
+            <input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="tanpa_spasi" />
           </div>
           <div className="w-full">
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Password</label>
-            <input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="***" />
+            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Password (Min. 6 Karakter)</label>
+            <input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} minLength={6} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="minimal 6 karakter" />
           </div>
-          <button type="submit" className="w-full p-2.5 md:p-3 lg:p-3.5 rounded-xl text-white font-bold transition-transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-md text-sm md:text-base" style={{ backgroundColor: theme.primary }}>
-            <Plus className="w-4 h-4 md:w-5 md:h-5"/> Tambah
+          <button type="submit" disabled={isProcessing} className="w-full p-2.5 md:p-3 lg:p-3.5 rounded-xl text-white font-bold transition-transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-md text-sm md:text-base" style={{ backgroundColor: theme.primary, opacity: isProcessing ? 0.7 : 1 }}>
+            {isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4 md:w-5 md:h-5"/>} 
+            {isProcessing ? 'Proses...' : 'Tambah'}
           </button>
         </form>
       </div>
 
       <div className="space-y-3 md:space-y-4 lg:space-y-5">
-        <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 px-1 md:px-2 flex items-center gap-2 md:gap-3">
-          <Users className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> Daftar Halaqah & Santri
-        </h2>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-1 md:px-2 gap-3">
+          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2 md:gap-3">
+            <Users className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> Daftar Halaqah & Santri
+          </h2>
+          <span className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg shadow-sm">
+             <ShieldCheck className="w-4 h-4"/> Aman (Password Tidak Disimpan)
+          </span>
+        </div>
         
         {pengampus.map(pengampu => {
             const isExpanded = expandedPengampuId === pengampu.id;
@@ -579,7 +624,9 @@ const AdminView = ({ pengampus, students }) => {
                         <h3 className="text-base md:text-lg lg:text-xl font-bold text-gray-800 leading-tight">{pengampu.name}</h3>
                         <div className="flex flex-wrap gap-1.5 md:gap-2 text-[10px] md:text-xs text-gray-500 mt-1 md:mt-1.5">
                            <span className="bg-gray-100 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg border border-gray-200">USN: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
-                           <span className="bg-gray-100 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg border border-gray-200">Pass: <span className="font-bold text-gray-700">{pengampu.password}</span></span>
+                           <span className="bg-green-50 text-green-600 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg border border-green-200 flex items-center gap-1 font-semibold">
+                              <ShieldCheck className="w-3 h-3"/> Terenkripsi Auth
+                           </span>
                         </div>
                      </div>
                   </div>
@@ -601,7 +648,7 @@ const AdminView = ({ pengampus, students }) => {
                       <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Kls/Smt</label><div className="flex gap-1.5 md:gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className="w-1/2 p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white"><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className="w-1/2 p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white">{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
                       <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 border-r-0 rounded-l-lg md:rounded-l-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white" /><span className="bg-gray-100 p-2 md:p-2.5 lg:p-3 border border-gray-200 border-l-0 rounded-r-lg md:rounded-r-xl text-[10px] md:text-xs text-gray-500 font-medium">Juz</span></div></div>
                       <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white" placeholder="usn..." /></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Password</label><div className="flex gap-1.5 md:gap-2"><input required type="text" value={newStudent.password} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white" placeholder="pass" /><button type="submit" className="p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-white font-bold transition-transform hover:scale-105 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary }}><Plus className="w-4 h-4 md:w-5 md:h-5"/></button></div></div>
+                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Password Auth</label><div className="flex gap-1.5 md:gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white" placeholder="min 6 char" /><button type="submit" disabled={isProcessing} className="p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-white font-bold transition-transform hover:scale-105 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary, opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4 md:w-5 md:h-5"/>}</button></div></div>
                     </form>
                     
                     <div className="overflow-x-auto bg-white rounded-xl md:rounded-2xl border border-gray-200 shadow-sm w-full">
@@ -611,7 +658,7 @@ const AdminView = ({ pengampus, students }) => {
                                <th className="p-3 md:p-4 lg:p-5 font-bold">Nama Santri</th>
                                <th className="p-3 md:p-4 lg:p-5 font-bold">Kls/Smt</th>
                                <th className="p-3 md:p-4 lg:p-5 font-bold">Juz</th>
-                               <th className="p-3 md:p-4 lg:p-5 font-bold">Akun (USN / Pass)</th>
+                               <th className="p-3 md:p-4 lg:p-5 font-bold">Status Keamanan</th>
                                <th className="p-3 md:p-4 lg:p-5 font-bold text-center">Aksi</th>
                              </tr>
                           </thead>
@@ -624,7 +671,9 @@ const AdminView = ({ pengampus, students }) => {
                                    <td className="p-3 md:p-4 lg:p-5">
                                      <div className="flex gap-1.5 md:gap-2">
                                        <span className="bg-gray-100 px-2 md:px-2.5 py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-semibold text-gray-600 border border-gray-200">{s.username}</span>
-                                       <span className="bg-gray-100 px-2 md:px-2.5 py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-semibold text-gray-600 border border-gray-200">{s.password}</span>
+                                       <span className="bg-green-50 text-green-600 px-2 md:px-2.5 py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-bold border border-green-200 flex items-center gap-1">
+                                          <ShieldCheck className="w-3.5 h-3.5"/> Password Aman (Auth)
+                                       </span>
                                      </div>
                                    </td>
                                    <td className="p-3 md:p-4 lg:p-5 text-center">
