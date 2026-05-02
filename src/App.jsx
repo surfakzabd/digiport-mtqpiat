@@ -23,7 +23,7 @@ try {
    const envStorageBucket = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || "";
    const envSenderId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || "";
    const envAppId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_APP_ID) || "";
-   const envMeasurementID = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MEASUREMENT_ID) || "";
+   const envMeasurementId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "";) || "";
 
    firebaseConfig = {
       apiKey: envApiKey,
@@ -44,9 +44,17 @@ try {
    topLevelError = e;
 }
 
-// Path Database Asli
-const getCollectionPath = (colName) => `markaz_data/${colName}`;
-const getSessionPath = (uid) => `markaz_sessions/${uid}`;
+// --- PERBAIKAN PATH DATABASE ---
+// Firebase mewajibkan Collection (Folder) memiliki jumlah segmen ganjil (cth: 5 segmen)
+// dan Document (File) memiliki jumlah segmen genap (cth: 6 segmen)
+const currentAppId = typeof __app_id !== 'undefined' ? __app_id : (firebaseConfig.appId || 'markaz-app');
+
+// Berjumlah 5 Segmen (Ganjil): artifacts / currentAppId / public / data / colName
+const getCollectionPath = (colName) => `artifacts/${currentAppId}/public/data/${colName}`;
+
+// Berjumlah 6 Segmen (Genap): artifacts / currentAppId / users / uid / session / current
+const getSessionPath = (uid) => `artifacts/${currentAppId}/users/${uid}/session/current`;
+
 
 // Tema Warna
 const theme = {
