@@ -9,20 +9,34 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 
-// --- PENGAMBILAN KONFIGURASI ANTI-CRASH ---
+// --- PENGAMBILAN KONFIGURASI ANTI-CRASH SUPER AMAN ---
+let topLevelError = null;
 let apiKey = "", authDomain = "", projectId = "", storageBucket = "", messagingSenderId = "", appId = "", measurementId = "";
+let isConfigValid = false;
+let app, auth, db;
 
-try { apiKey = import.meta.env.VITE_FIREBASE_API_KEY || ""; } catch (e) {}
-try { authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || ""; } catch (e) {}
-try { projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || ""; } catch (e) {}
-try { storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || ""; } catch (e) {}
-try { messagingSenderId = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || ""; } catch (e) {}
-try { appId = import.meta.env.VITE_FIREBASE_APP_ID || ""; } catch (e) {}
-try {measurementId = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "";} catch (e) {}
-
-const firebaseConfig = {
-  apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId: appIdFirebase
-};
+try { 
+   if (typeof import.meta !== 'undefined' && import.meta.env) {
+      apiKey = import.meta.env.VITE_FIREBASE_API_KEY || ""; 
+      authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || ""; 
+      projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || ""; 
+      storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || ""; 
+      messagingSenderId = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || ""; 
+      appIdFirebase = import.meta.env.VITE_FIREBASE_APP_ID || ""; 
+      measurementId = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "";
+   }
+   
+   const firebaseConfig = { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId: appIdFirebase };
+   
+   if (apiKey && apiKey.length > 5) {
+      isConfigValid = true;
+      app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+      auth = getAuth(app);
+      db = getFirestore(app);
+   }
+} catch (e) {
+   topLevelError = e;
+}
 
 // Path Database Asli
 const getCollectionPath = (colName) => `markaz_data/${colName}`;
@@ -1381,15 +1395,61 @@ const WaliDashboardView = ({ students, records, user }) => {
 };
 
 // --- RENDER APP INTI ---
-export default function App() {
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Crash tertangkap oleh ErrorBoundary:", error, errorInfo);
+    this.setState({ errorInfo });
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-red-50 p-6 flex flex-col items-center justify-center font-sans">
+          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-2xl w-full border-t-8 border-red-500">
+            <div className="flex flex-col items-center text-center mb-6">
+              <AlertTriangle className="w-16 h-16 text-red-500 mb-4 animate-pulse" />
+              <h1 className="text-xl md:text-2xl font-black text-gray-800">Sistem Mengalami Crash!</h1>
+              <p className="text-gray-600 mt-2 text-sm md:text-base">
+                Layar putih berhasil dicegah. Silakan <b>fotokan/copy</b> teks merah di bawah ini dan kirimkan ke saya agar saya bisa langsung memperbaiki sumber masalahnya:
+              </p>
+            </div>
+            <div className="bg-red-900 text-red-100 p-4 rounded-xl text-left text-xs md:text-sm font-mono overflow-auto max-h-64 shadow-inner border border-red-950">
+              <strong>Error:</strong> {this.state.error && this.state.error.toString()}
+              <br/><br/>
+              <strong>Stack Trace:</strong>
+              <br/>
+              {this.state.errorInfo && this.state.errorInfo.componentStack}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function AppStarter() {
+  if (topLevelError) {
+    throw topLevelError;
+  }
+  
   if (!isConfigValid) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-red-50 font-sans">
-         <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-lg text-center border-t-8 border-red-500">
-             <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4 animate-pulse" />
-             <h1 className="text-xl md:text-2xl font-black text-gray-800 mb-3">Kunci Firebase Belum Ditemukan!</h1>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-yellow-50 font-sans">
+         <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-lg text-center border-t-8 border-yellow-500">
+             <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-bounce" />
+             <h1 className="text-xl md:text-2xl font-black text-gray-800 mb-3">Peringatan: Konfigurasi Kosong</h1>
              <p className="text-gray-600 mb-4 text-sm md:text-base leading-relaxed">
-               Aplikasi dicegah memuat untuk menghindari <i>crash</i>. Harap pastikan file <code>.env</code> Anda sudah dibuat dengan awalan variabel <code>VITE_</code>.
+               Aplikasi ditahan untuk menghindari <i>crash</i>. Kunci Firebase belum terbaca dari file <code>.env</code> Anda.
+             </p>
+             <p className="text-gray-500 text-xs md:text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+               Jika file <code>.env</code> sudah diisi dengan awalan <code>VITE_</code>, silakan <b>Refresh / Restart</b> browser StackBlitz Anda.
              </p>
          </div>
       </div>
@@ -1397,4 +1457,12 @@ export default function App() {
   }
 
   return <MainApp />;
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppStarter />
+    </ErrorBoundary>
+  );
 }
