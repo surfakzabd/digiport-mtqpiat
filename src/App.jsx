@@ -11,24 +11,30 @@ import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc
 
 // --- PENGAMBILAN KONFIGURASI ANTI-CRASH SUPER AMAN ---
 let topLevelError = null;
-let apiKey = "", authDomain = "", projectId = "", storageBucket = "", messagingSenderId = "", appId = "", measurementId = "";
 let isConfigValid = false;
 let app, auth, db;
+let firebaseConfig = {};
 
 try { 
-   if (typeof import.meta !== 'undefined' && import.meta.env) {
-      apiKey = import.meta.env.VITE_FIREBASE_API_KEY || ""; 
-      authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || ""; 
-      projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || ""; 
-      storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || ""; 
-      messagingSenderId = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || ""; 
-      appIdFirebase = import.meta.env.VITE_FIREBASE_APP_ID || ""; 
-      measurementId = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "";
-   }
+   // Mengambil env secara langsung dengan deklarasi terpisah agar compiler StackBlitz tidak bingung
+   const envApiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) || "";
+   const envAuthDomain = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "";
+   const envProjectId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_PROJECT_ID) || "";
+   const envStorageBucket = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || "";
+   const envSenderId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || "";
+   const envAppId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_APP_ID) || "";
+   const envMeasurementID = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MEASUREMENT_ID) || "";
+
+   firebaseConfig = {
+      apiKey: envApiKey,
+      authDomain: envAuthDomain,
+      projectId: envProjectId,
+      storageBucket: envStorageBucket,
+      messagingSenderId: envSenderId,
+      appId: envAppId
+   };
    
-   const firebaseConfig = { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId: appIdFirebase };
-   
-   if (apiKey && apiKey.length > 5) {
+   if (firebaseConfig.apiKey && firebaseConfig.apiKey.length > 5) {
       isConfigValid = true;
       app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
       auth = getAuth(app);
