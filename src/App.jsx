@@ -24,20 +24,6 @@ const firebaseConfig = {
   apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId: appIdFirebase
 };
 
-// Cek apakah minimal API Key sudah ada dan bukan string kosong
-const isConfigValid = Boolean(firebaseConfig.apiKey && firebaseConfig.apiKey.length > 5);
-
-let app, auth, db;
-if (isConfigValid) {
-  try {
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    auth = getAuth(app);
-    db = getFirestore(app);
-  } catch (error) {
-    console.error("Gagal inisialisasi Firebase:", error);
-  }
-}
-
 // Path Database Asli
 const getCollectionPath = (colName) => `markaz_data/${colName}`;
 const getSessionPath = (uid) => `markaz_sessions/${uid}`;
