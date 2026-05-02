@@ -4,28 +4,42 @@ import {
   Download, Printer, Plus, Minus, Check, X, ChevronDown, ChevronUp,
   Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User
 } from 'lucide-react';
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { 
+  initializeApp, getApps 
+} from 'firebase/app';
+import { 
+  getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken 
+} from 'firebase/auth';
+import { 
+  getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc
+} from 'firebase/firestore';
 
-// --- KONFIGURASI FIREBASE LOKAL ---
+// --- CONFIGURATION ---
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const auth = getAuth(app);
-const db = getFirestore(app);
+const isConfigValid = !!firebaseConfig.apiKey;
 
-// Path Database Asli
-const getCollectionPath = (colName) => `markaz_data/${colName}`;
-const getSessionPath = (uid) => `markaz_sessions/${uid}`;
+let app, auth, db;
+if (isConfigValid) {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+  // Mencegah crash jika .env kosong
+  app = getApps().length === 0 ? initializeApp({ projectId: "demo" }) : getApps()[0];
+  auth = getAuth(app);
+  db = getFirestore(app);
+}
+
+const appId = 'tasmi-app';
 
 // Tema Warna
 const theme = {
@@ -60,6 +74,9 @@ const calculateScore = (tajwid, lupa, lupaDiberitahu) => {
   let score = 100 - (tajwid * 1) - (lupa * 1) - (lupaDiberitahu * 2);
   return Math.max(0, score);
 };
+
+const getCollectionPath = (colName) => `artifacts/${appId}/public/data/${colName}`;
+const getSessionPath = (uid) => `artifacts/${appId}/users/${uid}/session`;
 
 const getLocalYYYYMMDD = (dateObj) => {
    const y = dateObj.getFullYear();
@@ -211,7 +228,6 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
     e.preventDefault();
     setError('');
     
-    // PERHATIAN: Logika hardcode sementara, nanti kita ubah pakai email/pass Firebase sungguhan.
     if (role === 'admin') {
       if (username === 'MinDigi' && password === 'J4diJar1yah') {
         onLogin({ role: 'admin', name: 'Admin Pusat', id: 'admin' });
@@ -296,16 +312,16 @@ const App = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    // LOGIN FIREBASE SECARA ANONIM (Penting agar tidak terblokir Security Rules bawaan Test Mode)
     const initAuth = async () => {
       try {
-        await signInAnonymously(auth);
-      } catch (err) { 
-        console.error("Gagal terhubung ke Firebase. Cek kunci di .env Anda!", err); 
-      }
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) { console.error("Auth error:", err); }
     };
     initAuth();
-    
     const unsubscribe = onAuthStateChanged(auth, setFirebaseUser);
     return () => unsubscribe();
   }, []);
@@ -315,7 +331,7 @@ const App = () => {
 
     const checkSession = async () => {
        try {
-          const docSnap = await getDoc(doc(db, getSessionPath(firebaseUser.uid)));
+          const docSnap = await getDoc(doc(db, getSessionPath(firebaseUser.uid), 'current'));
           if (docSnap.exists()) {
              const savedData = docSnap.data();
              setAppUser(savedData);
@@ -329,7 +345,6 @@ const App = () => {
     };
     checkSession();
 
-    // MENGAMBIL DATA DARI DATABASE ASLI
     const unsubPengampus = onSnapshot(collection(db, getCollectionPath('pengampus')), (snap) => setPengampus(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
     const unsubStudents = onSnapshot(collection(db, getCollectionPath('students')), (snap) => setStudents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
     const unsubRecords = onSnapshot(collection(db, getCollectionPath('records')), (snap) => setRecords(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
@@ -342,14 +357,14 @@ const App = () => {
     setAppUser(userData);
     setActiveTab(userData.role === 'admin' ? 'admin' : userData.role === 'wali' ? 'dashboard' : 'harian');
     if (firebaseUser) {
-       try { await setDoc(doc(db, getSessionPath(firebaseUser.uid)), userData); } 
+       try { await setDoc(doc(db, getSessionPath(firebaseUser.uid), 'current'), userData); } 
        catch (err) { console.error("Gagal menyimpan sesi permanen", err); }
     }
   };
 
   const handleLogout = async () => {
      if (firebaseUser) {
-        try { await deleteDoc(doc(db, getSessionPath(firebaseUser.uid))); } 
+        try { await deleteDoc(doc(db, getSessionPath(firebaseUser.uid), 'current')); } 
         catch (err) { console.error("Gagal menghapus sesi", err); }
      }
      setAppUser(null);
