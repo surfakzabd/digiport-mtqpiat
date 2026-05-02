@@ -10,7 +10,7 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 
 // --- PENGAMBILAN KONFIGURASI ANTI-CRASH ---
-let apiKey = "", authDomain = "", projectId = "", storageBucket = "", messagingSenderId = "", appIdFirebase = "";
+let apiKey = "", authDomain = "", projectId = "", storageBucket = "", messagingSenderId = "", appId = "", measurementId = "";
 
 try { apiKey = import.meta.env.VITE_FIREBASE_API_KEY || ""; } catch (e) {}
 try { authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || ""; } catch (e) {}
