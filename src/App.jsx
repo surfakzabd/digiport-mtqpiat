@@ -607,9 +607,6 @@ const AdminView = ({ pengampus, students }) => {
           <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2 md:gap-3">
             <Users className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> Daftar Halaqah & Santri
           </h2>
-          <span className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg shadow-sm">
-             <ShieldCheck className="w-4 h-4"/> Aman (Password Tidak Disimpan)
-          </span>
         </div>
         
         {pengampus.map(pengampu => {
