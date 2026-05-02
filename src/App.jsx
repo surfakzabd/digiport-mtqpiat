@@ -4,42 +4,43 @@ import {
   Download, Printer, Plus, Minus, Check, X, ChevronDown, ChevronUp,
   Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User
 } from 'lucide-react';
-import { 
-  initializeApp, getApps 
-} from 'firebase/app';
-import { 
-  getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken 
-} from 'firebase/auth';
-import { 
-  getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc
-} from 'firebase/firestore';
 
-// --- CONFIGURATION ---
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
+
+// --- PENGAMBILAN KONFIGURASI ANTI-CRASH ---
+let apiKey = "", authDomain = "", projectId = "", storageBucket = "", messagingSenderId = "", appIdFirebase = "";
+
+try { apiKey = import.meta.env.VITE_FIREBASE_API_KEY || ""; } catch (e) {}
+try { authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || ""; } catch (e) {}
+try { projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || ""; } catch (e) {}
+try { storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || ""; } catch (e) {}
+try { messagingSenderId = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || ""; } catch (e) {}
+try { appId = import.meta.env.VITE_FIREBASE_APP_ID || ""; } catch (e) {}
+try {measurementId = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "";} catch (e) {}
+
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId: appIdFirebase
 };
 
-const isConfigValid = !!firebaseConfig.apiKey;
+// Cek apakah minimal API Key sudah ada dan bukan string kosong
+const isConfigValid = Boolean(firebaseConfig.apiKey && firebaseConfig.apiKey.length > 5);
 
 let app, auth, db;
 if (isConfigValid) {
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  auth = getAuth(app);
-  db = getFirestore(app);
-} else {
-  // Mencegah crash jika .env kosong
-  app = getApps().length === 0 ? initializeApp({ projectId: "demo" }) : getApps()[0];
-  auth = getAuth(app);
-  db = getFirestore(app);
+  try {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (error) {
+    console.error("Gagal inisialisasi Firebase:", error);
+  }
 }
 
-const appId = 'tasmi-app';
+// Path Database Asli
+const getCollectionPath = (colName) => `markaz_data/${colName}`;
+const getSessionPath = (uid) => `markaz_sessions/${uid}`;
 
 // Tema Warna
 const theme = {
@@ -74,9 +75,6 @@ const calculateScore = (tajwid, lupa, lupaDiberitahu) => {
   let score = 100 - (tajwid * 1) - (lupa * 1) - (lupaDiberitahu * 2);
   return Math.max(0, score);
 };
-
-const getCollectionPath = (colName) => `artifacts/${appId}/public/data/${colName}`;
-const getSessionPath = (uid) => `artifacts/${appId}/users/${uid}/session`;
 
 const getLocalYYYYMMDD = (dateObj) => {
    const y = dateObj.getFullYear();
@@ -228,6 +226,7 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
     e.preventDefault();
     setError('');
     
+    // Kredensial Admin Sementara
     if (role === 'admin') {
       if (username === 'MinDigi' && password === 'J4diJar1yah') {
         onLogin({ role: 'admin', name: 'Admin Pusat', id: 'admin' });
@@ -297,8 +296,8 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
   );
 };
 
-// --- APP ROOT ---
-const App = () => {
+// --- APP COMPONENT INTI ---
+const MainApp = () => {
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [appUser, setAppUser] = useState(null); 
   const [sessionChecked, setSessionChecked] = useState(false);
@@ -312,26 +311,28 @@ const App = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (!auth) return;
+    
+    // LOGIN FIREBASE ANONIM
     const initAuth = async () => {
       try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (err) { console.error("Auth error:", err); }
+        await signInAnonymously(auth);
+      } catch (err) { 
+        console.error("Gagal login anonim ke Firebase:", err); 
+      }
     };
     initAuth();
+    
     const unsubscribe = onAuthStateChanged(auth, setFirebaseUser);
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (!firebaseUser) return;
+    if (!firebaseUser || !db) return;
 
     const checkSession = async () => {
        try {
-          const docSnap = await getDoc(doc(db, getSessionPath(firebaseUser.uid), 'current'));
+          const docSnap = await getDoc(doc(db, getSessionPath(firebaseUser.uid)));
           if (docSnap.exists()) {
              const savedData = docSnap.data();
              setAppUser(savedData);
@@ -345,6 +346,7 @@ const App = () => {
     };
     checkSession();
 
+    // MENGAMBIL DATA DARI DATABASE ASLI
     const unsubPengampus = onSnapshot(collection(db, getCollectionPath('pengampus')), (snap) => setPengampus(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
     const unsubStudents = onSnapshot(collection(db, getCollectionPath('students')), (snap) => setStudents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
     const unsubRecords = onSnapshot(collection(db, getCollectionPath('records')), (snap) => setRecords(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
@@ -356,15 +358,15 @@ const App = () => {
   const handleLogin = async (userData) => {
     setAppUser(userData);
     setActiveTab(userData.role === 'admin' ? 'admin' : userData.role === 'wali' ? 'dashboard' : 'harian');
-    if (firebaseUser) {
-       try { await setDoc(doc(db, getSessionPath(firebaseUser.uid), 'current'), userData); } 
-       catch (err) { console.error("Gagal menyimpan sesi permanen", err); }
+    if (firebaseUser && db) {
+       try { await setDoc(doc(db, getSessionPath(firebaseUser.uid)), userData); } 
+       catch (err) { console.error("Gagal menyimpan sesi", err); }
     }
   };
 
   const handleLogout = async () => {
-     if (firebaseUser) {
-        try { await deleteDoc(doc(db, getSessionPath(firebaseUser.uid), 'current')); } 
+     if (firebaseUser && db) {
+        try { await deleteDoc(doc(db, getSessionPath(firebaseUser.uid))); } 
         catch (err) { console.error("Gagal menghapus sesi", err); }
      }
      setAppUser(null);
@@ -381,7 +383,7 @@ const App = () => {
   };
 
   return (
-    <div className="h-screen w-full flex bg-gray-50 font-sans overflow-hidden">
+    <div className="h-[100dvh] min-h-screen flex bg-gray-50 font-sans overflow-hidden">
       {/* Mobile Header (Top Bar) */}
       <div className="lg:hidden fixed top-0 left-0 w-full h-14 md:h-16 flex items-center justify-between px-3 md:px-4 text-white z-40 shadow-md" style={{ backgroundColor: theme.primary }}>
         <div className="flex items-center gap-2 md:gap-3">
@@ -1392,4 +1394,21 @@ const WaliDashboardView = ({ students, records, user }) => {
   );
 };
 
-export default App;
+// --- RENDER APP INTI ---
+export default function App() {
+  if (!isConfigValid) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-red-50 font-sans">
+         <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-lg text-center border-t-8 border-red-500">
+             <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4 animate-pulse" />
+             <h1 className="text-xl md:text-2xl font-black text-gray-800 mb-3">Kunci Firebase Belum Ditemukan!</h1>
+             <p className="text-gray-600 mb-4 text-sm md:text-base leading-relaxed">
+               Aplikasi dicegah memuat untuk menghindari <i>crash</i>. Harap pastikan file <code>.env</code> Anda sudah dibuat dengan awalan variabel <code>VITE_</code>.
+             </p>
+         </div>
+      </div>
+    );
+  }
+
+  return <MainApp />;
+}
