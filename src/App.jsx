@@ -4,31 +4,28 @@ import {
   Download, Printer, Plus, Minus, Check, X, ChevronDown, ChevronUp,
   Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User
 } from 'lucide-react';
-import { 
-  initializeApp, getApps 
-} from 'firebase/app';
-import { 
-  getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken 
-} from 'firebase/auth';
-import { 
-  getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc
-} from 'firebase/firestore';
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 
-// --- CONFIGURATION ---
+// --- KONFIGURASI FIREBASE LOKAL ---
 const firebaseConfig = {
-  apiKey: "AIzaSyAOH9Ep7itgTz1RMmxMF2ko2KCl8tL73tw",
-  authDomain: "digiport-mtqpiat.firebaseapp.com",
-  projectId: "digiport-mtqpiat",
-  storageBucket: "digiport-mtqpiat.firebasestorage.app",
-  messagingSenderId: "913919068993",
-  appId: "1:913919068993:web:418e76ba44641e0ec4afc0",
-  measurementId: "G-2GG96J583V"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'tasmi-app';
+
+// Path Database Asli
+const getCollectionPath = (colName) => `markaz_data/${colName}`;
+const getSessionPath = (uid) => `markaz_sessions/${uid}`;
 
 // Tema Warna
 const theme = {
@@ -64,9 +61,6 @@ const calculateScore = (tajwid, lupa, lupaDiberitahu) => {
   return Math.max(0, score);
 };
 
-const getCollectionPath = (colName) => `artifacts/${appId}/public/data/${colName}`;
-const getSessionPath = (uid) => `artifacts/${appId}/users/${uid}/session`;
-
 const getLocalYYYYMMDD = (dateObj) => {
    const y = dateObj.getFullYear();
    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -79,8 +73,8 @@ const formatZiyadahSurahSafe = (z) => {
   const s1 = QURAN_SURAHS[z.fromSurah]?.[0] || 'Unknown';
   const s2 = QURAN_SURAHS[z.toSurah]?.[0] || 'Unknown';
   return z.fromSurah === z.toSurah 
-    ? `${s1} : ${z.fromAyah}-${z.toAyah}` 
-    : `${s1} : ${z.fromAyah} - ${s2} : ${z.toAyah}`;
+    ? `${s1} ay ${z.fromAyah}-${z.toAyah}` 
+    : `${s1} ay ${z.fromAyah} - ${s2} ay ${z.toAyah}`;
 };
 
 // --- CUSTOM MODALS ---
@@ -217,6 +211,7 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
     e.preventDefault();
     setError('');
     
+    // PERHATIAN: Logika hardcode sementara, nanti kita ubah pakai email/pass Firebase sungguhan.
     if (role === 'admin') {
       if (username === 'MinDigi' && password === 'J4diJar1yah') {
         onLogin({ role: 'admin', name: 'Admin Pusat', id: 'admin' });
@@ -301,16 +296,16 @@ const App = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    // LOGIN FIREBASE SECARA ANONIM (Penting agar tidak terblokir Security Rules bawaan Test Mode)
     const initAuth = async () => {
       try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (err) { console.error("Auth error:", err); }
+        await signInAnonymously(auth);
+      } catch (err) { 
+        console.error("Gagal terhubung ke Firebase. Cek kunci di .env Anda!", err); 
+      }
     };
     initAuth();
+    
     const unsubscribe = onAuthStateChanged(auth, setFirebaseUser);
     return () => unsubscribe();
   }, []);
@@ -320,7 +315,7 @@ const App = () => {
 
     const checkSession = async () => {
        try {
-          const docSnap = await getDoc(doc(db, getSessionPath(firebaseUser.uid), 'current'));
+          const docSnap = await getDoc(doc(db, getSessionPath(firebaseUser.uid)));
           if (docSnap.exists()) {
              const savedData = docSnap.data();
              setAppUser(savedData);
@@ -334,6 +329,7 @@ const App = () => {
     };
     checkSession();
 
+    // MENGAMBIL DATA DARI DATABASE ASLI
     const unsubPengampus = onSnapshot(collection(db, getCollectionPath('pengampus')), (snap) => setPengampus(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
     const unsubStudents = onSnapshot(collection(db, getCollectionPath('students')), (snap) => setStudents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
     const unsubRecords = onSnapshot(collection(db, getCollectionPath('records')), (snap) => setRecords(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
@@ -346,14 +342,14 @@ const App = () => {
     setAppUser(userData);
     setActiveTab(userData.role === 'admin' ? 'admin' : userData.role === 'wali' ? 'dashboard' : 'harian');
     if (firebaseUser) {
-       try { await setDoc(doc(db, getSessionPath(firebaseUser.uid), 'current'), userData); } 
+       try { await setDoc(doc(db, getSessionPath(firebaseUser.uid)), userData); } 
        catch (err) { console.error("Gagal menyimpan sesi permanen", err); }
     }
   };
 
   const handleLogout = async () => {
      if (firebaseUser) {
-        try { await deleteDoc(doc(db, getSessionPath(firebaseUser.uid), 'current')); } 
+        try { await deleteDoc(doc(db, getSessionPath(firebaseUser.uid))); } 
         catch (err) { console.error("Gagal menghapus sesi", err); }
      }
      setAppUser(null);
@@ -690,7 +686,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
 
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-10">
-      <ConfirmModal isOpen={recordToDelete !== null} title="Ulang Laporan?" message="Mengulang laporan akan mengosongkan kembali form yang telah diisi hari ini." confirmText="Kosongkan Form" onConfirm={executeDeleteRecord} onCancel={() => setRecordToDelete(null)} />
+      <ConfirmModal isOpen={recordToDelete !== null} title="Ulang Laporan?" message="Menghapus laporan akan mengosongkan kembali form setoran hari ini." confirmText="Kosongkan Form" onConfirm={executeDeleteRecord} onCancel={() => setRecordToDelete(null)} />
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4 bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm">
         <div>
