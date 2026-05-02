@@ -239,31 +239,31 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
     try {
        if (role === 'admin') {
          if (username === adminUsername && password === adminPassword) {
-           await signInAnonymously(auth); // Admin login anonim untuk akses firestore
+           await signInAnonymously(auth); // Login anonim untuk akses firestore
            onLogin({ role: 'admin', name: 'Admin Pusat', id: 'admin' });
          } else {
            setError('Username atau password admin salah.');
          }
        } else {
          // Login Pengampu & Wali
-         const authEmail = `${username}@markaz.app`.toLowerCase();
+         const authEmail = `${username}@mtqpiat.app`.toLowerCase();
          await signInWithEmailAndPassword(auth, authEmail, password);
          
          // Pastikan datanya ada di Firestore
          if (role === 'pengampu') {
            const user = pengampus.find(p => p.username === username);
            if (user) onLogin({ role: 'pengampu', name: user.name, id: user.id });
-           else throw new Error("Akun Firebase valid, namun data profil pengampu tidak ditemukan di database.");
+           else throw new Error("Data profil pengampu tidak ditemukan di database.");
          } else if (role === 'wali') {
            const user = students.find(s => s.username === username);
            if (user) onLogin({ role: 'wali', name: `Wali ${user.name}`, studentId: user.id });
-           else throw new Error("Akun Firebase valid, namun data profil santri tidak ditemukan di database.");
+           else throw new Error("Data profil santri tidak ditemukan di database.");
          }
        }
     } catch (err) {
        console.error("Login Error:", err);
        if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-          setError('Username atau sandi salah, atau akun belum terdaftar di Firebase.');
+          setError('Username atau sandi salah, atau akun belum terdaftar.');
        } else {
           setError(err.message || 'Terjadi kesalahan saat mencoba masuk.');
        }
@@ -491,12 +491,12 @@ const AdminView = ({ pengampus, students }) => {
   const [formError, setFormError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Fungsi utilitas hebat untuk membuat user Firebase Auth TANPA me-logout admin
+  // Fungsi utilitas hebat
   const createFirebaseAuthUser = async (username, password) => {
     // Membuka "Aplikasi Firebase Kedua" sementara
     const tempApp = initializeApp(firebaseConfig, 'TempApp_' + Date.now());
     const tempAuth = getAuth(tempApp);
-    const email = `${username}@markaz.app`.toLowerCase();
+    const email = `${username}@mtqpiat.app`.toLowerCase();
     
     try {
       const userCred = await createUserWithEmailAndPassword(tempAuth, email, password);
@@ -524,7 +524,7 @@ const AdminView = ({ pengampus, students }) => {
       });
       setNewPengampu({ name: '', username: '', password: '' });
     } catch (err) { 
-      setFormError(err.code === 'auth/email-already-in-use' ? "Username tersebut sudah dipakai." : "Gagal menyimpan akun ke sistem Auth."); 
+      setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah dipakai." : "Gagal menyimpan akun ke sistem Auth."); 
     } finally { setIsProcessing(false); }
   };
 
@@ -543,7 +543,7 @@ const AdminView = ({ pengampus, students }) => {
       });
       setNewStudent({ name: '', kelas: '1', semester: '1', username: '', password: '', juzTercapai: 0 });
     } catch (err) { 
-      setFormError(err.code === 'auth/email-already-in-use' ? "Username tersebut sudah dipakai." : "Gagal menyimpan akun ke sistem Auth."); 
+      setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah dipakai." : "Gagal menyimpan akun ke sistem Auth."); 
     } finally { setIsProcessing(false); }
   };
 
