@@ -1509,9 +1509,8 @@ const MainApp = () => {
         <div className="p-6 hidden md:block">
           <div className="flex items-center gap-3 mb-1">
              <BookOpen className="w-8 h-8" style={{ color: theme.primary }}/>
-             <span className="font-black text-2xl text-gray-800 tracking-tight">Markaz</span>
+             <span className="font-black text-2xl text-gray-800 tracking-tight">Markaz Digiport</span>
           </div>
-          <span className="text-xs font-bold text-gray-400 tracking-widest uppercase ml-11">Digiport</span>
         </div>
         
         <div className="px-4 py-4 md:py-2">
