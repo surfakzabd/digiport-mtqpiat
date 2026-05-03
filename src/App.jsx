@@ -2,55 +2,58 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Users, BookOpen, Calendar, Settings, LogOut, 
   Download, Printer, Plus, Minus, Check, X, ChevronDown, ChevronUp,
-  Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User, ShieldCheck
+  Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User, ShieldCheck, Key
 } from 'lucide-react';
 
 import { initializeApp, getApps, deleteApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 
-// --- PENGAMBILAN KONFIGURASI ---
+// ==========================================
+// 1. PENGATURAN FIREBASE (SISTEM INTI)
+// ==========================================
 let topLevelError = null;
 let isConfigValid = false;
 let app, auth, db;
 let firebaseConfig = {};
 
 try { 
-   const envApiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) || "";
-   const envAuthDomain = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "";
-   const envProjectId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_PROJECT_ID) || "";
-   const envStorageBucket = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || "";
-   const envSenderId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || "";
-   const envAppId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_APP_ID) || "";
-   const envMeasurementId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MEASUREMENT_ID) || "";
+  const envApiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) || "";
+  const envAuthDomain = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "";
+  const envProjectId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_PROJECT_ID) || "";
+  const envStorageBucket = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || "";
+  const envSenderId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || "";
+  const envAppId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_APP_ID) || "";
+  const envMeasurementId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MEASUREMENT_ID) || "";
 
-   firebaseConfig = {
-      apiKey: envApiKey,
-      authDomain: envAuthDomain,
-      projectId: envProjectId,
-      storageBucket: envStorageBucket,
-      messagingSenderId: envSenderId,
-      appId: envAppId,
-      measurementId: envMeasurementId
-   };
-   
-   if (firebaseConfig.apiKey && firebaseConfig.apiKey.length > 5) {
-      isConfigValid = true;
-      app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-      auth = getAuth(app);
-      db = getFirestore(app);
-   }
+  firebaseConfig = {
+    apiKey: envApiKey,
+    authDomain: envAuthDomain,
+    projectId: envProjectId,
+    storageBucket: envStorageBucket,
+    messagingSenderId: envSenderId,
+    appId: envAppId,
+    measurementId: envMeasurementId
+  };
+  
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey.length > 5) {
+    isConfigValid = true;
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    auth = getAuth(app);
+    db = getFirestore(app);
+  }
 } catch (e) {
-   topLevelError = e;
+  topLevelError = e;
 }
 
-// --- PERBAIKAN PATH DATABASE ---
 const currentAppId = typeof __app_id !== 'undefined' ? __app_id : (firebaseConfig.appId || 'markaz-app');
 const getCollectionPath = (colName) => `artifacts/${currentAppId}/public/data/${colName}`;
 const getSessionPath = (uid) => `artifacts/${currentAppId}/users/${uid}/session/current`;
 
 
-// Tema Warna
+// ==========================================
+// 2. TEMA DAN DATA REFERENSI (CONSTANTS)
+// ==========================================
 const theme = {
   primary: '#26544d',
   secondary: '#54af48',
@@ -75,6 +78,7 @@ const QURAN_SURAHS = [
   ["Al-Qari'ah",11], ["At-Takasur",8], ["Al-'Asr",3], ["Al-Humazah",9], ["Al-Fil",5], ["Quraisy",4], ["Al-Ma'un",7], ["Al-Kausar",3], ["Al-Kafirun",6], ["An-Nasr",3],
   ["Al-Lahab",5], ["Al-Ikhlas",4], ["Al-Falaq",5], ["An-Nas",6]
 ];
+
 const JUZ_LIST = Array.from({ length: 30 }, (_, i) => i + 1);
 const TARGET_HAFALAN = { 1: 8, 2: 13, 3: 18, 4: 23, 5: 28, 6: 30 };
 const SP_OPTIONS = ["SP-TS1", "SP-K1", "SP-TH1", "SP-TH2", "SP-P1", "SP-A1", "SP-A2"];
@@ -85,10 +89,10 @@ const calculateScore = (tajwid, lupa, lupaDiberitahu) => {
 };
 
 const getLocalYYYYMMDD = (dateObj) => {
-   const y = dateObj.getFullYear();
-   const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-   const d = String(dateObj.getDate()).padStart(2, '0');
-   return `${y}-${m}-${d}`;
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 };
 
 const formatZiyadahSurahSafe = (z) => {
@@ -100,7 +104,9 @@ const formatZiyadahSurahSafe = (z) => {
     : `${s1} ay ${z.fromAyah} - ${s2} ay ${z.toAyah}`;
 };
 
-// --- CUSTOM MODALS ---
+// ==========================================
+// 3. KOMPONEN MODAL (REUSABLE)
+// ==========================================
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "Hapus Data" }) => {
   if (!isOpen) return null;
   return (
@@ -123,7 +129,6 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText
   );
 };
 
-// Edit Modal disesuaikan:
 const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
   const [formData, setFormData] = useState({});
 
@@ -162,7 +167,7 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
 
           <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
             <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Nama</label>
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Nama Lengkap</label>
               <input required type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: theme.secondary }} />
             </div>
             
@@ -201,7 +206,7 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
             )}
 
             <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username <span className="lowercase font-medium">(Tidak bisa diubah)</span></label>
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username <span className="lowercase font-medium">(Tetap)</span></label>
               <input type="text" name="username" value={formData.username || ''} disabled className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-100 text-gray-500 cursor-not-allowed outline-none" />
             </div>
 
@@ -218,7 +223,82 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
   );
 };
 
-// --- LOGIN SCREEN (DENGAN FIREBASE AUTH) ---
+const ResetAccessModal = ({ isOpen, target, onSave, onCancel }) => {
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isOpen && target) {
+      setNewUsername(target.data.username + '2');
+      setNewPassword('');
+      setError('');
+    }
+  }, [isOpen, target]);
+
+  if (!isOpen || !target) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    setError('');
+    try {
+      await onSave(newUsername.replace(/\s+/g, ''), newPassword);
+    } catch (err) {
+      setError(err.message || 'Proses pemulihan akses dibatalkan oleh sistem.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+      <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+      <div className="flex min-h-full p-4 sm:p-6">
+        <div className="m-auto relative bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-5 md:p-6 animate-in fade-in zoom-in duration-200 border-t-4 md:border-t-8 border-yellow-400" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
+              <Key className="w-5 h-5 md:w-6 md:h-6 text-yellow-500"/> Atur Ulang Akses
+            </h3>
+            <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 md:p-1.5 bg-gray-100 rounded-full transition-colors"><X className="w-4 h-4 md:w-5 md:h-5"/></button>
+          </div>
+          
+          <div className="bg-yellow-50 p-3 md:p-4 rounded-xl border border-yellow-100 mb-4 md:mb-6">
+             <p className="text-xs md:text-sm text-yellow-800 font-medium leading-relaxed">
+               Untuk menjaga privasi, sandi lama tidak dapat dilihat oleh Admin. Silakan buat <b>username baru</b> (atau tambahkan angka) dan sandi yang baru. Data riwayat santri akan tetap tersambung dengan aman.
+             </p>
+          </div>
+
+          {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs md:text-sm font-bold border border-red-100 flex items-start gap-2 mb-4"><AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/> {error}</div>}
+
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+            <div>
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username Baru</label>
+              <input required type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all focus:ring-yellow-400" />
+            </div>
+            <div>
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Sandi Baru (Min. 6 Karakter)</label>
+              <input required type="text" minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all focus:ring-yellow-400" />
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row gap-2 md:gap-3 justify-end pt-4 md:pt-6 mt-4 md:mt-6 border-t border-gray-100">
+              <button type="button" onClick={onCancel} className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full sm:w-auto">Batal</button>
+              <button type="submit" disabled={isProcessing} className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-gray-800 bg-yellow-400 hover:bg-yellow-500 shadow-md hover:shadow-lg transition-transform w-full sm:w-auto flex justify-center items-center gap-2">
+                {isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-800"></div> : <Key className="w-4 h-4 md:w-5 md:h-5"/>} 
+                {isProcessing ? 'Memproses...' : 'Terapkan Akses'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 4. TAMPILAN LOGIN (AUTENTIKASI)
+// ==========================================
 const LoginScreen = ({ onLogin, pengampus, students }) => {
   const [role, setRole] = useState('wali');
   const [username, setUsername] = useState('');
@@ -231,7 +311,6 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
     setError('');
     setLoading(true);
     
-    // Fallback Aman (Safe Accessor)
     const getEnv = (key, fallback) => { try { return import.meta.env[key] || fallback; } catch(err) { return fallback; } };
     const adminUsername = getEnv('VITE_ADMIN_USERNAME');
     const adminPassword = getEnv('VITE_ADMIN_PASSWORD');
@@ -239,33 +318,31 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
     try {
        if (role === 'admin') {
          if (username === adminUsername && password === adminPassword) {
-           await signInAnonymously(auth); // Login anonim untuk akses firestore
+           await signInAnonymously(auth); 
            onLogin({ role: 'admin', name: 'Admin Pusat', id: 'admin' });
          } else {
-           setError('Username atau password admin salah.');
+           setError('Kredensial Admin tidak sesuai.');
          }
        } else {
-         // Login Pengampu & Wali
          const authEmail = `${username}@mtqpiat.app`.toLowerCase();
          await signInWithEmailAndPassword(auth, authEmail, password);
          
-         // Pastikan datanya ada di Firestore
          if (role === 'pengampu') {
            const user = pengampus.find(p => p.username === username);
            if (user) onLogin({ role: 'pengampu', name: user.name, id: user.id });
-           else throw new Error("Data profil pengampu tidak ditemukan di database.");
+           else throw new Error("Profil tidak ditemukan. Silakan hubungi Admin.");
          } else if (role === 'wali') {
            const user = students.find(s => s.username === username);
            if (user) onLogin({ role: 'wali', name: `Wali ${user.name}`, studentId: user.id });
-           else throw new Error("Data profil santri tidak ditemukan di database.");
+           else throw new Error("Profil tidak ditemukan. Silakan hubungi Admin.");
          }
        }
     } catch (err) {
        console.error("Login Error:", err);
        if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-          setError('Username atau sandi salah, atau akun belum terdaftar.');
+          setError('Username atau sandi yang Anda masukkan salah.');
        } else {
-          setError(err.message || 'Terjadi kesalahan saat mencoba masuk.');
+          setError(err.message || 'Gagal memverifikasi akses masuk.');
        }
     } finally {
        setLoading(false);
@@ -302,15 +379,15 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
              </div>
           </div>
           <div>
-             <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Password</label>
+             <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Kata Sandi</label>
              <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none"><Lock className="w-4 h-4 md:w-5 md:h-5 text-gray-400" /></div>
-                <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-9 md:pl-11 pr-4 py-2.5 md:py-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan password" />
+                <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-9 md:pl-11 pr-4 py-2.5 md:py-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan kata sandi" />
              </div>
           </div>
           
           <button type="submit" disabled={loading} className="w-full mt-3 md:mt-4 p-3 md:p-4 rounded-xl text-white text-sm md:text-base font-bold shadow-md hover:shadow-lg transition-transform hover:scale-[1.02] flex justify-center items-center" style={{ backgroundColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c', opacity: loading ? 0.7 : 1 }}>
-            {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk'}
+            {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk Sistem'}
           </button>
         </form>
       </div>
@@ -318,169 +395,74 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
   );
 };
 
-// --- APP COMPONENT INTI ---
-const MainApp = () => {
-  const [firebaseUser, setFirebaseUser] = useState(null);
-  const [appUser, setAppUser] = useState(null); 
-  const [sessionChecked, setSessionChecked] = useState(false);
-  const [activeTab, setActiveTab] = useState('admin');
-  
-  const [pengampus, setPengampus] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [records, setRecords] = useState([]);
-  const [recapNotes, setRecapNotes] = useState([]);
-  
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+// ==========================================
+// 5. TAMPILAN PENGATURAN (UBAH SANDI)
+// ==========================================
+const SettingsView = () => {
+  const [newPassword, setNewPassword] = useState('');
+  const [status, setStatus] = useState({ type: '', msg: '' });
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, setFirebaseUser);
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!db) return;
-
-    // Fetch Database Secara Realtime
-    const unsubPengampus = onSnapshot(collection(db, getCollectionPath('pengampus')), (snap) => setPengampus(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
-    const unsubStudents = onSnapshot(collection(db, getCollectionPath('students')), (snap) => setStudents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
-    const unsubRecords = onSnapshot(collection(db, getCollectionPath('records')), (snap) => setRecords(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
-    const unsubRecapNotes = onSnapshot(collection(db, getCollectionPath('recap_notes')), (snap) => setRecapNotes(snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))));
-
-    return () => { unsubPengampus(); unsubStudents(); unsubRecords(); unsubRecapNotes(); };
-  }, []);
-
-  // Cek Sesi Ketika firebaseUser berubah
-  useEffect(() => {
-    if (!db) return;
-    const checkSession = async () => {
-       if (firebaseUser) {
-           try {
-              const docSnap = await getDoc(doc(db, getSessionPath(firebaseUser.uid)));
-              if (docSnap.exists()) {
-                 const savedData = docSnap.data();
-                 setAppUser(savedData);
-                 setActiveTab(savedData.role === 'admin' ? 'admin' : savedData.role === 'wali' ? 'dashboard' : 'harian');
-              }
-           } catch (error) { console.error("Gagal memeriksa sesi", error); }
-       }
-       setSessionChecked(true); 
-    };
-    checkSession();
-  }, [firebaseUser]);
-
-  const handleLogin = async (userData) => {
-    setAppUser(userData);
-    setActiveTab(userData.role === 'admin' ? 'admin' : userData.role === 'wali' ? 'dashboard' : 'harian');
-    // Karena login dilakukan SEBELUM onLogin dipanggil
-    if (auth.currentUser && db) {
-       try { await setDoc(doc(db, getSessionPath(auth.currentUser.uid)), userData); } 
-       catch (err) { console.error("Gagal menyimpan sesi", err); }
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setStatus({ type: '', msg: '' });
+    if (newPassword.length < 6) {
+       setStatus({ type: 'error', msg: 'Kata sandi minimal terdiri dari 6 karakter.'});
+       return;
     }
-  };
-
-  const handleLogout = async () => {
-     if (firebaseUser && db) {
-        try { 
-           await deleteDoc(doc(db, getSessionPath(firebaseUser.uid))); 
-           await signOut(auth);
-        } catch (err) { console.error("Gagal menghapus sesi/logout", err); }
-     }
-     setAppUser(null);
-  };
-
-  if (!sessionChecked) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-10 w-10 border-b-4" style={{ borderColor: theme.primary }}></div></div>;
-  if (!appUser) return <LoginScreen onLogin={handleLogin} pengampus={pengampus} students={students} />;
-
-  const visibleStudents = appUser.role === 'pengampu' ? students.filter(s => s.pengampuId === appUser.id) : students;
-  
-  const handleTabChange = (tab) => { 
-    setActiveTab(tab); 
-    setIsMobileMenuOpen(false); 
+    setLoading(true);
+    try {
+       await updatePassword(auth.currentUser, newPassword);
+       setStatus({ type: 'success', msg: 'Kata sandi berhasil diperbarui! Silakan gunakan untuk login berikutnya.' });
+       setNewPassword('');
+    } catch (err) {
+       if (err.code === 'auth/requires-recent-login') {
+          setStatus({ type: 'error', msg: 'Sesi Anda terlalu lama. Demi keamanan, silakan Keluar dan Masuk kembali sebelum memperbarui sandi.' });
+       } else {
+          setStatus({ type: 'error', msg: 'Terjadi kendala saat memperbarui sandi. Silakan coba beberapa saat lagi.' });
+       }
+    }
+    setLoading(false);
   };
 
   return (
-    <div className="h-[100dvh] min-h-screen flex bg-gray-50 font-sans overflow-hidden">
-      {/* Mobile Header (Top Bar) */}
-      <div className="lg:hidden fixed top-0 left-0 w-full h-14 md:h-16 flex items-center justify-between px-3 md:px-4 text-white z-40 shadow-md" style={{ backgroundColor: theme.primary }}>
-        <div className="flex items-center gap-2 md:gap-3">
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1.5 md:p-2 bg-white/10 rounded-lg active:scale-95 transition-transform">
-            <Menu className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-          <span className="font-bold text-base md:text-lg tracking-wide">Markaz Digiport</span>
-        </div>
-      </div>
+     <div className="space-y-4 md:space-y-6 pb-10">
+        <div className="bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm max-w-2xl">
+           <h2 className="text-lg md:text-xl lg:text-3xl font-bold text-gray-800 flex items-center gap-3">
+             <Key className="w-6 h-6 md:w-8 md:h-8" style={{ color: theme.primary }}/> Pengaturan Akun
+           </h2>
+           <p className="text-xs md:text-sm text-gray-500 mt-1.5 md:mt-2">Kelola kata sandi Anda secara berkala untuk menjaga keamanan akun.</p>
+           
+           <hr className="my-6 border-gray-100" />
 
-      {/* Mobile Overlay */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40">
-           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
-        </div>
-      )}
+           {status.msg && (
+              <div className={`p-3 md:p-4 rounded-xl mb-6 text-xs md:text-sm font-bold flex items-start gap-2 ${status.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                 {status.type === 'error' ? <AlertCircle className="w-5 h-5 shrink-0"/> : <Check className="w-5 h-5 shrink-0"/>}
+                 <span className="leading-relaxed">{status.msg}</span>
+              </div>
+           )}
 
-      {/* Sidebar */}
-      <div className={`fixed lg:static inset-y-0 left-0 w-64 md:w-72 lg:w-64 text-white flex flex-col shadow-2xl lg:shadow-xl z-50 shrink-0 transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`} style={{ backgroundColor: theme.primary }}>
-        
-        {/* Sidebar Header (Mobile & Desktop) */}
-        <div className="flex items-center justify-between p-4 md:p-5 lg:p-6 border-b border-white/10">
-          <div className="flex items-center gap-2 md:gap-3 font-bold text-lg md:text-xl">
-            <BookOpen className="w-6 h-6 md:w-7 md:h-7" style={{ color: theme.accent }} />
-            <span>Markaz Digiport</span>
-          </div>
-          <button className="lg:hidden p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        
-        <div className="p-4 md:p-5 flex-1 space-y-1.5 md:space-y-2 overflow-y-auto">
-          <div className="mb-4 md:mb-6 p-3 md:p-4 rounded-xl bg-white/10 shadow-inner border border-white/5">
-            <p className="opacity-70 text-[10px] md:text-xs mb-0.5 md:mb-1">Masuk sebagai:</p>
-            <p className="font-bold text-base md:text-lg truncate" style={{ color: theme.accent }}>{appUser.name}</p>
-            <p className="text-[10px] md:text-xs capitalize bg-white/20 inline-block px-2 py-0.5 md:px-2.5 md:py-1 rounded-md mt-1.5 md:mt-2 font-semibold tracking-wide">{appUser.role}</p>
-          </div>
-
-          {appUser.role === 'wali' ? (
-             <button onClick={() => handleTabChange('dashboard')} className={`w-full flex items-center gap-3 p-2.5 md:p-3.5 rounded-lg md:rounded-xl text-sm md:text-base transition-all ${activeTab === 'dashboard' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}>
-               <Calendar className="w-4 h-4 md:w-5 md:h-5"/> <span>Dashboard Anak</span>
-             </button>
-          ) : (
-            <>
-              {appUser.role === 'admin' && (
-                <button onClick={() => handleTabChange('admin')} className={`w-full flex items-center gap-3 p-2.5 md:p-3.5 rounded-lg md:rounded-xl text-sm md:text-base transition-all ${activeTab === 'admin' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}>
-                  <Settings className="w-4 h-4 md:w-5 md:h-5"/> <span>Kelola Data</span>
-                </button>
-              )}
-              <button onClick={() => handleTabChange('harian')} className={`w-full flex items-center gap-3 p-2.5 md:p-3.5 rounded-lg md:rounded-xl text-sm md:text-base transition-all ${activeTab === 'harian' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}>
-                <Calendar className="w-4 h-4 md:w-5 md:h-5"/> <span>Laporan Harian</span>
+           <form onSubmit={handleUpdate} className="space-y-4 md:space-y-5">
+              <div>
+                 <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Kata Sandi Baru</label>
+                 <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none"><Lock className="w-4 h-4 md:w-5 md:h-5 text-gray-400" /></div>
+                    <input type="text" required minLength={6} value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full pl-9 md:pl-11 pr-4 py-2.5 md:py-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all" style={{ focusRingColor: theme.secondary }} placeholder="Masukkan minimal 6 karakter" />
+                 </div>
+              </div>
+              <button type="submit" disabled={loading} className="w-full sm:w-auto px-6 py-2.5 md:py-3 rounded-xl text-white text-sm md:text-base font-bold shadow-md hover:shadow-lg transition-transform flex justify-center items-center gap-2" style={{ backgroundColor: theme.primary, opacity: loading ? 0.7 : 1 }}>
+                 {loading ? <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-b-2 border-white"></div> : <Key className="w-4 h-4 md:w-5 md:h-5"/>}
+                 Perbarui Kata Sandi
               </button>
-              <button onClick={() => handleTabChange('rekap')} className={`w-full flex items-center gap-3 p-2.5 md:p-3.5 rounded-lg md:rounded-xl text-sm md:text-base transition-all ${activeTab === 'rekap' ? 'bg-white/20 font-bold shadow-sm' : 'hover:bg-white/10'}`}>
-                <Download className="w-4 h-4 md:w-5 md:h-5"/> <span>Rekap Bulanan</span>
-              </button>
-            </>
-          )}
+           </form>
         </div>
-
-        <div className="p-4 md:p-5 border-t border-white/10">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 p-2.5 md:p-3.5 rounded-lg md:rounded-xl hover:bg-red-500/20 text-red-300 font-semibold text-sm md:text-base transition-colors">
-            <LogOut className="w-4 h-4 md:w-5 md:h-5"/> <span>Keluar</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 h-full overflow-y-auto pt-16 md:pt-20 pb-8 px-3 md:px-6 lg:p-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto w-full relative">
-          {activeTab === 'admin' && <AdminView pengampus={pengampus} students={students} />}
-          {activeTab === 'dashboard' && appUser.role === 'wali' && <WaliDashboardView students={students} records={records} user={appUser} />}
-          {activeTab === 'harian' && <HarianView students={visibleStudents} records={records} pengampus={pengampus} user={appUser} />}
-          {activeTab === 'rekap' && <RekapView students={visibleStudents} records={records} pengampus={pengampus} userRole={appUser.role} recapNotes={recapNotes} />}
-        </div>
-      </div>
-    </div>
+     </div>
   );
 };
 
-// --- ADMIN VIEW (KELOLA DATA) ---
+// ==========================================
+// 6. VIEW: DASHBOARD ADMIN
+// ==========================================
 const AdminView = ({ pengampus, students }) => {
   const [newPengampu, setNewPengampu] = useState({ name: '', username: '', password: '' });
   const [newStudent, setNewStudent] = useState({ name: '', kelas: '1', semester: '1', username: '', password: '', juzTercapai: 0 });
@@ -488,12 +470,11 @@ const AdminView = ({ pengampus, students }) => {
   
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editTarget, setEditTarget] = useState(null); 
+  const [resetTarget, setResetTarget] = useState(null);
   const [formError, setFormError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Fungsi utilitas hebat
   const createFirebaseAuthUser = async (username, password) => {
-    // Membuka "Aplikasi Firebase Kedua" sementara
     const tempApp = initializeApp(firebaseConfig, 'TempApp_' + Date.now());
     const tempAuth = getAuth(tempApp);
     const email = `${username}@mtqpiat.app`.toLowerCase();
@@ -502,7 +483,7 @@ const AdminView = ({ pengampus, students }) => {
       const userCred = await createUserWithEmailAndPassword(tempAuth, email, password);
       const uid = userCred.user.uid;
       await signOut(tempAuth);
-      await deleteApp(tempApp); // Tutup dan hapus aplikasi sementara
+      await deleteApp(tempApp);
       return uid;
     } catch (error) {
       await deleteApp(tempApp);
@@ -515,16 +496,13 @@ const AdminView = ({ pengampus, students }) => {
     if (!newPengampu.name || !newPengampu.username || !newPengampu.password) return;
     setIsProcessing(true); setFormError('');
     try {
-      // 1. Buat user asli di Firebase Authentication
       const authUid = await createFirebaseAuthUser(newPengampu.username.replace(/\s+/g, ''), newPengampu.password);
-      
-      // 2. Simpan profil ke Database (TANPA PASSWORD)
       await setDoc(doc(db, getCollectionPath('pengampus'), authUid), { 
         id: authUid, name: newPengampu.name, username: newPengampu.username.replace(/\s+/g, '') 
       });
       setNewPengampu({ name: '', username: '', password: '' });
     } catch (err) { 
-      setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah dipakai." : "Gagal menyimpan akun ke sistem Auth."); 
+      setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah digunakan." : "Gagal mendaftarkan akun ke sistem."); 
     } finally { setIsProcessing(false); }
   };
 
@@ -533,27 +511,23 @@ const AdminView = ({ pengampus, students }) => {
     if (!newStudent.name || !newStudent.username || !newStudent.password) return;
     setIsProcessing(true); setFormError('');
     try {
-      // 1. Buat user asli di Firebase Authentication
       const authUid = await createFirebaseAuthUser(newStudent.username.replace(/\s+/g, ''), newStudent.password);
-
-      // 2. Simpan profil ke Database (TANPA PASSWORD)
       await setDoc(doc(db, getCollectionPath('students'), authUid), { 
         id: authUid, pengampuId, name: newStudent.name, username: newStudent.username.replace(/\s+/g, ''),
         semester: parseInt(newStudent.semester), juzTercapai: parseInt(newStudent.juzTercapai), kelas: newStudent.kelas
       });
       setNewStudent({ name: '', kelas: '1', semester: '1', username: '', password: '', juzTercapai: 0 });
     } catch (err) { 
-      setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah dipakai." : "Gagal menyimpan akun ke sistem Auth."); 
+      setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah digunakan." : "Gagal mendaftarkan akun ke sistem."); 
     } finally { setIsProcessing(false); }
   };
 
   const executeDelete = async () => {
     if (!deleteTarget) return;
     try {
-      // Menghapus data dari Firestore. (Catatan: Auth user tidak bisa dihapus dari sisi client demi keamanan, namun datanya sudah putus).
       if (deleteTarget.type === 'pengampu') await deleteDoc(doc(db, getCollectionPath('pengampus'), deleteTarget.id));
       else if (deleteTarget.type === 'student') await deleteDoc(doc(db, getCollectionPath('students'), deleteTarget.id));
-    } catch (error) { setFormError("Gagal menghapus profil."); } finally { setDeleteTarget(null); }
+    } catch (error) { setFormError("Terjadi kendala saat menghapus data profil."); } finally { setDeleteTarget(null); }
   };
 
   const executeEdit = async (updatedData) => {
@@ -561,13 +535,28 @@ const AdminView = ({ pengampus, students }) => {
     try {
       const collectionName = editTarget.type === 'pengampu' ? 'pengampus' : 'students';
       await updateDoc(doc(db, getCollectionPath(collectionName), editTarget.data.id), updatedData);
-    } catch (error) { setFormError("Gagal memperbarui profil."); } finally { setEditTarget(null); }
+    } catch (error) { setFormError("Terjadi kendala saat menyimpan pembaruan profil."); } finally { setEditTarget(null); }
+  };
+
+  const executeResetAccess = async (newUsername, newPassword) => {
+    try {
+      await createFirebaseAuthUser(newUsername, newPassword);
+      const collectionName = resetTarget.type === 'pengampu' ? 'pengampus' : 'students';
+      await updateDoc(doc(db, getCollectionPath(collectionName), resetTarget.data.id), {
+         username: newUsername
+      });
+      setResetTarget(null);
+    } catch (err) {
+      if (err.code === 'auth/email-already-in-use') throw new Error("Username sudah terpakai. Silakan coba kombinasi lain.");
+      throw new Error("Sistem belum dapat memproses pengaturan ulang akses.");
+    }
   };
 
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-10">
-      <ConfirmModal isOpen={deleteTarget !== null} title={`Hapus ${deleteTarget?.type === 'pengampu' ? 'Pengampu' : 'Santri'}?`} message={`Apakah Anda yakin ingin menghapus profil "${deleteTarget?.name}"?`} onConfirm={executeDelete} onCancel={() => setDeleteTarget(null)} />
+      <ConfirmModal isOpen={deleteTarget !== null} title={`Hapus Data ${deleteTarget?.type === 'pengampu' ? 'Pengampu' : 'Santri'}?`} message={`Apakah Anda yakin ingin menghapus profil "${deleteTarget?.name}" secara permanen?`} onConfirm={executeDelete} onCancel={() => setDeleteTarget(null)} />
       <EditModal isOpen={editTarget !== null} target={editTarget} pengampus={pengampus} onSave={executeEdit} onCancel={() => setEditTarget(null)} />
+      <ResetAccessModal isOpen={resetTarget !== null} target={resetTarget} onSave={executeResetAccess} onCancel={() => setResetTarget(null)} />
 
       <div className="bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm border-t-4" style={{ borderColor: theme.primary }}>
         <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
@@ -576,7 +565,7 @@ const AdminView = ({ pengampus, students }) => {
            </div>
            <div>
              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">Tambah Pengampu</h2>
-             <p className="text-[10px] md:text-sm text-gray-500 mt-0.5 md:mt-1">Akun yang dibuat disini akan tersertifikasi oleh Firebase Auth.</p>
+             <p className="text-[10px] md:text-sm text-gray-500 mt-0.5 md:mt-1">Pendaftaran akun secara otomatis terhubung dengan sistem keamanan berenkripsi.</p>
            </div>
         </div>
         
@@ -584,20 +573,20 @@ const AdminView = ({ pengampus, students }) => {
         
         <form onSubmit={handleAddPengampu} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 items-end">
           <div className="w-full">
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Nama Pengampu</label>
-            <input required type="text" value={newPengampu.name} onChange={e=>setNewPengampu({...newPengampu, name: e.target.value})} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="Ust. Fulan" />
+            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Nama Lengkap</label>
+            <input required type="text" value={newPengampu.name} onChange={e=>setNewPengampu({...newPengampu, name: e.target.value})} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="Misal: Ust. Fulan" />
           </div>
           <div className="w-full">
             <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Username</label>
-            <input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="tanpa_spasi" />
+            <input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="tanpaspasi" />
           </div>
           <div className="w-full">
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Password (Min. 6 Karakter)</label>
-            <input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} minLength={6} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="minimal 6 karakter" />
+            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Sandi (Min. 6 Karakter)</label>
+            <input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} minLength={6} className="w-full p-2.5 md:p-3 lg:p-3.5 border border-gray-200 rounded-xl bg-gray-50 outline-none focus:ring-2 focus:bg-white text-sm md:text-base transition-all" placeholder="Minimal 6 karakter" />
           </div>
           <button type="submit" disabled={isProcessing} className="w-full p-2.5 md:p-3 lg:p-3.5 rounded-xl text-white font-bold transition-transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-md text-sm md:text-base" style={{ backgroundColor: theme.primary, opacity: isProcessing ? 0.7 : 1 }}>
             {isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4 md:w-5 md:h-5"/>} 
-            {isProcessing ? 'Proses...' : 'Tambah'}
+            {isProcessing ? 'Memproses...' : 'Tambahkan'}
           </button>
         </form>
       </div>
@@ -607,6 +596,9 @@ const AdminView = ({ pengampus, students }) => {
           <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2 md:gap-3">
             <Users className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> Daftar Halaqah & Santri
           </h2>
+          <span className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg shadow-sm">
+             <ShieldCheck className="w-4 h-4"/> Keamanan Aktif (Sandi Privasi)
+          </span>
         </div>
         
         {pengampus.map(pengampu => {
@@ -620,9 +612,9 @@ const AdminView = ({ pengampus, students }) => {
                      <div>
                         <h3 className="text-base md:text-lg lg:text-xl font-bold text-gray-800 leading-tight">{pengampu.name}</h3>
                         <div className="flex flex-wrap gap-1.5 md:gap-2 text-[10px] md:text-xs text-gray-500 mt-1 md:mt-1.5">
-                           <span className="bg-gray-100 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg border border-gray-200">USN: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
+                           <span className="bg-gray-100 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg border border-gray-200">ID: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
                            <span className="bg-green-50 text-green-600 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg border border-green-200 flex items-center gap-1 font-semibold">
-                              <ShieldCheck className="w-3 h-3"/> Terenkripsi Auth
+                              <ShieldCheck className="w-3 h-3"/> Sandi Terenkripsi
                            </span>
                         </div>
                      </div>
@@ -630,8 +622,9 @@ const AdminView = ({ pengampus, students }) => {
                   <div className="flex items-center justify-between sm:justify-end gap-3 md:gap-4 w-full sm:w-auto mt-1 md:mt-0 pt-2 sm:pt-0 border-t sm:border-none border-gray-100">
                      <div className="text-xs md:text-sm font-bold text-gray-600 bg-gray-100 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl shadow-inner">{pengampuStudents.length} Santri</div>
                      <div className="flex items-center gap-1 md:gap-1.5">
-                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-blue-500 p-1.5 md:p-2 lg:p-2.5 hover:bg-blue-50 rounded-full transition-colors"><Edit className="w-4 h-4 md:w-5 md:h-5"/></button>
-                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-400 p-1.5 md:p-2 lg:p-2.5 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors"><Trash2 className="w-4 h-4 md:w-5 md:h-5"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setResetTarget({ type: 'pengampu', data: pengampu }); }} className="text-yellow-500 p-1.5 md:p-2 lg:p-2.5 hover:bg-yellow-50 rounded-full transition-colors" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4 md:w-5 md:h-5"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-blue-500 p-1.5 md:p-2 lg:p-2.5 hover:bg-blue-50 rounded-full transition-colors" title="Edit Profil"><Edit className="w-4 h-4 md:w-5 md:h-5"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-400 p-1.5 md:p-2 lg:p-2.5 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors" title="Hapus Data"><Trash2 className="w-4 h-4 md:w-5 md:h-5"/></button>
                         <div className={`p-1 md:p-2 rounded-full transition-colors ml-1 md:ml-2 ${isExpanded ? 'bg-gray-100 text-gray-700' : 'text-gray-400'}`}>{isExpanded ? <ChevronUp className="w-4 h-4 md:w-5 md:h-5" /> : <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />}</div>
                      </div>
                   </div>
@@ -641,11 +634,11 @@ const AdminView = ({ pengampus, students }) => {
                   <div className="border-t border-gray-100 bg-gray-50 p-3 md:p-5 lg:p-6 animate-in slide-in-from-top-4 duration-200">
                     <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white p-3 md:p-4 lg:p-5 rounded-xl md:rounded-2xl shadow-sm border border-gray-200 mb-4 md:mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4 items-end relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-1.5 h-full" style={{ backgroundColor: theme.secondary }}></div>
-                      <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Nama Santri Baru</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm outline-none bg-gray-50 focus:bg-white focus:ring-2" style={{ focusRingColor: theme.secondary }} placeholder="Nama..." /></div>
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Nama Santri Baru</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm outline-none bg-gray-50 focus:bg-white focus:ring-2" style={{ focusRingColor: theme.secondary }} placeholder="Nama Lengkap" /></div>
                       <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Kls/Smt</label><div className="flex gap-1.5 md:gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className="w-1/2 p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white"><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className="w-1/2 p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white">{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
                       <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 border-r-0 rounded-l-lg md:rounded-l-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white" /><span className="bg-gray-100 p-2 md:p-2.5 lg:p-3 border border-gray-200 border-l-0 rounded-r-lg md:rounded-r-xl text-[10px] md:text-xs text-gray-500 font-medium">Juz</span></div></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white" placeholder="usn..." /></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Password Auth</label><div className="flex gap-1.5 md:gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white" placeholder="min 6 char" /><button type="submit" disabled={isProcessing} className="p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-white font-bold transition-transform hover:scale-105 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary, opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4 md:w-5 md:h-5"/>}</button></div></div>
+                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white" placeholder="tanpaspasi" /></div>
+                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-400 mb-1 md:mb-1.5 block">Sandi Akses</label><div className="flex gap-1.5 md:gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className="w-full p-2 md:p-2.5 lg:p-3 border border-gray-200 rounded-lg md:rounded-xl text-xs md:text-sm bg-gray-50 outline-none focus:bg-white" placeholder="Minimal 6" /><button type="submit" disabled={isProcessing} className="p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-white font-bold transition-transform hover:scale-105 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary, opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4 md:w-5 md:h-5"/>}</button></div></div>
                     </form>
                     
                     <div className="overflow-x-auto bg-white rounded-xl md:rounded-2xl border border-gray-200 shadow-sm w-full">
@@ -656,11 +649,11 @@ const AdminView = ({ pengampus, students }) => {
                                <th className="p-3 md:p-4 lg:p-5 font-bold">Kls/Smt</th>
                                <th className="p-3 md:p-4 lg:p-5 font-bold">Juz</th>
                                <th className="p-3 md:p-4 lg:p-5 font-bold">Status Keamanan</th>
-                               <th className="p-3 md:p-4 lg:p-5 font-bold text-center">Aksi</th>
+                               <th className="p-3 md:p-4 lg:p-5 font-bold text-center">Tindakan</th>
                              </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-100 text-xs md:text-sm">
-                             {pengampuStudents.length === 0 ? <tr><td colSpan="5" className="p-4 md:p-6 text-center text-gray-400 italic">Belum ada santri di halaqah ini.</td></tr> : pengampuStudents.map(s => (
+                             {pengampuStudents.length === 0 ? <tr><td colSpan="5" className="p-4 md:p-6 text-center text-gray-400 italic">Belum ada data santri yang ditambahkan.</td></tr> : pengampuStudents.map(s => (
                                 <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
                                    <td className="p-3 md:p-4 lg:p-5 font-bold text-gray-800">{s.name}</td>
                                    <td className="p-3 md:p-4 lg:p-5 text-gray-600 font-medium">{s.kelas} / {s.semester}</td>
@@ -669,13 +662,14 @@ const AdminView = ({ pengampus, students }) => {
                                      <div className="flex gap-1.5 md:gap-2">
                                        <span className="bg-gray-100 px-2 md:px-2.5 py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-semibold text-gray-600 border border-gray-200">{s.username}</span>
                                        <span className="bg-green-50 text-green-600 px-2 md:px-2.5 py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-bold border border-green-200 flex items-center gap-1">
-                                          <ShieldCheck className="w-3.5 h-3.5"/> Password Aman (Auth)
+                                          <ShieldCheck className="w-3.5 h-3.5"/> Sandi Terenkripsi
                                        </span>
                                      </div>
                                    </td>
                                    <td className="p-3 md:p-4 lg:p-5 text-center">
-                                      <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-blue-500 hover:text-blue-600 p-1.5 md:p-2 hover:bg-blue-50 rounded-full transition-colors mr-1 md:mr-2"><Edit className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5"/></button>
-                                      <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-400 hover:text-red-600 p-1.5 md:p-2 hover:bg-red-50 rounded-full transition-colors"><Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5"/></button>
+                                      <button onClick={() => setResetTarget({ type: 'student', data: s })} className="text-yellow-500 hover:text-yellow-600 p-1.5 md:p-2 hover:bg-yellow-50 rounded-full transition-colors mr-1" title="Atur Ulang Akses Sandi"><Key className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5"/></button>
+                                      <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-blue-500 hover:text-blue-600 p-1.5 md:p-2 hover:bg-blue-50 rounded-full transition-colors mr-1" title="Edit Profil"><Edit className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5"/></button>
+                                      <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-400 hover:text-red-600 p-1.5 md:p-2 hover:bg-red-50 rounded-full transition-colors" title="Hapus Data"><Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5"/></button>
                                    </td>
                                 </tr>
                              ))}
@@ -692,7 +686,9 @@ const AdminView = ({ pengampus, students }) => {
   )
 };
 
-// --- HARIAN VIEW ---
+// ==========================================
+// 7. VIEW: LAPORAN HARIAN (MANDIRI)
+// ==========================================
 const HarianView = ({ students, records, pengampus, user }) => {
   const [selectedDate, setSelectedDate] = useState(getLocalYYYYMMDD(new Date()));
   const [expandedStudent, setExpandedStudent] = useState(null);
@@ -709,7 +705,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
        const yesterday = new Date(today);
        yesterday.setDate(yesterday.getDate() - 1);
        
-       if (yesterday.getDay() === 0) return; // Abaikan hari minggu
+       if (yesterday.getDay() === 0) return;
 
        const yesterdayStr = getLocalYYYYMMDD(yesterday);
        const relevantStudents = user.role === 'pengampu' ? students.filter(s => s.pengampuId === user.id) : students;
@@ -725,7 +721,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
                 studentId: student.id,
                 date: yesterdayStr,
                 presensi: 'Alpha',
-                keterangan: 'Otomatis (Tidak ada laporan pada hari tersebut)',
+                keterangan: 'Tercatat otomatis oleh sistem (Laporan tidak diisi)',
                 autoGenerated: true
              };
              try { await setDoc(doc(db, getCollectionPath('records'), recordId), payload); } 
@@ -763,12 +759,12 @@ const HarianView = ({ students, records, pengampus, user }) => {
 
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-10">
-      <ConfirmModal isOpen={recordToDelete !== null} title="Ulang Laporan?" message="Menghapus laporan akan mengosongkan kembali form setoran hari ini." confirmText="Kosongkan Form" onConfirm={executeDeleteRecord} onCancel={() => setRecordToDelete(null)} />
+      <ConfirmModal isOpen={recordToDelete !== null} title="Ulangi Laporan?" message="Tindakan ini akan mengosongkan kembali form setoran hari ini untuk santri tersebut." confirmText="Kosongkan Form" onConfirm={executeDeleteRecord} onCancel={() => setRecordToDelete(null)} />
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4 bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm">
         <div>
           <h2 className="text-lg md:text-xl lg:text-3xl font-bold text-gray-800">Laporan Harian</h2>
-          <p className="text-xs md:text-sm text-gray-500 mt-1">Isi presensi, ziyadah, dan muraja'ah santri.</p>
+          <p className="text-xs md:text-sm text-gray-500 mt-1">Isi presensi, setoran ziyadah, dan muraja'ah santri Anda.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3 w-full sm:w-auto">
           {user.role === 'admin' && (
@@ -778,7 +774,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
             </div>
           )}
           <div className="flex items-center gap-1.5 md:gap-2 bg-gray-50 p-2 md:p-2.5 rounded-xl border border-gray-100 w-full sm:w-auto">
-             <label className="text-xs md:text-sm font-bold text-gray-600 px-1 md:px-2">Tanggal:</label>
+             <label className="text-xs md:text-sm font-bold text-gray-600 px-1 md:px-2">Tanggal Laporan:</label>
              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="border-none bg-white rounded-lg p-1.5 md:p-2 text-xs md:text-sm outline-none font-medium shadow-sm w-full"/>
           </div>
         </div>
@@ -786,7 +782,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
 
       <div className="space-y-4 md:space-y-6 lg:space-y-8">
         {groupedStudents.length === 0 ? (
-          <div className="text-center p-6 md:p-8 bg-white rounded-2xl md:rounded-3xl border border-dashed border-gray-300 text-gray-400 font-medium text-sm md:text-base">Tidak ada santri pada filter terpilih.</div>
+          <div className="text-center p-6 md:p-8 bg-white rounded-2xl md:rounded-3xl border border-dashed border-gray-300 text-gray-400 font-medium text-sm md:text-base">Tidak ada data santri pada filter yang Anda pilih.</div>
         ) : (
           groupedStudents.map(group => (
             <div key={group.pengampu.id} className="space-y-3 md:space-y-4">
@@ -799,13 +795,10 @@ const HarianView = ({ students, records, pengampus, user }) => {
               )}
               {group.students.map(student => {
                 const todayRecord = records.find(r => r.studentId === student.id && r.date === selectedDate);
-                
                 const pastZiyadahs = records.filter(r => r.studentId === student.id && r.date < selectedDate && r.ziyadah && r.ziyadah.toSurah != null).sort((a,b) => b.date.localeCompare(a.date));
                 const lastZiyadah = pastZiyadahs.length > 0 ? pastZiyadahs[0].ziyadah : null;
-
                 const pastMurajaahs = records.filter(r => r.studentId === student.id && r.date < selectedDate && r.murajaah && r.murajaah.toJuz != null).sort((a,b) => b.date.localeCompare(a.date));
                 const lastMurajaah = pastMurajaahs.length > 0 ? pastMurajaahs[0].murajaah : null;
-
                 const isExpanded = expandedStudent === student.id;
 
                 return (
@@ -827,20 +820,20 @@ const HarianView = ({ students, records, pengampus, user }) => {
                               <span className={`px-2.5 md:px-3 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-wide mb-1 md:mb-1.5 ${todayRecord.presensi === 'Hadir' ? 'bg-green-100 text-green-700' : todayRecord.presensi === 'Alpha' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{todayRecord.presensi}</span>
                               {todayRecord.presensi === 'Hadir' && (
                                 <div className="text-[10px] md:text-xs font-medium text-gray-600 flex flex-col gap-0.5 md:gap-1">
-                                  {todayRecord.ziyadah && (<div><span className="font-bold text-green-600">Z:</span> {formatZiyadahSurahSafe(todayRecord.ziyadah)} <span className="font-bold text-green-700 ml-1">[{todayRecord.ziyadah.finalScore}]</span></div>)}
-                                  {todayRecord.murajaah && (<div><span className="font-bold text-yellow-600">M:</span> Juz {todayRecord.murajaah.fromJuz === todayRecord.murajaah.toJuz ? todayRecord.murajaah.fromJuz : `${todayRecord.murajaah.fromJuz}-${todayRecord.murajaah.toJuz}`} <span className="font-bold text-yellow-700 ml-1">[{todayRecord.murajaah.finalScore}]</span></div>)}
+                                  {todayRecord.ziyadah && (<div><span className="font-bold text-green-600">Ziyadah:</span> {formatZiyadahSurahSafe(todayRecord.ziyadah)} <span className="font-bold text-green-700 ml-1">[{todayRecord.ziyadah.finalScore}]</span></div>)}
+                                  {todayRecord.murajaah && (<div><span className="font-bold text-yellow-600">Muraja'ah:</span> Juz {todayRecord.murajaah.fromJuz === todayRecord.murajaah.toJuz ? todayRecord.murajaah.fromJuz : `${todayRecord.murajaah.fromJuz}-${todayRecord.murajaah.toJuz}`} <span className="font-bold text-yellow-700 ml-1">[{todayRecord.murajaah.finalScore}]</span></div>)}
                                 </div>
                               )}
                               {todayRecord.presensi !== 'Hadir' && (<div className="text-[10px] md:text-xs text-gray-500 truncate w-32 md:w-48"><span className="font-bold">Ket:</span> {todayRecord.keterangan || '-'}</div>)}
                             </div>
                             <div className="flex sm:flex-col gap-1 md:gap-1.5 border-l-0 sm:border-l border-gray-200 pl-0 sm:pl-2 md:pl-3 shrink-0">
-                               <button onClick={(e) => { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); }} className={`p-1.5 md:p-2 rounded-lg md:rounded-xl transition-colors ${isExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'}`}><Edit className="w-4 h-4 md:w-5 md:h-5"/></button>
-                               <button onClick={(e) => { e.stopPropagation(); setRecordToDelete(todayRecord.id); }} className="p-1.5 md:p-2 rounded-lg md:rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors"><RotateCcw className="w-4 h-4 md:w-5 md:h-5"/></button>
+                               <button onClick={(e) => { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); }} className={`p-1.5 md:p-2 rounded-lg md:rounded-xl transition-colors ${isExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-600'}`} title="Ubah Laporan"><Edit className="w-4 h-4 md:w-5 md:h-5"/></button>
+                               <button onClick={(e) => { e.stopPropagation(); setRecordToDelete(todayRecord.id); }} className="p-1.5 md:p-2 rounded-lg md:rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors" title="Ulangi (Kosongkan)"><RotateCcw className="w-4 h-4 md:w-5 md:h-5"/></button>
                             </div>
                           </div>
                         ) : (
                           <div className="flex items-center justify-between w-full gap-3 md:gap-4">
-                             <span className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm font-bold bg-gray-50 text-gray-500 border border-gray-200">Belum diisi</span>
+                             <span className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm font-bold bg-gray-50 text-gray-500 border border-gray-200">Menunggu Laporan</span>
                              <div className={`p-1.5 md:p-2 rounded-full transition-colors ${isExpanded ? 'bg-gray-100' : ''}`}>{isExpanded ? <ChevronUp className="w-5 h-5 md:w-6 md:h-6 text-gray-600" /> : <ChevronDown className="w-5 h-5 md:w-6 md:h-6 text-gray-400" />}</div>
                           </div>
                         )}
@@ -858,6 +851,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
   );
 };
 
+// Form Harian Internal
 const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMurajaah, onSaveSuccess }) => {
   const getAyahCount = (surahIdx) => QURAN_SURAHS[surahIdx]?.[1] || 0;
 
@@ -898,7 +892,7 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
   
   const handleSave = async () => {
     if (!presensi) { setErrorMsg("Pilih status presensi terlebih dahulu."); return; }
-    if (presensi === 'Izin/Sakit' && !keterangan.trim()) { setErrorMsg("Mohon isi keterangan izin atau sakit."); return; }
+    if (presensi === 'Izin/Sakit' && !keterangan.trim()) { setErrorMsg("Mohon lengkapi keterangan izin atau sakit."); return; }
     
     setErrorMsg(''); setSaving(true);
     
@@ -916,7 +910,7 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
     try { 
        await setDoc(doc(db, getCollectionPath('records'), recordId), payload); 
        onSaveSuccess(); 
-    } catch (error) { setErrorMsg("Gagal menyimpan data."); setSaving(false); }
+    } catch (error) { setErrorMsg("Terjadi kendala saat menyimpan laporan harian."); setSaving(false); }
   };
 
   const ErrorRow = ({ label, penalty, value, onChange, colorTheme }) => {
@@ -982,11 +976,11 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
                       </div>
                    </div>
                    <div className="mt-3 md:mt-4 p-3 md:p-4 rounded-xl md:rounded-2xl border-2 flex items-center justify-between bg-white shadow-sm hover:shadow-md transition-all" style={{ borderColor: theme.primary }}>
-                      <div><p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5 md:mb-1">Skor Penilaian</p><div className="flex items-baseline gap-1.5 md:gap-2"><span className="text-2xl md:text-3xl lg:text-4xl font-black" style={{ color: theme.primary }}>{ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}</span></div></div>
-                      <div className="flex flex-col items-end"><label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 md:mb-2">Ubah Manual</label><input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="-" className="w-16 md:w-20 px-2 md:px-3 py-1.5 md:py-2 text-sm md:text-base font-bold text-center border-2 border-gray-200 rounded-lg md:rounded-xl outline-none focus:border-transparent bg-gray-50 focus:bg-white transition-all" style={{ focusRingColor: theme.secondary, focusRingWidth: '2px' }} /></div>
+                      <div><p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5 md:mb-1">Skor Akhir</p><div className="flex items-baseline gap-1.5 md:gap-2"><span className="text-2xl md:text-3xl lg:text-4xl font-black" style={{ color: theme.primary }}>{ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}</span></div></div>
+                      <div className="flex flex-col items-end"><label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 md:mb-2">Koreksi Manual</label><input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="Otomatis" className="w-16 md:w-20 px-2 md:px-3 py-1.5 md:py-2 text-sm md:text-base font-bold text-center border-2 border-gray-200 rounded-lg md:rounded-xl outline-none focus:border-transparent bg-gray-50 focus:bg-white transition-all" style={{ focusRingColor: theme.secondary, focusRingWidth: '2px' }} /></div>
                    </div>
                 </div>
-             ) : (<div className="flex-1 flex items-center justify-center py-6 md:py-8"><p className="text-xs md:text-sm text-gray-400 italic font-medium">Pengisian Ziyadah Dinonaktifkan.</p></div>)}
+             ) : (<div className="flex-1 flex items-center justify-center py-6 md:py-8"><p className="text-xs md:text-sm text-gray-400 italic font-medium">Borang Ziyadah ditutup sementara.</p></div>)}
           </div>
           
           <div className={`bg-white p-4 md:p-5 lg:p-6 rounded-xl md:rounded-2xl border shadow-sm flex flex-col transition-all ${!isMurajaahActive ? 'border-gray-200 bg-gray-50/50' : 'border-gray-100'}`}>
@@ -1008,11 +1002,11 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
                       </div>
                    </div>
                    <div className="mt-3 md:mt-4 p-3 md:p-4 rounded-xl md:rounded-2xl border-2 flex items-center justify-between bg-white shadow-sm hover:shadow-md transition-all" style={{ borderColor: theme.secondary }}>
-                      <div><p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5 md:mb-1">Skor Penilaian</p><div className="flex items-baseline gap-1.5 md:gap-2"><span className="text-2xl md:text-3xl lg:text-4xl font-black" style={{ color: theme.secondary }}>{murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}</span></div></div>
-                      <div className="flex flex-col items-end"><label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 md:mb-2">Ubah Manual</label><input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="-" className="w-16 md:w-20 px-2 md:px-3 py-1.5 md:py-2 text-sm md:text-base font-bold text-center border-2 border-gray-200 rounded-lg md:rounded-xl outline-none focus:border-transparent bg-gray-50 focus:bg-white transition-all" style={{ focusRingColor: theme.primary, focusRingWidth: '2px' }} /></div>
+                      <div><p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5 md:mb-1">Skor Akhir</p><div className="flex items-baseline gap-1.5 md:gap-2"><span className="text-2xl md:text-3xl lg:text-4xl font-black" style={{ color: theme.secondary }}>{murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}</span></div></div>
+                      <div className="flex flex-col items-end"><label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 md:mb-2">Koreksi Manual</label><input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="Otomatis" className="w-16 md:w-20 px-2 md:px-3 py-1.5 md:py-2 text-sm md:text-base font-bold text-center border-2 border-gray-200 rounded-lg md:rounded-xl outline-none focus:border-transparent bg-gray-50 focus:bg-white transition-all" style={{ focusRingColor: theme.primary, focusRingWidth: '2px' }} /></div>
                    </div>
                 </div>
-             ) : (<div className="flex-1 flex items-center justify-center py-6 md:py-8"><p className="text-xs md:text-sm text-gray-400 italic font-medium">Pengisian Muraja'ah Dinonaktifkan.</p></div>)}
+             ) : (<div className="flex-1 flex items-center justify-center py-6 md:py-8"><p className="text-xs md:text-sm text-gray-400 italic font-medium">Borang Muraja'ah ditutup sementara.</p></div>)}
           </div>
         </div>
       )}
@@ -1032,7 +1026,7 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
                  <textarea 
                     value={keterangan} 
                     onChange={(e) => setKeterangan(e.target.value)} 
-                    placeholder="Tuliskan alasan izin atau sakit di sini. (Contoh: Ananda sedang sakit demam dan batuk sejak semalam...)" 
+                    placeholder="Contoh: Ananda sedang sakit demam dan membutuhkan istirahat..." 
                     className="w-full p-3 md:p-4 text-xs md:text-sm border-2 border-gray-200 rounded-lg md:rounded-xl outline-none bg-white focus:border-gray-400 transition-colors resize-none h-24 md:h-28 font-medium text-gray-700" 
                  />
               </div>
@@ -1043,14 +1037,16 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
       <div className="flex justify-end pt-3 md:pt-4">
         <button onClick={handleSave} disabled={saving} className="w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3 px-6 md:px-8 py-3 md:py-4 rounded-xl text-sm md:text-base text-white font-bold shadow-lg hover:shadow-xl transition-all" style={{ backgroundColor: theme.primary }}>
           {saving ? <div className="animate-spin rounded-full h-5 w-5 md:h-6 md:w-6 border-b-2 border-white"></div> : <Check className="w-5 h-5 md:w-6 md:h-6"/>}
-          {saving ? 'Menyimpan...' : 'Simpan Laporan'}
+          {saving ? 'Menyimpan...' : 'Simpan Laporan Harian'}
         </button>
       </div>
     </div>
   );
 };
 
-// --- REKAP VIEW ---
+// ==========================================
+// 8. VIEW: REKAPITULASI (MANDIRI)
+// ==========================================
 const EditableSelectCell = ({ value, options, onSave }) => (
   <select value={value || ''} onChange={(e) => onSave(e.target.value)} className="w-20 md:w-24 p-1.5 md:p-2 border border-gray-200 rounded-md md:rounded-lg text-xs md:text-sm font-semibold text-gray-700 bg-gray-50 outline-none focus:ring-2 focus:bg-white transition-all">
     <option value="">- SP -</option>{options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -1150,7 +1146,7 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm print:hidden">
         <div>
            <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">Rekapitulasi Bulanan</h2>
-           <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1">Pilih bulan dan halaqah untuk melihat atau mengunduh laporan.</p>
+           <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1">Pilih periode bulan dan kelompok halaqah untuk melihat hasil evaluasi.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full md:w-auto">
           {userRole === 'admin' && (
@@ -1162,8 +1158,8 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
           <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
              <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="border border-gray-200 bg-gray-50 rounded-xl p-2 md:p-2.5 px-3 md:px-4 text-xs md:text-sm outline-none font-bold text-gray-700 flex-1 sm:flex-none focus:bg-white transition-colors min-w-[120px]" />
              <div className="flex gap-2 w-auto">
-                 <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-green-600 text-white text-xs md:text-sm font-bold rounded-xl shadow-md hover:bg-green-700 transition-colors"><Download className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Excel</span></button>
-                 <button onClick={() => window.print()} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-gray-800 text-white text-xs md:text-sm font-bold rounded-xl shadow-md hover:bg-gray-700 transition-colors"><Printer className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Cetak</span></button>
+                 <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-green-600 text-white text-xs md:text-sm font-bold rounded-xl shadow-md hover:bg-green-700 transition-colors"><Download className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Unduh Excel</span></button>
+                 <button onClick={() => window.print()} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-gray-800 text-white text-xs md:text-sm font-bold rounded-xl shadow-md hover:bg-gray-700 transition-colors"><Printer className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Cetak Rekap</span></button>
              </div>
           </div>
         </div>
@@ -1176,19 +1172,19 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
               <tr className="text-[10px] md:text-xs lg:text-sm">
                 <th className="p-2 md:p-3 lg:p-4 font-bold">Nama Santri</th>
                 <th className="p-2 md:p-3 lg:p-4 font-bold">Kls/Smt</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold">Presensi</th>
+                <th className="p-2 md:p-3 lg:p-4 font-bold">Kehadiran</th>
                 <th className="p-2 md:p-3 lg:p-4 font-bold border-l border-white/20">Target %</th>
                 <th className="p-2 md:p-3 lg:p-4 font-bold border-l border-white/20">Ziyadah (Awal - Akhir)</th>
                 <th className="p-2 md:p-3 lg:p-4 font-bold">Rata Z</th>
                 <th className="p-2 md:p-3 lg:p-4 font-bold border-l border-white/20">Muraja'ah (Awal - Akhir)</th>
                 <th className="p-2 md:p-3 lg:p-4 font-bold">Rata M</th>
                 <th className="p-2 md:p-3 lg:p-4 font-bold border-l border-white/20">S.P</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold">Ket</th>
+                <th className="p-2 md:p-3 lg:p-4 font-bold">Keterangan</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-xs md:text-sm">
               {groupedRecap.length === 0 ? (
-                <tr><td colSpan="10" className="p-6 md:p-10 text-center text-gray-400 font-medium italic">Tidak ada data rekapitulasi.</td></tr>
+                <tr><td colSpan="10" className="p-6 md:p-10 text-center text-gray-400 font-medium italic">Data rekapitulasi belum tersedia.</td></tr>
               ) : (
                 groupedRecap.map(group => (
                   <React.Fragment key={group.pengampu.id}>
@@ -1212,20 +1208,20 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
                             </td>
                             <td className="p-2 md:p-3 lg:p-4 text-[10px] md:text-xs border-l border-gray-100">
                               <div className="flex flex-col gap-1 md:gap-1.5">
-                                <span className="bg-gray-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md"><span className="font-bold text-gray-400 mr-1 md:mr-2">A:</span> {row.zStart ? formatZiyadahSurahSafe(row.zStart) : '-'}</span>
-                                <span className="bg-gray-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md"><span className="font-bold text-gray-400 mr-1 md:mr-2">Z:</span> {row.zEnd ? formatZiyadahSurahSafe(row.zEnd) : '-'}</span>
+                                <span className="bg-gray-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md"><span className="font-bold text-gray-400 mr-1 md:mr-2">Awl:</span> {row.zStart ? formatZiyadahSurahSafe(row.zStart) : '-'}</span>
+                                <span className="bg-gray-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md"><span className="font-bold text-gray-400 mr-1 md:mr-2">Akh:</span> {row.zEnd ? formatZiyadahSurahSafe(row.zEnd) : '-'}</span>
                               </div>
                             </td>
                             <td className="p-2 md:p-3 lg:p-4 font-black text-base md:text-lg" style={{ color: theme.primary }}>{row.avgZiyadah}</td>
                             <td className="p-2 md:p-3 lg:p-4 text-[10px] md:text-xs border-l border-gray-100">
                               <div className="flex flex-col gap-1 md:gap-1.5">
-                                <span className="bg-gray-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md"><span className="font-bold text-gray-400 mr-1 md:mr-2">A:</span> {row.mStart ? `Juz ${row.mStart.fromJuz}` : '-'}</span>
-                                <span className="bg-gray-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md"><span className="font-bold text-gray-400 mr-1 md:mr-2">Z:</span> {row.mEnd ? `Juz ${row.mEnd.toJuz}` : '-'}</span>
+                                <span className="bg-gray-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md"><span className="font-bold text-gray-400 mr-1 md:mr-2">Awl:</span> {row.mStart ? `Juz ${row.mStart.fromJuz}` : '-'}</span>
+                                <span className="bg-gray-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md"><span className="font-bold text-gray-400 mr-1 md:mr-2">Akh:</span> {row.mEnd ? `Juz ${row.mEnd.toJuz}` : '-'}</span>
                               </div>
                             </td>
                             <td className="p-2 md:p-3 lg:p-4 font-black text-base md:text-lg" style={{ color: theme.primary }}>{row.avgMurajaah}</td>
                             <td className="p-2 md:p-3 border-l border-gray-100"><EditableSelectCell value={sn.sp} options={SP_OPTIONS} onSave={(val) => handleSaveNote(row.id, 'sp', val)} /></td>
-                            <td className="p-2 md:p-3"><EditableInputCell value={sn.keterangan} placeholder="Ket..." onSave={(val) => handleSaveNote(row.id, 'keterangan', val)} /></td>
+                            <td className="p-2 md:p-3"><EditableInputCell value={sn.keterangan} placeholder="Catatan..." onSave={(val) => handleSaveNote(row.id, 'keterangan', val)} /></td>
                           </tr>
                         )
                     })}
@@ -1240,7 +1236,9 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
   );
 };
 
-// --- WALI DASHBOARD VIEW ---
+// ==========================================
+// 9. VIEW: DASHBOARD WALI (MANDIRI)
+// ==========================================
 const WaliDashboardView = ({ students, records, user }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -1252,8 +1250,8 @@ const WaliDashboardView = ({ students, records, user }) => {
   if (!student) return (
      <div className="flex flex-col items-center justify-center p-6 md:p-10 mt-6 md:mt-10 bg-white rounded-2xl md:rounded-3xl shadow-sm text-center">
         <AlertTriangle className="w-12 h-12 md:w-16 md:h-16 text-yellow-400 mb-3 md:mb-4" />
-        <h3 className="text-lg md:text-xl font-bold text-gray-800">Data Tidak Ditemukan</h3>
-        <p className="text-xs md:text-sm text-gray-500 mt-1 md:mt-2">Data ananda mungkin telah dihapus atau belum diatur oleh admin.</p>
+        <h3 className="text-lg md:text-xl font-bold text-gray-800">Profil Ananda Tidak Ditemukan</h3>
+        <p className="text-xs md:text-sm text-gray-500 mt-1 md:mt-2">Data profil Ananda mungkin telah diperbarui. Silakan hubungi pengurus Markaz.</p>
      </div>
   );
   
@@ -1270,11 +1268,10 @@ const WaliDashboardView = ({ students, records, user }) => {
     <div className="space-y-4 md:space-y-6 pb-10">
       <div className="bg-white p-4 md:p-5 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm">
          <h2 className="text-lg md:text-xl lg:text-3xl font-bold text-gray-800">Dashboard Ananda</h2>
-         <p className="text-[10px] md:text-sm text-gray-500 mt-0.5 md:mt-1">Pantau perkembangan tahfidz dan mutaba'ah harian.</p>
+         <p className="text-[10px] md:text-sm text-gray-500 mt-0.5 md:mt-1">Pantau perkembangan tahfidz dan mutaba'ah harian secara menyeluruh.</p>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
-        {/* Panel Kiri */}
         <div className="lg:col-span-4 space-y-4 md:space-y-6">
            <div className="bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm border-t-4" style={{ borderColor: theme.primary }}>
               <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
@@ -1292,10 +1289,10 @@ const WaliDashboardView = ({ students, records, user }) => {
                  <div className="w-full h-3 md:h-4 bg-gray-100 rounded-full overflow-hidden shadow-inner">
                     <div className="h-full transition-all duration-1000" style={{ width: `${persentase}%`, backgroundColor: persentase >= 100 ? theme.secondary : theme.accent }}></div>
                  </div>
-                 <p className="text-[10px] md:text-xs font-semibold text-gray-500 mt-2 md:mt-3 text-right">{student.juzTercapai || 0} Juz tercapai dari target {targetJuz} Juz</p>
+                 <p className="text-[10px] md:text-xs font-semibold text-gray-500 mt-2 md:mt-3 text-right">Tercapai {student.juzTercapai || 0} Juz dari target {targetJuz} Juz</p>
               </div>
               <div className="bg-gray-50 p-4 md:p-5 mt-4 md:mt-6 rounded-xl md:rounded-2xl border border-gray-100">
-                 <h4 className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 md:mb-3">Target Semester {student.semester}</h4>
+                 <h4 className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 md:mb-3">Target Semester Ini</h4>
                  <div className="flex items-center gap-2 md:gap-3">
                     <Award className={`w-5 h-5 md:w-7 md:h-7 ${persentase >= 100 ? "text-green-500" : "text-gray-400"}`} />
                     <span className={`font-bold text-sm md:text-lg lg:text-xl ${persentase >= 100 ? 'text-green-600' : 'text-gray-600'}`}>Selesai {targetJuz} Juz</span>
@@ -1304,7 +1301,6 @@ const WaliDashboardView = ({ students, records, user }) => {
            </div>
         </div>
         
-        {/* Panel Kanan (Kalender) */}
         <div className="lg:col-span-8 h-full">
            <div className="bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl shadow-sm h-full flex flex-col">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4 mb-4 md:mb-6 lg:mb-8">
@@ -1354,18 +1350,14 @@ const WaliDashboardView = ({ students, records, user }) => {
         </div>
       </div>
 
-      {/* Modal Detail Mutabaah */}
+      {/* Modal Detail Mutabaah Wali */}
       {detailModalOpen && selectedRecord && (
          <div className="fixed inset-0 z-[9999] overflow-y-auto">
             <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
             <div className="flex min-h-full p-4 sm:p-6">
                <div className="m-auto relative bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md p-6 sm:p-8 animate-in fade-in zoom-in duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
                   
-                  {/* Header Decoration Line */}
-                  <div 
-                     className="absolute top-0 left-0 w-full h-2 md:h-3" 
-                     style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}
-                  ></div>
+                  <div className="absolute top-0 left-0 w-full h-2 md:h-3" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}></div>
 
                   <div className="flex justify-between items-start mb-6 pt-2">
                      <div>
@@ -1376,11 +1368,8 @@ const WaliDashboardView = ({ students, records, user }) => {
                   </div>
                   
                   <div className="mb-6 flex flex-col items-center bg-gray-50 py-4 md:py-5 rounded-2xl border border-gray-100">
-                     <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 md:mb-3">Status Presensi</p>
-                     <span 
-                        className="inline-flex px-6 md:px-8 py-2 md:py-2.5 rounded-full text-sm md:text-base font-black uppercase tracking-widest text-white shadow-md transition-transform"
-                        style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}
-                     >
+                     <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 md:mb-3">Status Kehadiran</p>
+                     <span className="inline-flex px-6 md:px-8 py-2 md:py-2.5 rounded-full text-sm md:text-base font-black uppercase tracking-widest text-white shadow-md transition-transform" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}>
                         {selectedRecord.presensi}
                      </span>
                   </div>
@@ -1399,12 +1388,12 @@ const WaliDashboardView = ({ students, records, user }) => {
                                  </div>
                               </div>
                               <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai</p>
+                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai Evaluasi</p>
                                  <span className="text-xl md:text-2xl font-black" style={{ color: theme.primary }}>{selectedRecord.ziyadah.finalScore}</span>
                               </div>
                            </div>
                         ) : (
-                           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Ziyadah</div>
+                           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Setoran Ziyadah belum tercatat</div>
                         )}
                         
                         {selectedRecord.murajaah ? (
@@ -1419,12 +1408,12 @@ const WaliDashboardView = ({ students, records, user }) => {
                                  </div>
                               </div>
                               <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai</p>
+                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai Evaluasi</p>
                                  <span className="text-xl md:text-2xl font-black" style={{ color: theme.secondary }}>{selectedRecord.murajaah.finalScore}</span>
                               </div>
                            </div>
                         ) : (
-                           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Tidak ada setoran Muraja'ah</div>
+                           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400">Setoran Muraja'ah belum tercatat</div>
                         )}
                      </div>
                   )}
@@ -1432,7 +1421,7 @@ const WaliDashboardView = ({ students, records, user }) => {
                   {selectedRecord.presensi === 'Izin/Sakit' && (
                      <div className="bg-yellow-50 p-5 rounded-2xl border border-yellow-100 flex flex-col items-center text-center mt-2">
                         <AlertCircle className="w-6 h-6 text-yellow-500 mb-2"/>
-                        <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Izin/Sakit</p>
+                        <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Pengampu</p>
                         <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || '-'}</p>
                      </div>
                   )}
@@ -1440,12 +1429,12 @@ const WaliDashboardView = ({ students, records, user }) => {
                   {selectedRecord.presensi === 'Alpha' && (
                      <div className="bg-red-50 p-5 rounded-2xl border border-red-100 flex flex-col items-center text-center mt-2">
                         <AlertTriangle className="w-6 h-6 text-red-500 mb-2"/>
-                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Alpha</p>
-                        <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || 'Tanpa keterangan'}</p>
+                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1.5 md:mb-2">Catatan Sistem</p>
+                        <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || 'Tanpa keterangan lebih lanjut'}</p>
                      </div>
                   )}
 
-                  <button onClick={() => setDetailModalOpen(false)} className="mt-8 w-full py-3 md:py-3.5 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Tutup Detail</button>
+                  <button onClick={() => setDetailModalOpen(false)} className="mt-8 w-full py-3 md:py-3.5 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Tutup Detail Laporan</button>
                </div>
             </div>
          </div>
@@ -1454,7 +1443,9 @@ const WaliDashboardView = ({ students, records, user }) => {
   );
 };
 
-// --- RENDER APP INTI ---
+// ==========================================
+// 10. ERROR BOUNDARY & APP STARTER
+// ==========================================
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -1470,22 +1461,16 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-red-50 p-6 flex flex-col items-center justify-center font-sans">
-          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-2xl w-full border-t-8 border-red-500">
-            <div className="flex flex-col items-center text-center mb-6">
-              <AlertTriangle className="w-16 h-16 text-red-500 mb-4 animate-pulse" />
-              <h1 className="text-xl md:text-2xl font-black text-gray-800">Sistem Mengalami Crash!</h1>
-              <p className="text-gray-600 mt-2 text-sm md:text-base">
-                Layar putih berhasil dicegah. Silakan <b>fotokan/copy</b> teks merah di bawah ini dan kirimkan ke saya agar saya bisa langsung memperbaiki sumber masalahnya:
-              </p>
-            </div>
-            <div className="bg-red-900 text-red-100 p-4 rounded-xl text-left text-xs md:text-sm font-mono overflow-auto max-h-64 shadow-inner border border-red-950">
-              <strong>Error:</strong> {this.state.error && this.state.error.toString()}
-              <br/><br/>
-              <strong>Stack Trace:</strong>
-              <br/>
-              {this.state.errorInfo && this.state.errorInfo.componentStack}
-            </div>
+        <div className="min-h-screen bg-gray-50 p-6 flex flex-col items-center justify-center font-sans">
+          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-lg w-full text-center border-t-8 border-gray-400">
+            <AlertTriangle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h1 className="text-xl md:text-2xl font-black text-gray-800">Mohon Maaf, Terjadi Kendala Sistem</h1>
+            <p className="text-gray-500 mt-3 text-sm md:text-base leading-relaxed">
+              Sistem kami sedang mengalami sedikit gangguan. Jangan khawatir, data Anda tetap aman. Silakan segarkan (muat ulang) halaman ini untuk mencoba kembali.
+            </p>
+            <button onClick={() => window.location.reload()} className="mt-6 px-6 py-3 bg-gray-800 text-white font-bold rounded-xl shadow-md hover:bg-gray-700 transition-colors">
+               Muat Ulang Halaman
+            </button>
           </div>
         </div>
       );
@@ -1504,12 +1489,12 @@ function AppStarter() {
       <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-yellow-50 font-sans">
          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl max-w-lg text-center border-t-8 border-yellow-500">
              <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-bounce" />
-             <h1 className="text-xl md:text-2xl font-black text-gray-800 mb-3">Peringatan: Konfigurasi Kosong</h1>
+             <h1 className="text-xl md:text-2xl font-black text-gray-800 mb-3">Mohon Perhatian</h1>
              <p className="text-gray-600 mb-4 text-sm md:text-base leading-relaxed">
-               Aplikasi ditahan untuk menghindari <i>crash</i>. Kunci Firebase belum terbaca dari file <code>.env</code> Anda.
+               Sistem belum dapat memuat karena pengaturan keamanan (Konfigurasi Firebase) belum terbaca secara utuh.
              </p>
-             <p className="text-gray-500 text-xs md:text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
-               Jika file <code>.env</code> sudah diisi dengan awalan <code>VITE_</code>, silakan <b>Refresh / Restart</b> browser StackBlitz Anda.
+             <p className="text-gray-500 text-xs md:text-sm bg-gray-50 p-3 rounded-lg border border-gray-100 font-medium">
+               Silakan periksa kembali berkas pengaturan (.env) dan pastikan Anda memuat ulang (Refresh) halaman ini.
              </p>
          </div>
       </div>
