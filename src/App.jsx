@@ -48,8 +48,6 @@ try {
 
 const currentAppId = typeof __app_id !== 'undefined' ? __app_id : (firebaseConfig.appId || 'markaz-app');
 const getCollectionPath = (colName) => `artifacts/${currentAppId}/public/data/${colName}`;
-const getSessionPath = (uid) => `artifacts/${currentAppId}/users/${uid}/session/current`;
-
 
 // ==========================================
 // 2. TEMA DAN DATA REFERENSI (CONSTANTS)
@@ -64,8 +62,8 @@ const theme = {
   warning: '#eab308'
 };
 
-const glassCard = "bg-white/70 backdrop-blur-md border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]";
-const glassInput = "bg-white/50 backdrop-blur-sm border border-white/50 focus:bg-white focus:ring-2 focus:ring-[#54af48]/50 transition-all";
+const glassCard = "bg-white/80 backdrop-blur-xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)]";
+const glassInput = "bg-white/60 backdrop-blur-md border border-white/60 text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-[#54af48]/40 transition-all shadow-inner";
 
 const QURAN_SURAHS = [
   ["Al-Fatihah",7], ["Al-Baqarah",286], ["Ali 'Imran",200], ["An-Nisa'",176], ["Al-Ma'idah",120], ["Al-An'am",165], ["Al-A'raf",206], ["Al-Anfal",75], ["At-Taubah",129], ["Yunus",109],
@@ -111,10 +109,10 @@ const formatZiyadahSurahSafe = (z) => {
 // BACKGROUND GLASSMORPHISM BLOBS (REUSABLE)
 // ==========================================
 const GlassBackground = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-    <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#54af48] rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
-    <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-[#26544d] rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
-    <div className="absolute top-[20%] right-[10%] w-72 h-72 bg-[#f9e653] rounded-full mix-blend-multiply filter blur-[128px] opacity-15"></div>
+  <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#54af48] rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
+    <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-[#26544d] rounded-full mix-blend-multiply filter blur-[128px] opacity-15"></div>
+    <div className="absolute top-[20%] right-[10%] w-[400px] h-[400px] bg-[#f9e653] rounded-full mix-blend-multiply filter blur-[128px] opacity-[0.12]"></div>
   </div>
 );
 
@@ -127,15 +125,17 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
       <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
       <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-        <div className="m-auto bg-white/80 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-sm p-5 md:p-6 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-          <div className="flex items-center gap-3 text-red-600 mb-3 md:mb-4">
-            <AlertTriangle className="w-6 h-6 md:w-7 md:h-7" />
-            <h3 className="text-lg md:text-xl font-bold text-gray-800">{title}</h3>
+        <div className="m-auto bg-white/90 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-sm p-6 md:p-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center gap-4 text-red-600 mb-4">
+            <div className="p-3 bg-red-50 rounded-2xl">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 leading-tight">{title}</h3>
           </div>
-          <p className="text-sm md:text-base text-gray-600 mb-5 md:mb-6 leading-relaxed">{message}</p>
-          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end">
-            <button onClick={onCancel} className="w-full sm:w-auto px-4 py-2 md:py-2.5 rounded-xl font-semibold text-sm md:text-base text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 transition-colors shadow-sm">Batal</button>
-            <button onClick={onConfirm} className="w-full sm:w-auto px-4 py-2 md:py-2.5 rounded-xl font-semibold text-sm md:text-base bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/30 transition-colors">{confirmText}</button>
+          <p className="text-sm md:text-base text-gray-600 mb-6 leading-relaxed">{message}</p>
+          <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end">
+            <button onClick={onCancel} className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-sm md:text-base text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 transition-colors shadow-sm">Batal</button>
+            <button onClick={onConfirm} className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-sm md:text-base bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/30 transition-transform active:scale-95">{confirmText}</button>
           </div>
         </div>
       </div>
@@ -161,49 +161,51 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
       <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
       <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-        <div className="m-auto bg-white/90 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-5 md:p-6 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-          <div className="flex items-center justify-between mb-4 md:mb-6">
-            <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Edit className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> 
-              Edit {isStudent ? 'Data Santri' : 'Data Pengampu'}
+        <div className="m-auto bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-6 md:p-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-3">
+              <div className="p-2.5 bg-[#26544d]/10 rounded-xl">
+                 <Edit className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> 
+              </div>
+              Edit {isStudent ? 'Data Santri' : 'Pengampu'}
             </h3>
-            <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1.5 bg-gray-100/50 rounded-full transition-colors"><X className="w-4 h-4 md:w-5 md:h-5"/></button>
+            <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-2 bg-gray-100/50 hover:bg-gray-200/50 rounded-full transition-colors"><X className="w-5 h-5"/></button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
             <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Nama Lengkap</label>
-              <input required type="text" name="name" value={formData.name || ''} onChange={handleChange} className={`w-full p-2.5 md:p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} />
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nama Lengkap</label>
+              <input required type="text" name="name" value={formData.name || ''} onChange={handleChange} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} />
             </div>
             
             {isStudent && (
               <>
-                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Kelas</label>
-                    <select name="kelas" value={formData.kelas || '1'} onChange={handleChange} className={`w-full p-2.5 md:p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`}>
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Kelas</label>
+                    <select name="kelas" value={formData.kelas || '1'} onChange={handleChange} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`}>
                       <option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Semester</label>
-                    <select name="semester" value={formData.semester || '1'} onChange={handleChange} className={`w-full p-2.5 md:p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`}>
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Semester</label>
+                    <select name="semester" value={formData.semester || '1'} onChange={handleChange} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`}>
                       {[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Halaqah</label>
-                    <select name="pengampuId" value={formData.pengampuId || ''} onChange={handleChange} className={`w-full p-2.5 md:p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`}>
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Halaqah</label>
+                    <select name="pengampuId" value={formData.pengampuId || ''} onChange={handleChange} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`}>
                       {pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Target Tercapai</label>
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Target Tercapai</label>
                     <div className="flex">
-                      <input type="number" min="0" max="30" name="juzTercapai" value={formData.juzTercapai || 0} onChange={handleChange} className={`w-full p-2.5 md:p-3 border-r-0 rounded-l-xl text-sm md:text-base outline-none ${glassInput}`} />
-                      <span className="bg-white/50 backdrop-blur-sm p-2.5 md:p-3 border border-white/50 border-l-0 rounded-r-xl text-[10px] md:text-sm text-gray-500 font-medium">Juz</span>
+                      <input type="number" min="0" max="30" name="juzTercapai" value={formData.juzTercapai || 0} onChange={handleChange} className={`w-full p-3 border-r-0 rounded-l-xl text-sm md:text-base outline-none ${glassInput}`} />
+                      <span className="bg-white/70 backdrop-blur-sm p-3 border border-white/50 border-l-0 rounded-r-xl text-xs text-gray-500 font-bold">Juz</span>
                     </div>
                   </div>
                 </div>
@@ -211,14 +213,14 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
             )}
 
             <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username <span className="lowercase font-medium">(Tetap)</span></label>
-              <input type="text" name="username" value={formData.username || ''} disabled className="w-full p-2.5 md:p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-100/50 text-gray-500 cursor-not-allowed outline-none" />
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Username <span className="lowercase font-medium">(Tetap)</span></label>
+              <input type="text" name="username" value={formData.username || ''} disabled className="w-full p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-100/50 text-gray-400 cursor-not-allowed outline-none font-medium" />
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-2 md:gap-3 justify-end pt-4 md:pt-6 mt-4 md:mt-6 border-t border-gray-200/50">
-              <button type="button" onClick={onCancel} className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-white hover:bg-gray-50 transition-colors w-full sm:w-auto shadow-sm border border-gray-200">Batal</button>
-              <button type="submit" className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-white shadow-lg transition-transform w-full sm:w-auto flex justify-center items-center gap-2 hover:opacity-90" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50` }}>
-                <Check className="w-4 h-4 md:w-5 md:h-5"/> Simpan
+            <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-6 mt-6 border-t border-gray-200/50">
+              <button type="button" onClick={onCancel} className="px-5 py-3 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-white hover:bg-gray-50 transition-colors w-full sm:w-auto shadow-sm border border-gray-200">Batal</button>
+              <button type="submit" className="px-5 py-3 rounded-xl font-bold text-sm md:text-base text-white shadow-lg transition-transform active:scale-95 w-full sm:w-auto flex justify-center items-center gap-2 hover:opacity-90" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50` }}>
+                <Check className="w-5 h-5"/> Simpan Data
               </button>
             </div>
           </form>
@@ -252,36 +254,39 @@ const ResetAccessModal = ({ isOpen, target, onSave, onCancel }) => {
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
       <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
       <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-        <div className="m-auto bg-white/90 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-5 md:p-6 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Key className="w-5 h-5 md:w-6 md:h-6 text-yellow-500"/> Atur Ulang Akses
+        <div className="m-auto bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-6 md:p-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-3">
+              <div className="p-2.5 bg-[#f9e653]/20 rounded-xl">
+                 <Key className="w-5 h-5 md:w-6 md:h-6 text-yellow-600"/>
+              </div>
+              Atur Ulang Akses
             </h3>
-            <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 md:p-1.5 bg-gray-100/50 rounded-full transition-colors"><X className="w-4 h-4 md:w-5 md:h-5"/></button>
+            <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-2 bg-gray-100/50 hover:bg-gray-200/50 rounded-full transition-colors"><X className="w-5 h-5"/></button>
           </div>
           
-          <div className="bg-yellow-50/80 backdrop-blur-sm p-3 md:p-4 rounded-xl border border-yellow-200/50 mb-4 md:mb-6 shadow-inner">
+          <div className="bg-yellow-50/80 backdrop-blur-sm p-4 rounded-xl border border-yellow-200/50 mb-6 shadow-inner">
              <p className="text-xs md:text-sm text-yellow-800 font-medium leading-relaxed">
-               Untuk menjaga privasi, sandi lama tidak dapat dilihat oleh Admin. Silakan buat <b>username baru</b> (atau tambahkan angka) dan sandi yang baru. Data riwayat santri akan tetap tersambung dengan aman.
+               Untuk menjaga privasi, sandi lama tidak dapat dilihat. Silakan buat <b>username baru</b> (atau tambah angka) dan sandi yang baru. Data riwayat santri akan tetap aman.
              </p>
           </div>
 
-          {error && <div className="p-3 bg-red-50/80 backdrop-blur-sm text-red-600 rounded-xl text-xs md:text-sm font-bold border border-red-200/50 flex items-start gap-2 mb-4 shadow-inner"><AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/> {error}</div>}
+          {error && <div className="p-4 bg-red-50/80 backdrop-blur-sm text-red-600 rounded-xl text-xs md:text-sm font-bold border border-red-200/50 flex items-start gap-2 mb-5 shadow-inner"><AlertCircle className="w-5 h-5 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span></div>}
 
-          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
             <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Username Baru</label>
-              <input required type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} className={`w-full p-2.5 md:p-3 rounded-xl text-sm md:text-base outline-none ${glassInput} focus:ring-yellow-400/50`} />
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Username Baru</label>
+              <input required type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput} focus:ring-yellow-400/50`} />
             </div>
             <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1">Sandi Baru (Min. 6 Karakter)</label>
-              <input required type="text" minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={`w-full p-2.5 md:p-3 rounded-xl text-sm md:text-base outline-none ${glassInput} focus:ring-yellow-400/50`} />
+              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Sandi Baru</label>
+              <input required type="text" minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput} focus:ring-yellow-400/50`} />
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-2 md:gap-3 justify-end pt-4 md:pt-6 mt-4 md:mt-6 border-t border-gray-200/50">
-              <button type="button" onClick={onCancel} className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors w-full sm:w-auto shadow-sm">Batal</button>
-              <button type="submit" disabled={isProcessing} className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold text-sm md:text-base text-gray-800 bg-[#f9e653] hover:bg-[#e0cf4a] shadow-lg shadow-[#f9e653]/30 transition-transform w-full sm:w-auto flex justify-center items-center gap-2">
-                {isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-800"></div> : <Key className="w-4 h-4 md:w-5 md:h-5"/>} 
+            <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-6 mt-6 border-t border-gray-200/50">
+              <button type="button" onClick={onCancel} className="px-5 py-3 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors w-full sm:w-auto shadow-sm">Batal</button>
+              <button type="submit" disabled={isProcessing} className="px-5 py-3 rounded-xl font-bold text-sm md:text-base text-gray-800 bg-[#f9e653] hover:bg-[#e0cf4a] shadow-lg shadow-[#f9e653]/30 transition-transform active:scale-95 w-full sm:w-auto flex justify-center items-center gap-2">
+                {isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-800"></div> : <Key className="w-5 h-5"/>} 
                 {isProcessing ? 'Memproses...' : 'Terapkan Akses'}
               </button>
             </div>
@@ -324,7 +329,7 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
            else throw new Error("Profil tidak ditemukan. Silakan hubungi Admin.");
          } else if (role === 'wali') {
            const user = students.find(s => s.username === username);
-           if (user) onLogin({ role: 'wali', name: `Wali ${user.name}`, studentId: user.id });
+           if (user) onLogin({ role: 'wali', name: user.name, studentId: user.id });
            else throw new Error("Profil tidak ditemukan. Silakan hubungi Admin.");
          }
        }
@@ -337,24 +342,24 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-6 bg-[#f0f4f3] relative overflow-hidden">
       <GlassBackground />
-      <div className={`relative z-10 p-6 md:p-8 rounded-3xl w-full max-w-[90%] sm:max-w-md ${glassCard} border-t-[6px]`} style={{ borderTopColor: theme.primary }}>
-        <div className="text-center mb-6 md:mb-8">
-          <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 md:mb-4 bg-white rounded-2xl shadow-lg flex items-center justify-center border border-gray-100">
+      <div className={`relative z-10 p-6 md:p-10 rounded-[2rem] w-full max-w-[90%] sm:max-w-md ${glassCard} border-t-[8px]`} style={{ borderTopColor: theme.primary }}>
+        <div className="text-center mb-8 md:mb-10">
+          <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-5 bg-white rounded-2xl shadow-lg flex items-center justify-center border border-gray-100">
              <BookOpen className="w-8 h-8 md:w-10 md:h-10" style={{ color: theme.primary }} />
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">Markaz Digiport</h1>
-          <p className="text-xs md:text-sm text-gray-500 font-medium mt-1">Sistem Presensi & Mutaba'ah Santri</p>
+          <p className="text-xs md:text-sm text-gray-500 font-medium mt-1.5">Sistem Presensi & Mutaba'ah Santri</p>
         </div>
 
         <div className="flex bg-gray-100/50 backdrop-blur-sm p-1.5 rounded-xl mb-6 md:mb-8 border border-white/50 shadow-inner">
-          <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 md:py-2.5 text-xs md:text-sm font-bold rounded-lg transition-all ${role === 'wali' ? 'bg-white text-gray-800 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
-          <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 md:py-2.5 text-xs md:text-sm font-bold rounded-lg transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
-          <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 md:py-2.5 text-xs md:text-sm font-bold rounded-lg transition-all ${role === 'admin' ? 'bg-white text-gray-800 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
+          <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs md:text-sm font-bold rounded-lg transition-all ${role === 'wali' ? 'bg-white text-gray-800 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
+          <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs md:text-sm font-bold rounded-lg transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
+          <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs md:text-sm font-bold rounded-lg transition-all ${role === 'admin' ? 'bg-white text-gray-800 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
         </div>
 
         {error && (
-           <div className="mb-4 md:mb-5 p-3 md:p-3.5 bg-red-50/80 backdrop-blur-sm text-red-600 rounded-xl text-xs md:text-sm font-bold border border-red-200/50 flex items-start gap-2 shadow-inner">
-             <AlertCircle className="w-4 h-4 md:w-5 md:h-5 shrink-0 mt-0.5"/> <span className="leading-tight">{error}</span>
+           <div className="mb-5 p-3.5 md:p-4 bg-red-50/80 backdrop-blur-sm text-red-600 rounded-xl text-xs md:text-sm font-bold border border-red-200/50 flex items-start gap-2.5 shadow-inner">
+             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span>
            </div>
         )}
 
@@ -362,19 +367,19 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
           <div>
              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Username</label>
              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none"><User className="w-4 h-4 md:w-5 md:h-5 text-gray-400" /></div>
-                <input required type="text" value={username} onChange={e => setUsername(e.target.value.replace(/\s+/g, ''))} className={`w-full pl-9 md:pl-11 pr-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan username" />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><User className="w-5 h-5 text-gray-400" /></div>
+                <input required type="text" value={username} onChange={e => setUsername(e.target.value.replace(/\s+/g, ''))} className={`w-full pl-11 pr-4 py-3 md:py-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan username" />
              </div>
           </div>
           <div>
              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Kata Sandi</label>
              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none"><Lock className="w-4 h-4 md:w-5 md:h-5 text-gray-400" /></div>
-                <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className={`w-full pl-9 md:pl-11 pr-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan kata sandi" />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="w-5 h-5 text-gray-400" /></div>
+                <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className={`w-full pl-11 pr-4 py-3 md:py-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan kata sandi" />
              </div>
           </div>
           
-          <button type="submit" disabled={loading} className="w-full mt-3 md:mt-4 p-3 md:p-4 rounded-xl text-white text-sm md:text-base font-bold shadow-xl hover:opacity-90 transition-all flex justify-center items-center" style={{ backgroundColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c', shadowColor: `${role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c'}50`, opacity: loading ? 0.7 : 1 }}>
+          <button type="submit" disabled={loading} className="w-full mt-4 md:mt-6 p-3.5 md:p-4 rounded-xl text-white text-sm md:text-base font-bold shadow-xl hover:opacity-90 active:scale-95 transition-all flex justify-center items-center" style={{ backgroundColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c', shadowColor: `${role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c'}50`, opacity: loading ? 0.7 : 1 }}>
             {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk'}
           </button>
         </form>
@@ -408,31 +413,32 @@ const SettingsView = () => {
 
   return (
      <div className="space-y-4 md:space-y-6 pb-10">
-        <div className={`p-4 md:p-6 lg:p-8 rounded-3xl max-w-2xl ${glassCard}`}>
-           <h2 className="text-lg md:text-xl lg:text-3xl font-bold text-gray-800 flex items-center gap-3">
-             <Key className="w-6 h-6 md:w-8 md:h-8" style={{ color: theme.primary }}/> Pengaturan Akun
+        <div className={`p-5 md:p-8 lg:p-10 rounded-3xl max-w-2xl ${glassCard}`}>
+           <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 flex items-center gap-3 md:gap-4">
+             <div className="p-3 bg-[#26544d]/10 rounded-2xl"><Key className="w-6 h-6 md:w-8 md:h-8" style={{ color: theme.primary }}/></div>
+             Pengaturan Akun
            </h2>
-           <p className="text-xs md:text-sm text-gray-500 mt-1.5 md:mt-2">Kelola kata sandi Anda secara berkala demi keamanan akun.</p>
+           <p className="text-sm text-gray-500 mt-2 md:mt-3">Kelola kata sandi Anda secara berkala demi keamanan akun.</p>
            
-           <hr className="my-6 border-gray-200/50" />
+           <hr className="my-6 md:my-8 border-gray-200/50" />
 
            {status.msg && (
-              <div className={`p-3 md:p-4 rounded-xl mb-6 text-xs md:text-sm font-bold flex items-start gap-2 shadow-inner ${status.type === 'error' ? 'bg-red-50/80 backdrop-blur-sm text-red-600 border border-red-200/50' : 'bg-green-50/80 backdrop-blur-sm text-green-600 border border-green-200/50'}`}>
-                 {status.type === 'error' ? <AlertCircle className="w-5 h-5 shrink-0"/> : <Check className="w-5 h-5 shrink-0"/>}
-                 <span className="leading-relaxed">{status.msg}</span>
+              <div className={`p-4 md:p-5 rounded-2xl mb-6 md:mb-8 text-sm font-bold flex items-start gap-3 shadow-inner ${status.type === 'error' ? 'bg-red-50/80 backdrop-blur-sm text-red-600 border border-red-200/50' : 'bg-green-50/80 backdrop-blur-sm text-green-600 border border-green-200/50'}`}>
+                 {status.type === 'error' ? <AlertCircle className="w-6 h-6 shrink-0"/> : <Check className="w-6 h-6 shrink-0"/>}
+                 <span className="leading-relaxed mt-0.5">{status.msg}</span>
               </div>
            )}
 
-           <form onSubmit={handleUpdate} className="space-y-4 md:space-y-5">
+           <form onSubmit={handleUpdate} className="space-y-5 md:space-y-6">
               <div>
                  <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Kata Sandi Baru</label>
                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none"><Lock className="w-4 h-4 md:w-5 md:h-5 text-gray-400" /></div>
-                    <input type="text" required minLength={6} value={newPassword} onChange={e => setNewPassword(e.target.value)} className={`w-full pl-9 md:pl-11 pr-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Masukkan minimal 6 karakter" />
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="w-5 h-5 text-gray-400" /></div>
+                    <input type="text" required minLength={6} value={newPassword} onChange={e => setNewPassword(e.target.value)} className={`w-full pl-11 pr-4 py-3 md:py-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Masukkan minimal 6 karakter" />
                  </div>
               </div>
-              <button type="submit" disabled={loading} className="w-full sm:w-auto px-6 py-2.5 md:py-3 rounded-xl text-white text-sm md:text-base font-bold shadow-lg transition-transform flex justify-center items-center gap-2 hover:opacity-90" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50`, opacity: loading ? 0.7 : 1 }}>
-                 {loading ? <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-b-2 border-white"></div> : <Key className="w-4 h-4 md:w-5 md:h-5"/>}
+              <button type="submit" disabled={loading} className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-white text-sm md:text-base font-bold shadow-lg transition-transform active:scale-95 flex justify-center items-center gap-2.5 hover:opacity-90" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50`, opacity: loading ? 0.7 : 1 }}>
+                 {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Key className="w-5 h-5"/>}
                  Perbarui Kata Sandi
               </button>
            </form>
@@ -475,7 +481,7 @@ const AdminView = ({ pengampus, students }) => {
       const authUid = await createFirebaseAuthUser(newPengampu.username.replace(/\s+/g, ''), newPengampu.password);
       await setDoc(doc(db, getCollectionPath('pengampus'), authUid), { id: authUid, name: newPengampu.name, username: newPengampu.username.replace(/\s+/g, '') });
       setNewPengampu({ name: '', username: '', password: '' });
-    } catch (err) { setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah digunakan." : "Gagal mendaftarkan akun ke sistem."); } finally { setIsProcessing(false); }
+    } catch (err) { setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah digunakan." : "Gagal mendaftarkan akun."); } finally { setIsProcessing(false); }
   };
 
   const handleAddStudent = async (e, pengampuId) => {
@@ -489,7 +495,7 @@ const AdminView = ({ pengampus, students }) => {
         semester: parseInt(newStudent.semester), juzTercapai: parseInt(newStudent.juzTercapai), kelas: newStudent.kelas
       });
       setNewStudent({ name: '', kelas: '1', semester: '1', username: '', password: '', juzTercapai: 0 });
-    } catch (err) { setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah digunakan." : "Gagal mendaftarkan akun ke sistem."); } finally { setIsProcessing(false); }
+    } catch (err) { setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah digunakan." : "Gagal mendaftarkan akun."); } finally { setIsProcessing(false); }
   };
 
   const executeDelete = async () => {
@@ -521,52 +527,49 @@ const AdminView = ({ pengampus, students }) => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-10">
+    <div className="space-y-6 md:space-y-8 pb-10">
       <ConfirmModal isOpen={deleteTarget !== null} title={`Hapus Data ${deleteTarget?.type === 'pengampu' ? 'Pengampu' : 'Santri'}?`} message={`Apakah Anda yakin ingin menghapus profil "${deleteTarget?.name}" secara permanen?`} onConfirm={executeDelete} onCancel={() => setDeleteTarget(null)} />
       <EditModal isOpen={editTarget !== null} target={editTarget} pengampus={pengampus} onSave={executeEdit} onCancel={() => setEditTarget(null)} />
       <ResetAccessModal isOpen={resetTarget !== null} target={resetTarget} onSave={executeResetAccess} onCancel={() => setResetTarget(null)} />
 
-      <div className={`p-4 md:p-6 lg:p-8 rounded-3xl ${glassCard}`}>
-        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
-           <div className="p-2 md:p-3 lg:p-4 bg-white rounded-xl shadow-md border border-gray-100">
-             <UserPlus className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" style={{ color: theme.primary }}/>
+      <div className={`p-5 md:p-8 rounded-3xl ${glassCard}`}>
+        <div className="flex items-center gap-4 mb-6 md:mb-8">
+           <div className="p-3 md:p-4 bg-white/80 rounded-2xl shadow-sm border border-white">
+             <UserPlus className="w-6 h-6 md:w-8 md:h-8" style={{ color: theme.primary }}/>
            </div>
            <div>
-             <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">Tambah Pengampu</h2>
-             <p className="text-[10px] md:text-sm text-gray-500 mt-0.5 md:mt-1">Pendaftaran akun secara otomatis terhubung dengan sistem keamanan berenkripsi.</p>
+             <h2 className="text-xl md:text-2xl font-bold text-gray-800">Tambah Pengampu</h2>
+             <p className="text-xs md:text-sm text-gray-500 mt-1">Pendaftaran akun otomatis terhubung dengan sistem keamanan berenkripsi.</p>
            </div>
         </div>
         
-        {formError && <div className="p-3 md:p-4 bg-red-50/80 backdrop-blur-sm text-red-700 rounded-xl mb-4 md:mb-5 text-xs md:text-sm font-medium border border-red-200/50 flex items-center gap-2 shadow-inner"><AlertCircle className="w-4 h-4"/> {formError}</div>}
+        {formError && <div className="p-4 bg-red-50/80 backdrop-blur-sm text-red-700 rounded-xl mb-5 text-sm font-medium border border-red-200/50 flex items-center gap-2 shadow-inner"><AlertCircle className="w-5 h-5"/> {formError}</div>}
         
-        <form onSubmit={handleAddPengampu} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 items-end">
+        <form onSubmit={handleAddPengampu} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 items-end">
           <div className="w-full">
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Nama Lengkap</label>
-            <input required type="text" value={newPengampu.name} onChange={e=>setNewPengampu({...newPengampu, name: e.target.value})} className={`w-full p-2.5 md:p-3 lg:p-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Misal: Ust. Fulan" />
+            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nama Lengkap</label>
+            <input required type="text" value={newPengampu.name} onChange={e=>setNewPengampu({...newPengampu, name: e.target.value})} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Misal: Ust. Fulan" />
           </div>
           <div className="w-full">
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Username</label>
-            <input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className={`w-full p-2.5 md:p-3 lg:p-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="tanpaspasi" />
+            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Username</label>
+            <input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Tanpa Spasi" />
           </div>
           <div className="w-full">
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1 md:mb-2">Sandi (Min. 6 Karakter)</label>
-            <input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} minLength={6} className={`w-full p-2.5 md:p-3 lg:p-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Minimal 6 karakter" />
+            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Kata Sandi</label>
+            <input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} minLength={6} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Minimal 6 karakter" />
           </div>
-          <button type="submit" disabled={isProcessing} className="w-full p-2.5 md:p-3 lg:p-3.5 rounded-xl text-white font-bold transition-transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg text-sm md:text-base" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50`, opacity: isProcessing ? 0.7 : 1 }}>
-            {isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4 md:w-5 md:h-5"/>} 
+          <button type="submit" disabled={isProcessing} className="w-full p-3 rounded-xl text-white font-bold transition-transform active:scale-95 flex items-center justify-center gap-2 shadow-lg text-sm md:text-base" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50`, opacity: isProcessing ? 0.7 : 1 }}>
+            {isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Plus className="w-5 h-5"/>} 
             {isProcessing ? 'Memproses...' : 'Tambahkan'}
           </button>
         </form>
       </div>
 
-      <div className="space-y-3 md:space-y-4 lg:space-y-5">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-1 md:px-2 gap-3">
-          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2 md:gap-3">
-            <Users className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> Daftar Halaqah & Santri
+      <div className="space-y-4 md:space-y-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 gap-3 mb-2">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3">
+            <Users className="w-6 h-6 md:w-7 md:h-7" style={{ color: theme.primary }}/> Daftar Halaqah & Santri
           </h2>
-          <span className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-green-700 bg-green-100/80 backdrop-blur-sm border border-green-200/50 px-3 py-1.5 rounded-lg shadow-sm">
-             <ShieldCheck className="w-4 h-4"/> Keamanan Aktif (Sandi Terenkripsi)
-          </span>
         </div>
         
         {pengampus.map(pengampu => {
@@ -574,70 +577,70 @@ const AdminView = ({ pengampus, students }) => {
             const pengampuStudents = students.filter(s => s.pengampuId === pengampu.id);
             return (
               <div key={pengampu.id} className={`rounded-3xl transition-all duration-300 overflow-hidden ${glassCard} ${isExpanded ? 'border-[#54af48]/50 shadow-lg' : 'hover:border-white'}`}>
-                <div className="p-3 md:p-5 lg:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer gap-3 md:gap-4" onClick={() => setExpandedPengampuId(isExpanded ? null : pengampu.id)}>
-                  <div className="flex items-center gap-3 md:gap-4 flex-1 w-full">
-                     <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-white font-bold text-lg md:text-xl lg:text-2xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{pengampu.name.charAt(0)}</div>
+                <div className={`p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer gap-4 transition-colors ${isExpanded ? 'bg-white/40' : 'hover:bg-white/40'}`} onClick={() => setExpandedPengampuId(isExpanded ? null : pengampu.id)}>
+                  <div className="flex items-center gap-4 flex-1 w-full">
+                     <div className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{pengampu.name.charAt(0)}</div>
                      <div>
-                        <h3 className="text-base md:text-lg lg:text-xl font-bold text-gray-800 leading-tight">{pengampu.name}</h3>
-                        <div className="flex flex-wrap gap-1.5 md:gap-2 text-[10px] md:text-xs text-gray-500 mt-1 md:mt-1.5">
-                           <span className="bg-white/60 px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg border border-white">ID: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
-                           <span className="bg-[#54af48]/10 text-[#54af48] px-2 md:px-2.5 py-0.5 md:py-1 rounded-md md:rounded-lg border border-[#54af48]/20 flex items-center gap-1 font-semibold">
-                              <ShieldCheck className="w-3 h-3"/> Sandi Terenkripsi
+                        <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-tight">{pengampu.name}</h3>
+                        <div className="flex flex-wrap gap-2 text-xs text-gray-500 mt-1.5">
+                           <span className="bg-white/60 px-2.5 py-1 rounded-md border border-white shadow-sm">ID: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
+                           <span className="bg-[#54af48]/10 text-[#54af48] px-2.5 py-1 rounded-md border border-[#54af48]/20 flex items-center gap-1 font-semibold shadow-sm">
+                              <ShieldCheck className="w-3.5 h-3.5"/> Sandi Terenkripsi
                            </span>
                         </div>
                      </div>
                   </div>
-                  <div className="flex items-center justify-between sm:justify-end gap-3 md:gap-4 w-full sm:w-auto mt-1 md:mt-0 pt-2 sm:pt-0 border-t border-gray-200/50 sm:border-none">
-                     <div className="text-xs md:text-sm font-bold text-gray-600 bg-white/60 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl shadow-inner border border-white">{pengampuStudents.length} Santri</div>
-                     <div className="flex items-center gap-1 md:gap-1.5">
-                        <button onClick={(e) => { e.stopPropagation(); setResetTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#f9e653] p-1.5 md:p-2 lg:p-2.5 hover:bg-[#f9e653]/10 rounded-full transition-colors drop-shadow-sm" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4 md:w-5 md:h-5"/></button>
-                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#54af48] p-1.5 md:p-2 lg:p-2.5 hover:bg-[#54af48]/10 rounded-full transition-colors drop-shadow-sm" title="Edit Profil"><Edit className="w-4 h-4 md:w-5 md:h-5"/></button>
-                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-400 p-1.5 md:p-2 lg:p-2.5 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors drop-shadow-sm" title="Hapus Data"><Trash2 className="w-4 h-4 md:w-5 md:h-5"/></button>
-                        <div className={`p-1 md:p-2 rounded-full transition-colors ml-1 md:ml-2 bg-white/50 shadow-sm border border-white ${isExpanded ? 'text-gray-700' : 'text-gray-400'}`}>{isExpanded ? <ChevronUp className="w-4 h-4 md:w-5 md:h-5" /> : <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />}</div>
+                  <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-gray-200/50 sm:border-none">
+                     <div className="text-xs md:text-sm font-bold text-[#26544d] bg-white/80 px-4 py-2 rounded-xl shadow-sm border border-white">{pengampuStudents.length} Santri</div>
+                     <div className="flex items-center gap-1.5 md:gap-2">
+                        <button onClick={(e) => { e.stopPropagation(); setResetTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#eab308] p-2 hover:bg-[#f9e653]/20 rounded-full transition-colors drop-shadow-sm bg-white/50" title="Atur Ulang Akses Sandi"><Key className="w-5 h-5"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#54af48] p-2 hover:bg-[#54af48]/20 rounded-full transition-colors drop-shadow-sm bg-white/50" title="Edit Profil"><Edit className="w-5 h-5"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-400 p-2 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors drop-shadow-sm bg-white/50" title="Hapus Data"><Trash2 className="w-5 h-5"/></button>
+                        <div className={`p-2 rounded-full transition-colors ml-2 bg-white shadow-sm border border-white/50 ${isExpanded ? 'text-gray-800' : 'text-gray-400'}`}>{isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}</div>
                      </div>
                   </div>
                 </div>
                 
                 {isExpanded && (
-                  <div className="border-t border-white/40 bg-white/30 p-3 md:p-5 lg:p-6 animate-in slide-in-from-top-4 duration-200">
-                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white/60 backdrop-blur-md p-3 md:p-4 lg:p-5 rounded-2xl shadow-sm border border-white mb-4 md:mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4 items-end relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-1.5 h-full" style={{ backgroundColor: theme.secondary }}></div>
-                      <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1 md:mb-1.5 block">Nama Santri Baru</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className={`w-full p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-xs md:text-sm outline-none ${glassInput}`} placeholder="Nama Lengkap" /></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1 md:mb-1.5 block">Kls/Smt</label><div className="flex gap-1.5 md:gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className={`w-1/2 p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-xs md:text-sm outline-none ${glassInput}`}><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className={`w-1/2 p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-xs md:text-sm outline-none ${glassInput}`}>{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1 md:mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className={`w-full p-2 md:p-2.5 lg:p-3 border-r-0 rounded-l-lg md:rounded-l-xl text-xs md:text-sm outline-none ${glassInput}`} /><span className="bg-white/50 p-2 md:p-2.5 lg:p-3 border border-white/50 border-l-0 rounded-r-lg md:rounded-r-xl text-[10px] md:text-xs text-gray-500 font-medium">Juz</span></div></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1 md:mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className={`w-full p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-xs md:text-sm outline-none ${glassInput}`} placeholder="tanpaspasi" /></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1 md:mb-1.5 block">Sandi Akses</label><div className="flex gap-1.5 md:gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className={`w-full p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-xs md:text-sm outline-none ${glassInput}`} placeholder="Minimal 6" /><button type="submit" disabled={isProcessing} className="p-2 md:p-2.5 lg:p-3 rounded-lg md:rounded-xl text-white font-bold transition-transform hover:scale-105 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary, opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4 md:w-5 md:h-5"/>}</button></div></div>
+                  <div className="border-t border-white/40 bg-white/30 p-4 md:p-6 lg:p-8 animate-in slide-in-from-top-4 duration-200">
+                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white/60 backdrop-blur-md p-4 md:p-5 rounded-2xl shadow-sm border border-white mb-6 md:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-2 h-full" style={{ backgroundColor: theme.secondary }}></div>
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Nama Santri</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="Nama Lengkap" /></div>
+                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Kls/Smt</label><div className="flex gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className={`w-1/2 p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className={`w-1/2 p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
+                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className={`w-full p-2.5 md:p-3 border-r-0 rounded-l-xl text-sm outline-none ${glassInput}`} /><span className="bg-white/50 p-2.5 md:p-3 border border-white/50 border-l-0 rounded-r-xl text-[10px] md:text-xs text-gray-500 font-bold">Juz</span></div></div>
+                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="tanpaspasi" /></div>
+                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Kata Sandi</label><div className="flex gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="Minimal 6" /><button type="submit" disabled={isProcessing} className="p-2.5 md:p-3 rounded-xl text-white font-bold transition-transform active:scale-95 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary, opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Plus className="w-5 h-5"/>}</button></div></div>
                     </form>
                     
                     <div className="overflow-x-auto bg-white/70 backdrop-blur-md rounded-2xl border border-white shadow-sm w-full">
-                       <table className="w-full text-left whitespace-nowrap min-w-[600px] md:min-w-[700px]">
-                          <thead className="bg-white/50 text-gray-500 border-b border-white/60 text-[10px] md:text-xs uppercase tracking-wide">
+                       <table className="w-full text-left whitespace-nowrap min-w-[700px]">
+                          <thead className="bg-white/50 text-gray-500 border-b border-white/60 text-xs uppercase tracking-wider">
                              <tr>
-                               <th className="p-3 md:p-4 lg:p-5 font-bold">Nama Santri</th>
-                               <th className="p-3 md:p-4 lg:p-5 font-bold">Kls/Smt</th>
-                               <th className="p-3 md:p-4 lg:p-5 font-bold">Juz</th>
-                               <th className="p-3 md:p-4 lg:p-5 font-bold">Status Keamanan</th>
-                               <th className="p-3 md:p-4 lg:p-5 font-bold text-center">Tindakan</th>
+                               <th className="p-4 lg:p-5 font-bold">Nama Santri</th>
+                               <th className="p-4 lg:p-5 font-bold">Kls/Smt</th>
+                               <th className="p-4 lg:p-5 font-bold">Juz Tercapai</th>
+                               <th className="p-4 lg:p-5 font-bold">Status Keamanan</th>
+                               <th className="p-4 lg:p-5 font-bold text-center">Tindakan</th>
                              </tr>
                           </thead>
-                          <tbody className="divide-y divide-white/40 text-xs md:text-sm">
-                             {pengampuStudents.length === 0 ? <tr><td colSpan="5" className="p-4 md:p-6 text-center text-gray-400 italic">Belum ada data santri yang ditambahkan.</td></tr> : pengampuStudents.map(s => (
+                          <tbody className="divide-y divide-white/40 text-sm">
+                             {pengampuStudents.length === 0 ? <tr><td colSpan="5" className="p-6 md:p-8 text-center text-gray-400 italic">Belum ada data santri yang ditambahkan.</td></tr> : pengampuStudents.map(s => (
                                 <tr key={s.id} className="hover:bg-white/50 transition-colors">
-                                   <td className="p-3 md:p-4 lg:p-5 font-bold text-gray-800">{s.name}</td>
-                                   <td className="p-3 md:p-4 lg:p-5 text-gray-600 font-medium">{s.kelas} / {s.semester}</td>
-                                   <td className="p-3 md:p-4 lg:p-5 font-bold" style={{ color: theme.secondary }}>{s.juzTercapai} Juz</td>
-                                   <td className="p-3 md:p-4 lg:p-5">
-                                     <div className="flex gap-1.5 md:gap-2">
-                                       <span className="bg-white/60 px-2 md:px-2.5 py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-semibold text-gray-600 border border-white">{s.username}</span>
-                                       <span className="bg-[#54af48]/10 text-[#54af48] px-2 md:px-2.5 py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-bold border border-[#54af48]/20 flex items-center gap-1">
+                                   <td className="p-4 lg:p-5 font-bold text-gray-800">{s.name}</td>
+                                   <td className="p-4 lg:p-5 text-gray-600 font-medium">{s.kelas} / {s.semester}</td>
+                                   <td className="p-4 lg:p-5 font-bold" style={{ color: theme.secondary }}>{s.juzTercapai} Juz</td>
+                                   <td className="p-4 lg:p-5">
+                                     <div className="flex gap-2">
+                                       <span className="bg-white/60 px-3 py-1 rounded-lg text-xs font-semibold text-gray-600 border border-white shadow-sm">{s.username}</span>
+                                       <span className="bg-[#54af48]/10 text-[#54af48] px-3 py-1 rounded-lg text-xs font-bold border border-[#54af48]/20 flex items-center gap-1.5 shadow-sm">
                                           <ShieldCheck className="w-3.5 h-3.5"/> Sandi Terenkripsi
                                        </span>
                                      </div>
                                    </td>
-                                   <td className="p-3 md:p-4 lg:p-5 text-center">
-                                      <button onClick={() => setResetTarget({ type: 'student', data: s })} className="text-[#eab308] hover:text-[#ca9a04] p-1.5 md:p-2 hover:bg-yellow-50 rounded-full transition-colors mr-1 drop-shadow-sm" title="Atur Ulang Akses Sandi"><Key className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5"/></button>
-                                      <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-[#54af48] hover:text-[#46933c] p-1.5 md:p-2 hover:bg-green-50 rounded-full transition-colors mr-1 drop-shadow-sm" title="Edit Profil"><Edit className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5"/></button>
-                                      <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-400 hover:text-red-600 p-1.5 md:p-2 hover:bg-red-50 rounded-full transition-colors drop-shadow-sm" title="Hapus Data"><Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5"/></button>
+                                   <td className="p-4 lg:p-5 text-center">
+                                      <button onClick={() => setResetTarget({ type: 'student', data: s })} className="text-[#eab308] hover:text-[#ca9a04] p-2 hover:bg-yellow-50 rounded-full transition-colors mr-1.5 drop-shadow-sm bg-white/50" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4 md:w-5 md:h-5"/></button>
+                                      <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-[#54af48] hover:text-[#46933c] p-2 hover:bg-green-50 rounded-full transition-colors mr-1.5 drop-shadow-sm bg-white/50" title="Edit Profil"><Edit className="w-4 h-4 md:w-5 md:h-5"/></button>
+                                      <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors drop-shadow-sm bg-white/50" title="Hapus Data"><Trash2 className="w-4 h-4 md:w-5 md:h-5"/></button>
                                    </td>
                                 </tr>
                              ))}
@@ -681,7 +684,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
           const hasRecord = records.some(r => r.studentId === student.id && r.date === yesterdayStr);
           if (!hasRecord) {
              const recordId = `${student.id}_${yesterdayStr}`;
-             const payload = { studentId: student.id, date: yesterdayStr, presensi: 'Alpha', keterangan: 'Tercatat otomatis oleh sistem (Laporan tidak diisi)', autoGenerated: true };
+             const payload = { studentId: student.id, date: yesterdayStr, presensi: 'Alpha', keterangan: 'Tercatat otomatis oleh sistem (Laporan kosong)', autoGenerated: true };
              try { await setDoc(doc(db, getCollectionPath('records'), recordId), payload); } catch (e) {}
           }
        }
@@ -707,39 +710,39 @@ const HarianView = ({ students, records, pengampus, user }) => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-10">
+    <div className="space-y-6 md:space-y-8 pb-10">
       <ConfirmModal isOpen={recordToDelete !== null} title="Ulangi Laporan?" message="Tindakan ini akan mengosongkan kembali form setoran hari ini untuk santri tersebut." confirmText="Kosongkan Form" onConfirm={executeDeleteRecord} onCancel={() => setRecordToDelete(null)} />
       
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4 p-4 md:p-6 lg:p-8 rounded-3xl ${glassCard}`}>
+      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 md:p-8 rounded-3xl ${glassCard}`}>
         <div>
-          <h2 className="text-lg md:text-xl lg:text-3xl font-bold text-gray-800">Laporan Harian</h2>
-          <p className="text-xs md:text-sm text-gray-500 mt-1">Isi presensi, ziyadah, dan muraja'ah santri Anda.</p>
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">Laporan Harian</h2>
+          <p className="text-sm text-gray-500 mt-1">Isi presensi, ziyadah, dan muraja'ah santri Anda.</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           {user.role === 'admin' && (
-            <div className="flex items-center gap-1.5 md:gap-2 bg-white/60 backdrop-blur-sm p-2 md:p-2.5 rounded-xl border border-white/50 w-full sm:w-auto shadow-sm">
-              <Filter className="text-gray-400 ml-1 md:ml-2 w-4 h-4 md:w-5 md:h-5" />
-              <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-xs md:text-sm font-bold text-gray-600 p-1 cursor-pointer w-full"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+            <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm p-2.5 rounded-xl border border-white/50 w-full sm:w-auto shadow-sm">
+              <Filter className="text-[#26544d] ml-2 w-5 h-5" />
+              <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-sm font-bold text-gray-700 p-1 cursor-pointer w-full"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
             </div>
           )}
-          <div className="flex items-center gap-1.5 md:gap-2 bg-white/60 backdrop-blur-sm p-2 md:p-2.5 rounded-xl border border-white/50 w-full sm:w-auto shadow-sm">
-             <label className="text-xs md:text-sm font-bold text-gray-600 px-1 md:px-2">Tanggal:</label>
-             <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className={`border-none bg-white rounded-lg p-1.5 md:p-2 text-xs md:text-sm outline-none font-medium shadow-sm w-full ${glassInput}`}/>
+          <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm p-2.5 rounded-xl border border-white/50 w-full sm:w-auto shadow-sm">
+             <label className="text-sm font-bold text-[#26544d] px-2">Tanggal:</label>
+             <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className={`border-none bg-white rounded-lg p-2 text-sm outline-none font-medium shadow-sm w-full ${glassInput}`}/>
           </div>
         </div>
       </div>
 
-      <div className="space-y-4 md:space-y-6 lg:space-y-8">
+      <div className="space-y-5 md:space-y-6 lg:space-y-8">
         {groupedStudents.length === 0 ? (
-          <div className={`text-center p-6 md:p-8 rounded-3xl border border-dashed border-gray-300 text-gray-400 font-medium text-sm md:text-base ${glassCard}`}>Tidak ada data santri pada filter yang Anda pilih.</div>
+          <div className={`text-center p-8 md:p-12 rounded-3xl border-2 border-dashed border-gray-300 text-gray-400 font-medium text-base ${glassCard}`}>Tidak ada data santri pada filter yang Anda pilih.</div>
         ) : (
           groupedStudents.map(group => (
-            <div key={group.pengampu.id} className="space-y-3 md:space-y-4">
+            <div key={group.pengampu.id} className="space-y-4">
               {user.role === 'admin' && selectedPengampuId === 'semua' && (
-                <div className="flex items-center gap-3 md:gap-4 pt-2 md:pt-4 pb-1 md:pb-2">
-                   <div className="h-px bg-gray-300 flex-1"></div>
-                   <span className="font-bold text-gray-600 uppercase text-[10px] md:text-xs px-3 md:px-4 py-1 md:py-1.5 bg-white/70 backdrop-blur-md rounded-full border border-white shadow-sm flex items-center gap-1.5 md:gap-2"><BookOpen className="w-3.5 h-3.5 md:w-4 md:h-4" style={{ color: theme.primary }}/> Halaqah {group.pengampu.name}</span>
-                   <div className="h-px bg-gray-300 flex-1"></div>
+                <div className="flex items-center gap-4 pt-4 pb-2">
+                   <div className="h-px bg-white/50 shadow-sm flex-1"></div>
+                   <span className="font-bold text-[#26544d] uppercase text-xs md:text-sm px-4 md:px-5 py-2 bg-white/80 backdrop-blur-md rounded-full border border-white shadow-sm flex items-center gap-2"><BookOpen className="w-4 h-4 md:w-5 md:h-5" style={{ color: theme.secondary }}/> Halaqah {group.pengampu.name}</span>
+                   <div className="h-px bg-white/50 shadow-sm flex-1"></div>
                 </div>
               )}
               {group.students.map(student => {
@@ -751,44 +754,44 @@ const HarianView = ({ students, records, pengampus, user }) => {
                 const isExpanded = expandedStudent === student.id;
 
                 return (
-                  <div key={student.id} className={`rounded-3xl transition-all duration-300 ${glassCard} ${isExpanded ? 'border-[#54af48]/50 shadow-lg ring-1 ring-[#54af48]/20' : 'hover:border-white'}`}>
-                    <div className={`p-3 md:p-4 lg:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4 ${!isExpanded ? 'hover:bg-white/40 cursor-pointer' : ''}`} onClick={() => !todayRecord && setExpandedStudent(isExpanded ? null : student.id)}>
+                  <div key={student.id} className={`rounded-3xl transition-all duration-300 ${glassCard} ${isExpanded ? 'border-[#54af48]/50 shadow-lg ring-2 ring-[#54af48]/20' : 'hover:border-white'}`}>
+                    <div className={`p-4 md:p-5 lg:p-7 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors ${!isExpanded ? 'hover:bg-white/50 cursor-pointer' : 'bg-white/40'}`} onClick={() => !todayRecord && setExpandedStudent(isExpanded ? null : student.id)}>
                       
-                      <div className="flex items-center gap-3 md:gap-4 w-full sm:w-auto" onClick={(e) => { if(todayRecord) { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); } }}>
-                        <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-white font-bold text-lg md:text-xl lg:text-2xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{student.name ? student.name.charAt(0) : '?'}</div>
+                      <div className="flex items-center gap-4 w-full sm:w-auto" onClick={(e) => { if(todayRecord) { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); } }}>
+                        <div className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{student.name ? student.name.charAt(0) : '?'}</div>
                         <div>
-                           <h3 className="text-base md:text-lg lg:text-xl font-bold text-gray-800">{student.name || 'Unknown'}</h3>
-                           <p className="text-[10px] md:text-xs font-medium text-gray-500 mt-0.5 md:mt-1">Kelas {student.kelas} • Smt {student.semester}</p>
+                           <h3 className="text-lg md:text-xl font-bold text-gray-800">{student.name || 'Unknown'}</h3>
+                           <p className="text-xs md:text-sm font-medium text-gray-500 mt-1">Kelas {student.kelas} • Smt {student.semester}</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 md:gap-3 mt-2 sm:mt-0 w-full sm:w-auto justify-end flex-1">
+                      <div className="flex items-center gap-3 mt-3 sm:mt-0 w-full sm:w-auto justify-end flex-1">
                         {todayRecord ? (
-                          <div className="flex items-center gap-2 md:gap-3 w-full justify-between sm:justify-end">
+                          <div className="flex items-center gap-3 w-full justify-between sm:justify-end">
                             <div className="flex flex-col items-start sm:items-end text-left sm:text-right">
-                              <span className={`px-2.5 md:px-3 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-wide mb-1 md:mb-1.5 shadow-sm border ${todayRecord.presensi === 'Hadir' ? 'bg-[#54af48]/10 text-[#54af48] border-[#54af48]/20' : todayRecord.presensi === 'Alpha' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-[#f9e653]/20 text-yellow-700 border-[#f9e653]/40'}`}>{todayRecord.presensi}</span>
+                              <span className={`px-3 md:px-4 py-1.5 rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2 shadow-sm border ${todayRecord.presensi === 'Hadir' ? 'bg-[#54af48]/10 text-[#54af48] border-[#54af48]/30' : todayRecord.presensi === 'Alpha' ? 'bg-red-100/80 text-red-700 border-red-200' : 'bg-[#f9e653]/30 text-yellow-800 border-[#f9e653]/50'}`}>{todayRecord.presensi}</span>
                               {todayRecord.presensi === 'Hadir' && (
-                                <div className="text-[10px] md:text-xs font-medium text-gray-600 flex flex-col gap-0.5 md:gap-1">
+                                <div className="text-xs font-medium text-gray-600 flex flex-col gap-1">
                                   {todayRecord.ziyadah && (<div><span className="font-bold text-[#54af48]">Ziyadah:</span> {formatZiyadahSurahSafe(todayRecord.ziyadah)} <span className="font-bold text-[#54af48] ml-1">[{todayRecord.ziyadah.finalScore}]</span></div>)}
                                   {todayRecord.murajaah && (<div><span className="font-bold text-yellow-600">Muraja'ah:</span> Juz {todayRecord.murajaah.fromJuz === todayRecord.murajaah.toJuz ? todayRecord.murajaah.fromJuz : `${todayRecord.murajaah.fromJuz}-${todayRecord.murajaah.toJuz}`} <span className="font-bold text-yellow-700 ml-1">[{todayRecord.murajaah.finalScore}]</span></div>)}
                                 </div>
                               )}
-                              {todayRecord.presensi !== 'Hadir' && (<div className="text-[10px] md:text-xs text-gray-500 truncate w-32 md:w-48"><span className="font-bold">Ket:</span> {todayRecord.keterangan || '-'}</div>)}
+                              {todayRecord.presensi !== 'Hadir' && (<div className="text-xs text-gray-500 truncate w-40 md:w-56"><span className="font-bold">Ket:</span> {todayRecord.keterangan || '-'}</div>)}
                             </div>
-                            <div className="flex sm:flex-col gap-1 md:gap-1.5 border-l-0 sm:border-l border-gray-200/50 pl-0 sm:pl-2 md:pl-3 shrink-0">
-                               <button onClick={(e) => { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); }} className={`p-1.5 md:p-2 rounded-lg md:rounded-xl transition-colors drop-shadow-sm ${isExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-500 bg-white/60 hover:bg-white border border-white hover:text-blue-600'}`} title="Ubah Laporan"><Edit className="w-4 h-4 md:w-5 md:h-5"/></button>
-                               <button onClick={(e) => { e.stopPropagation(); setRecordToDelete(todayRecord.id); }} className="p-1.5 md:p-2 rounded-lg md:rounded-xl text-gray-500 bg-white/60 hover:bg-white border border-white hover:text-red-600 transition-colors drop-shadow-sm" title="Ulangi (Kosongkan)"><RotateCcw className="w-4 h-4 md:w-5 md:h-5"/></button>
+                            <div className="flex sm:flex-col gap-2 border-l-0 sm:border-l border-white/50 pl-0 sm:pl-3 shrink-0">
+                               <button onClick={(e) => { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); }} className={`p-2 md:p-2.5 rounded-xl transition-colors drop-shadow-sm ${isExpanded ? 'bg-blue-100/80 text-blue-700 border border-blue-200' : 'text-gray-500 bg-white/70 hover:bg-white border border-white hover:text-blue-600'}`} title="Ubah Laporan"><Edit className="w-5 h-5"/></button>
+                               <button onClick={(e) => { e.stopPropagation(); setRecordToDelete(todayRecord.id); }} className="p-2 md:p-2.5 rounded-xl text-gray-500 bg-white/70 hover:bg-white border border-white hover:text-red-600 transition-colors drop-shadow-sm" title="Ulangi (Kosongkan)"><RotateCcw className="w-5 h-5"/></button>
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-between w-full gap-3 md:gap-4">
-                             <span className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-xs md:text-sm font-bold bg-white/50 border border-white text-gray-500 shadow-sm">Menunggu Laporan</span>
-                             <div className={`p-1.5 md:p-2 rounded-full transition-colors bg-white/50 shadow-sm border border-white ${isExpanded ? 'bg-white/80' : ''}`}>{isExpanded ? <ChevronUp className="w-5 h-5 md:w-6 md:h-6 text-gray-600" /> : <ChevronDown className="w-5 h-5 md:w-6 md:h-6 text-gray-400" />}</div>
+                          <div className="flex items-center justify-between w-full gap-4">
+                             <span className="px-4 py-2 rounded-xl text-xs md:text-sm font-bold bg-white/60 border border-white text-[#26544d] shadow-sm">Menunggu Laporan</span>
+                             <div className={`p-2 rounded-full transition-colors bg-white/60 shadow-sm border border-white ${isExpanded ? 'bg-white' : ''}`}>{isExpanded ? <ChevronUp className="w-6 h-6 text-gray-800" /> : <ChevronDown className="w-6 h-6 text-gray-500" />}</div>
                           </div>
                         )}
                       </div>
                     </div>
-                    {isExpanded && (<div className="p-3 md:p-4 lg:p-8 border-t border-white/50 bg-white/30 animate-in slide-in-from-top-2"><StudentDailyForm student={student} date={selectedDate} existingRecord={todayRecord} lastZiyadah={lastZiyadah} lastMurajaah={lastMurajaah} onSaveSuccess={() => setExpandedStudent(null)} /></div>)}
+                    {isExpanded && (<div className="p-4 md:p-6 lg:p-8 border-t border-white/50 bg-white/30 animate-in slide-in-from-top-4 duration-300"><StudentDailyForm student={student} date={selectedDate} existingRecord={todayRecord} lastZiyadah={lastZiyadah} lastMurajaah={lastMurajaah} onSaveSuccess={() => setExpandedStudent(null)} /></div>)}
                   </div>
                 );
               })}
@@ -857,128 +860,128 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
   const ErrorRow = ({ label, penalty, value, onChange, colorTheme }) => {
      const themes = { 
        green: { dot: 'bg-green-500', badge: 'bg-[#54af48]/20 text-[#54af48] border border-[#54af48]/30', text: 'text-[#54af48]' }, 
-       yellow: { dot: 'bg-[#f9e653]', badge: 'bg-[#f9e653]/20 text-yellow-700 border border-[#f9e653]/40', text: 'text-yellow-700' }, 
+       yellow: { dot: 'bg-[#f9e653]', badge: 'bg-[#f9e653]/30 text-yellow-800 border border-[#f9e653]/50', text: 'text-yellow-700' }, 
        red: { dot: 'bg-red-500', badge: 'bg-red-100 text-red-700 border border-red-200', text: 'text-red-700' } 
      };
      const t = themes[colorTheme];
      return (
-        <div className="flex items-center justify-between py-2 md:py-2.5 border-b border-white/40 last:border-0">
-           <div className="flex items-center gap-2 md:gap-3">
-              <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${t.dot}`}></div>
-              <span className="text-[10px] md:text-sm font-bold text-gray-700">{label}</span>
-              <span className={`text-[9px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-md shadow-sm ${t.badge}`}>{penalty}</span>
+        <div className="flex items-center justify-between py-3 border-b border-white/40 last:border-0">
+           <div className="flex items-center gap-3">
+              <div className={`w-2 h-2 rounded-full ${t.dot} shadow-sm`}></div>
+              <span className="text-xs md:text-sm font-bold text-gray-700">{label}</span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm ${t.badge}`}>{penalty}</span>
            </div>
-           <div className="flex items-center bg-white/70 backdrop-blur-md rounded-lg md:rounded-xl border border-white overflow-hidden h-7 md:h-9 shadow-sm">
-              <button type="button" onClick={() => onChange(Math.max(0, value - 1))} className="px-2 md:px-3 h-full hover:bg-white text-gray-500 transition-colors"><Minus className="w-3 h-3 md:w-4 md:h-4"/></button>
-              <div className={`w-8 md:w-10 text-center text-xs md:text-sm font-bold bg-white/40 h-full flex items-center justify-center border-x border-white/50 ${t.text}`}>{value}</div>
-              <button type="button" onClick={() => onChange(value + 1)} className="px-2 md:px-3 h-full hover:bg-white text-gray-500 transition-colors"><Plus className="w-3 h-3 md:w-4 md:h-4"/></button>
+           <div className="flex items-center bg-white/80 backdrop-blur-md rounded-xl border border-white overflow-hidden h-9 md:h-10 shadow-sm">
+              <button type="button" onClick={() => onChange(Math.max(0, value - 1))} className="px-3 h-full hover:bg-gray-100 text-gray-500 transition-colors active:bg-gray-200"><Minus className="w-4 h-4"/></button>
+              <div className={`w-10 md:w-12 text-center text-sm font-bold bg-white/50 h-full flex items-center justify-center border-x border-white/50 ${t.text}`}>{value}</div>
+              <button type="button" onClick={() => onChange(value + 1)} className="px-3 h-full hover:bg-gray-100 text-gray-500 transition-colors active:bg-gray-200"><Plus className="w-4 h-4"/></button>
            </div>
         </div>
      );
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {errorMsg && <div className="p-3 md:p-4 bg-red-50 text-red-700 rounded-xl text-xs md:text-sm font-bold border border-red-100 flex items-center gap-2 md:gap-3 shadow-inner"><AlertCircle className="w-4 h-4 md:w-5 md:h-5"/> {errorMsg}</div>}
+    <div className="space-y-5 md:space-y-6">
+      {errorMsg && <div className="p-4 bg-red-50/90 text-red-700 rounded-xl text-sm font-bold border border-red-200 shadow-inner flex items-center gap-3"><AlertCircle className="w-5 h-5"/> {errorMsg}</div>}
       
-      <div className={`p-4 md:p-5 lg:p-6 rounded-2xl border border-white shadow-sm bg-white/50 backdrop-blur-sm`}>
-        <label className="block text-xs md:text-sm font-bold text-gray-800 mb-2 md:mb-4 uppercase tracking-wider">Status Presensi</label>
-        <div className="grid grid-cols-3 gap-1.5 md:gap-3">
+      <div className={`p-5 md:p-6 rounded-3xl border border-white shadow-sm bg-white/60 backdrop-blur-md`}>
+        <label className="block text-sm font-bold text-gray-800 mb-3 md:mb-4 uppercase tracking-widest text-center md:text-left">Status Presensi</label>
+        <div className="grid grid-cols-3 gap-2 md:gap-4">
           {['Hadir', 'Izin/Sakit', 'Alpha'].map(status => (
-            <button key={status} onClick={() => {setPresensi(status); setErrorMsg('');}} className={`w-full py-2.5 md:py-3.5 px-1 rounded-lg md:rounded-xl text-[11px] sm:text-xs md:text-sm font-bold border-2 transition-all shadow-sm ${presensi === status ? 'text-white scale-[1.02] md:scale-105 border-transparent' : 'border-white bg-white/60 text-gray-500 hover:bg-white'}`} style={presensi === status ? { backgroundColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, color: '#fff' } : {}}>{status}</button>
+            <button key={status} onClick={() => {setPresensi(status); setErrorMsg('');}} className={`w-full py-3 md:py-4 px-2 rounded-2xl text-xs md:text-sm font-bold border-2 transition-all shadow-sm ${presensi === status ? 'text-white scale-[1.02] border-transparent shadow-md' : 'border-white bg-white/80 text-gray-500 hover:bg-white'}`} style={presensi === status ? { backgroundColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, color: '#fff' } : {}}>{status}</button>
           ))}
         </div>
       </div>
 
       {presensi === 'Hadir' && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
-          <div className={`p-4 md:p-5 lg:p-6 rounded-2xl border shadow-sm flex flex-col transition-all ${!isZiyadahActive ? 'border-white/50 bg-white/30' : 'border-white bg-white/60 backdrop-blur-sm'}`}>
-             <div className="flex justify-between items-center mb-3 md:mb-5">
-                <h4 className={`font-bold text-sm md:text-base lg:text-lg flex items-center gap-2 md:gap-3 ${!isZiyadahActive ? 'text-gray-400' : 'text-gray-800'}`}><div className={`p-1.5 md:p-2 rounded-lg md:rounded-xl ${!isZiyadahActive ? 'bg-white/50' : 'bg-[#54af48]/10 border border-[#54af48]/20'}`}><BookOpen className="w-4 h-4 md:w-5 md:h-5" style={{ color: !isZiyadahActive ? '#9ca3af' : theme.primary }}/></div> Setoran Ziyadah</h4>
-                <button type="button" onClick={() => setIsZiyadahActive(!isZiyadahActive)} className={`w-10 h-5 md:w-12 md:h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner border border-white/50 ${isZiyadahActive ? 'bg-[#54af48]' : 'bg-gray-300'}`}><div className={`bg-white w-3 h-3 md:w-4 md:h-4 rounded-full shadow transform transition-transform ${isZiyadahActive ? 'translate-x-5 md:translate-x-6' : 'translate-x-0'}`}></div></button>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 md:gap-8">
+          <div className={`p-5 md:p-6 lg:p-8 rounded-3xl border shadow-sm flex flex-col transition-all ${!isZiyadahActive ? 'border-white/50 bg-white/40' : 'border-white bg-white/70 backdrop-blur-md'}`}>
+             <div className="flex justify-between items-center mb-5 md:mb-6">
+                <h4 className={`font-bold text-base md:text-lg flex items-center gap-3 ${!isZiyadahActive ? 'text-gray-400' : 'text-gray-800'}`}><div className={`p-2.5 rounded-xl ${!isZiyadahActive ? 'bg-white/50' : 'bg-[#54af48]/15 border border-[#54af48]/20'}`}><BookOpen className="w-5 h-5" style={{ color: !isZiyadahActive ? '#9ca3af' : theme.primary }}/></div> Setoran Ziyadah</h4>
+                <button type="button" onClick={() => setIsZiyadahActive(!isZiyadahActive)} className={`w-12 h-6 md:w-14 md:h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner border border-white/50 ${isZiyadahActive ? 'bg-[#54af48]' : 'bg-gray-300'}`}><div className={`bg-white w-4 h-4 md:w-5 md:h-5 rounded-full shadow transform transition-transform ${isZiyadahActive ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div></button>
              </div>
              {isZiyadahActive ? (
-                <div className="space-y-3 md:space-y-4 flex-1 flex flex-col animate-in slide-in-from-top-2">
-                   <div className="space-y-2 md:space-y-3 bg-white/40 backdrop-blur-md p-3 md:p-4 rounded-xl border border-white shadow-inner">
-                      <div className="grid grid-cols-2 gap-2 md:gap-3">
-                         <div><label className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1 md:mb-1.5">Dari Surat</label><select value={ziyadah.fromSurah} onChange={(e) => setZiyadah({...ziyadah, fromSurah: parseInt(e.target.value), fromAyah: 1})} className={`w-full p-2 md:p-2.5 rounded-lg text-xs md:text-sm outline-none ${glassInput}`}>{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
-                         <div><label className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1 md:mb-1.5">Ayat</label><select value={ziyadah.fromAyah} onChange={(e) => setZiyadah({...ziyadah, fromAyah: parseInt(e.target.value)})} className={`w-full p-2 md:p-2.5 rounded-lg text-xs md:text-sm outline-none ${glassInput}`}>{Array.from({length: getAyahCount(ziyadah.fromSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
+                <div className="space-y-4 md:space-y-5 flex-1 flex flex-col animate-in slide-in-from-top-2">
+                   <div className="space-y-3 bg-white/50 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-white shadow-inner">
+                      <div className="grid grid-cols-2 gap-3">
+                         <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Dari Surat</label><select value={ziyadah.fromSurah} onChange={(e) => setZiyadah({...ziyadah, fromSurah: parseInt(e.target.value), fromAyah: 1})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
+                         <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Ayat</label><select value={ziyadah.fromAyah} onChange={(e) => setZiyadah({...ziyadah, fromAyah: parseInt(e.target.value)})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{Array.from({length: getAyahCount(ziyadah.fromSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 md:gap-3">
-                         <div><label className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1 md:mb-1.5">Sampai Surat</label><select value={ziyadah.toSurah} onChange={(e) => setZiyadah({...ziyadah, toSurah: parseInt(e.target.value), toAyah: 1})} className={`w-full p-2 md:p-2.5 rounded-lg text-xs md:text-sm outline-none ${glassInput}`}>{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
-                         <div><label className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1 md:mb-1.5">Ayat</label><select value={ziyadah.toAyah} onChange={(e) => setZiyadah({...ziyadah, toAyah: parseInt(e.target.value)})} className={`w-full p-2 md:p-2.5 rounded-lg text-xs md:text-sm outline-none ${glassInput}`}>{Array.from({length: getAyahCount(ziyadah.toSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
+                      <div className="grid grid-cols-2 gap-3">
+                         <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Sampai Surat</label><select value={ziyadah.toSurah} onChange={(e) => setZiyadah({...ziyadah, toSurah: parseInt(e.target.value), toAyah: 1})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
+                         <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Ayat</label><select value={ziyadah.toAyah} onChange={(e) => setZiyadah({...ziyadah, toAyah: parseInt(e.target.value)})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{Array.from({length: getAyahCount(ziyadah.toSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
                       </div>
                    </div>
                    <div className="flex-1">
-                      <div className="bg-white/40 backdrop-blur-md rounded-xl md:rounded-2xl px-3 md:px-4 border py-1.5 md:py-2 border-white shadow-sm">
+                      <div className="bg-white/50 backdrop-blur-md rounded-2xl px-4 border py-2 border-white shadow-sm">
                          <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={ziyadah.tajwid} onChange={(v) => setZiyadah({...ziyadah, tajwid: v})} colorTheme="green" />
                          <ErrorRow label="Lupa / Tersendat" penalty="-1" value={ziyadah.lupa} onChange={(v) => setZiyadah({...ziyadah, lupa: v})} colorTheme="yellow" />
                          <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={ziyadah.lupaBimbingan} onChange={(v) => setZiyadah({...ziyadah, lupaBimbingan: v})} colorTheme="red" />
                       </div>
                    </div>
-                   <div className="mt-3 md:mt-4 p-3 md:p-4 rounded-xl md:rounded-2xl border-2 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-md transition-all" style={{ borderColor: theme.primary }}>
-                      <div><p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5 md:mb-1">Skor Akhir</p><div className="flex items-baseline gap-1.5 md:gap-2"><span className="text-2xl md:text-3xl lg:text-4xl font-black" style={{ color: theme.primary }}>{ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}</span></div></div>
-                      <div className="flex flex-col items-end"><label className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 md:mb-2">Koreksi Manual</label><input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="Otomatis" className={`w-16 md:w-20 px-2 md:px-3 py-1.5 md:py-2 text-sm md:text-base font-bold text-center rounded-lg md:rounded-xl ${glassInput}`} style={{ focusRingColor: theme.secondary, focusRingWidth: '2px' }} /></div>
+                   <div className="mt-4 p-4 md:p-5 rounded-2xl border-[3px] flex items-center justify-between bg-white/90 backdrop-blur-md shadow-md transition-all" style={{ borderColor: theme.primary }}>
+                      <div><p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Skor Akhir</p><div className="flex items-baseline gap-2"><span className="text-3xl md:text-4xl font-black" style={{ color: theme.primary }}>{ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}</span></div></div>
+                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Koreksi Manual</label><input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="Otomatis" className={`w-20 md:w-24 px-3 py-2 text-base font-bold text-center rounded-xl ${glassInput}`} style={{ focusRingColor: theme.secondary, focusRingWidth: '2px' }} /></div>
                    </div>
                 </div>
-             ) : (<div className="flex-1 flex items-center justify-center py-6 md:py-8"><p className="text-xs md:text-sm text-gray-400 italic font-medium">Borang Ziyadah ditutup sementara.</p></div>)}
+             ) : (<div className="flex-1 flex items-center justify-center py-8"><p className="text-sm text-gray-400 italic font-medium">Borang Ziyadah ditutup sementara.</p></div>)}
           </div>
           
-          <div className={`p-4 md:p-5 lg:p-6 rounded-2xl border shadow-sm flex flex-col transition-all ${!isMurajaahActive ? 'border-white/50 bg-white/30' : 'border-white bg-white/60 backdrop-blur-sm'}`}>
-             <div className="flex justify-between items-center mb-3 md:mb-5">
-                <h4 className={`font-bold text-sm md:text-base lg:text-lg flex items-center gap-2 md:gap-3 ${!isMurajaahActive ? 'text-gray-400' : 'text-gray-800'}`}><div className={`p-1.5 md:p-2 rounded-lg md:rounded-xl ${!isMurajaahActive ? 'bg-white/50' : 'bg-[#f9e653]/20 border border-[#f9e653]/30'}`}><RotateCcw className="w-4 h-4 md:w-5 h-5" style={{ color: !isMurajaahActive ? '#9ca3af' : theme.secondary }}/></div> Setoran Muraja'ah</h4>
-                <button type="button" onClick={() => setIsMurajaahActive(!isMurajaahActive)} className={`w-10 h-5 md:w-12 md:h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner border border-white/50 ${isMurajaahActive ? 'bg-[#f9e653]' : 'bg-gray-300'}`}><div className={`bg-white w-3 h-3 md:w-4 md:h-4 rounded-full shadow transform transition-transform ${isMurajaahActive ? 'translate-x-5 md:translate-x-6' : 'translate-x-0'}`}></div></button>
+          <div className={`p-5 md:p-6 lg:p-8 rounded-3xl border shadow-sm flex flex-col transition-all ${!isMurajaahActive ? 'border-white/50 bg-white/40' : 'border-white bg-white/70 backdrop-blur-md'}`}>
+             <div className="flex justify-between items-center mb-5 md:mb-6">
+                <h4 className={`font-bold text-base md:text-lg flex items-center gap-3 ${!isMurajaahActive ? 'text-gray-400' : 'text-gray-800'}`}><div className={`p-2.5 rounded-xl ${!isMurajaahActive ? 'bg-white/50' : 'bg-[#f9e653]/20 border border-[#f9e653]/30'}`}><RotateCcw className="w-5 h-5" style={{ color: !isMurajaahActive ? '#9ca3af' : theme.secondary }}/></div> Setoran Muraja'ah</h4>
+                <button type="button" onClick={() => setIsMurajaahActive(!isMurajaahActive)} className={`w-12 h-6 md:w-14 md:h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner border border-white/50 ${isMurajaahActive ? 'bg-[#f9e653]' : 'bg-gray-300'}`}><div className={`bg-white w-4 h-4 md:w-5 md:h-5 rounded-full shadow transform transition-transform ${isMurajaahActive ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div></button>
              </div>
              {isMurajaahActive ? (
-                <div className="space-y-3 md:space-y-4 flex-1 flex flex-col animate-in slide-in-from-top-2">
-                   <div className="grid grid-cols-2 gap-2 md:gap-3 bg-white/40 backdrop-blur-md p-3 md:p-4 rounded-xl border border-white shadow-inner">
-                      <div><label className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1 md:mb-1.5">Dari Juz</label><select value={murajaah.fromJuz} onChange={(e) => setMurajaah({...murajaah, fromJuz: parseInt(e.target.value)})} className={`w-full p-2 md:p-2.5 rounded-lg text-xs md:text-sm outline-none ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
-                      <div><label className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1 md:mb-1.5">Sampai Juz</label><select value={murajaah.toJuz} onChange={(e) => setMurajaah({...murajaah, toJuz: parseInt(e.target.value)})} className={`w-full p-2 md:p-2.5 rounded-lg text-xs md:text-sm outline-none ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
+                <div className="space-y-4 md:space-y-5 flex-1 flex flex-col animate-in slide-in-from-top-2">
+                   <div className="grid grid-cols-2 gap-3 bg-white/50 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-white shadow-inner">
+                      <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Dari Juz</label><select value={murajaah.fromJuz} onChange={(e) => setMurajaah({...murajaah, fromJuz: parseInt(e.target.value)})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
+                      <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Sampai Juz</label><select value={murajaah.toJuz} onChange={(e) => setMurajaah({...murajaah, toJuz: parseInt(e.target.value)})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
                    </div>
                    <div className="flex-1">
-                      <div className="bg-white/40 backdrop-blur-md rounded-xl md:rounded-2xl px-3 md:px-4 border py-1.5 md:py-2 border-white shadow-sm">
+                      <div className="bg-white/50 backdrop-blur-md rounded-2xl px-4 border py-2 border-white shadow-sm">
                          <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={murajaah.tajwid} onChange={(v) => setMurajaah({...murajaah, tajwid: v})} colorTheme="green" />
                          <ErrorRow label="Lupa / Tersendat" penalty="-1" value={murajaah.lupa} onChange={(v) => setMurajaah({...murajaah, lupa: v})} colorTheme="yellow" />
                          <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={murajaah.lupaBimbingan} onChange={(v) => setMurajaah({...murajaah, lupaBimbingan: v})} colorTheme="red" />
                       </div>
                    </div>
-                   <div className="mt-3 md:mt-4 p-3 md:p-4 rounded-xl md:rounded-2xl border-2 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-md transition-all" style={{ borderColor: theme.secondary }}>
-                      <div><p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5 md:mb-1">Skor Akhir</p><div className="flex items-baseline gap-1.5 md:gap-2"><span className="text-2xl md:text-3xl lg:text-4xl font-black" style={{ color: theme.secondary }}>{murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}</span></div></div>
-                      <div className="flex flex-col items-end"><label className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 md:mb-2">Koreksi Manual</label><input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="Otomatis" className={`w-16 md:w-20 px-2 md:px-3 py-1.5 md:py-2 text-sm md:text-base font-bold text-center rounded-lg md:rounded-xl outline-none ${glassInput}`} style={{ focusRingColor: theme.primary, focusRingWidth: '2px' }} /></div>
+                   <div className="mt-4 p-4 md:p-5 rounded-2xl border-[3px] flex items-center justify-between bg-white/90 backdrop-blur-md shadow-md transition-all" style={{ borderColor: theme.secondary }}>
+                      <div><p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Skor Akhir</p><div className="flex items-baseline gap-2"><span className="text-3xl md:text-4xl font-black" style={{ color: theme.secondary }}>{murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}</span></div></div>
+                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Koreksi Manual</label><input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="Otomatis" className={`w-20 md:w-24 px-3 py-2 text-base font-bold text-center rounded-xl outline-none ${glassInput}`} style={{ focusRingColor: theme.primary, focusRingWidth: '2px' }} /></div>
                    </div>
                 </div>
-             ) : (<div className="flex-1 flex items-center justify-center py-6 md:py-8"><p className="text-xs md:text-sm text-gray-400 italic font-medium">Borang Muraja'ah ditutup sementara.</p></div>)}
+             ) : (<div className="flex-1 flex items-center justify-center py-8"><p className="text-sm text-gray-400 italic font-medium">Borang Muraja'ah ditutup sementara.</p></div>)}
           </div>
         </div>
       )}
 
       {presensi === 'Izin/Sakit' && (
-        <div className="p-4 md:p-5 lg:p-6 rounded-2xl border shadow-sm flex flex-col transition-all border-white bg-white/60 backdrop-blur-sm animate-in slide-in-from-top-2">
-           <div className="flex justify-between items-center mb-3 md:mb-5">
-              <h4 className="font-bold text-sm md:text-base lg:text-lg flex items-center gap-2 md:gap-3 text-gray-800">
-                 <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-[#f9e653]/20 border border-[#f9e653]/30">
-                    <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-600"/>
+        <div className="p-5 md:p-6 lg:p-8 rounded-3xl border shadow-sm flex flex-col transition-all border-white bg-white/70 backdrop-blur-md animate-in slide-in-from-top-2">
+           <div className="flex justify-between items-center mb-4 md:mb-5">
+              <h4 className="font-bold text-base md:text-lg flex items-center gap-3 text-gray-800">
+                 <div className="p-2.5 rounded-xl bg-[#f9e653]/20 border border-[#f9e653]/30">
+                    <AlertCircle className="w-5 h-5 text-yellow-600"/>
                  </div> 
                  Keterangan Izin / Sakit
               </h4>
            </div>
-           <div className="space-y-3 md:space-y-4 flex-1 flex flex-col">
-              <div className="bg-white/40 p-3 md:p-4 rounded-xl md:rounded-2xl border border-white shadow-inner">
+           <div className="space-y-4 flex-1 flex flex-col">
+              <div className="bg-white/50 p-4 md:p-5 rounded-2xl border border-white shadow-inner">
                  <textarea 
                     value={keterangan} 
                     onChange={(e) => setKeterangan(e.target.value)} 
                     placeholder="Contoh: Ananda sedang sakit demam dan membutuhkan istirahat..." 
-                    className={`w-full p-3 md:p-4 text-xs md:text-sm rounded-lg md:rounded-xl resize-none h-24 md:h-28 font-medium text-gray-700 ${glassInput}`} 
+                    className={`w-full p-4 text-sm rounded-xl resize-none h-28 md:h-32 font-medium text-gray-700 ${glassInput}`} 
                  />
               </div>
            </div>
         </div>
       )}
 
-      <div className="flex justify-end pt-3 md:pt-4 relative z-10">
-        <button onClick={handleSave} disabled={saving} className="w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3 px-6 md:px-8 py-3 md:py-4 rounded-xl text-sm md:text-base text-white font-bold shadow-lg transition-transform hover:scale-[1.02]" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}60` }}>
-          {saving ? <div className="animate-spin rounded-full h-5 w-5 md:h-6 md:w-6 border-b-2 border-white"></div> : <Check className="w-5 h-5 md:w-6 md:h-6"/>}
-          {saving ? 'Menyimpan...' : 'Simpan Laporan Harian'}
+      <div className="flex justify-end pt-4 relative z-10">
+        <button onClick={handleSave} disabled={saving} className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-base text-white font-bold shadow-xl transition-transform active:scale-95 hover:opacity-90" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}60` }}>
+          {saving ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div> : <Check className="w-6 h-6"/>}
+          {saving ? 'Menyimpan...' : 'Simpan Laporan'}
         </button>
       </div>
     </div>
@@ -989,7 +992,7 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
 // 8. VIEW: REKAPITULASI (MANDIRI)
 // ==========================================
 const EditableSelectCell = ({ value, options, onSave }) => (
-  <select value={value || ''} onChange={(e) => onSave(e.target.value)} className={`w-20 md:w-24 p-1.5 md:p-2 rounded-md md:rounded-lg text-xs md:text-sm font-semibold text-gray-700 outline-none ${glassInput}`}>
+  <select value={value || ''} onChange={(e) => onSave(e.target.value)} className={`w-20 md:w-24 p-2 rounded-lg text-xs md:text-sm font-semibold text-gray-700 outline-none ${glassInput}`}>
     <option value="">- SP -</option>{options.map(o => <option key={o} value={o}>{o}</option>)}
   </select>
 );
@@ -997,7 +1000,7 @@ const EditableInputCell = ({ value, onSave, placeholder }) => {
   const [val, setVal] = useState(value || ''); 
   useEffect(() => setVal(value || ''), [value]); 
   return (
-    <input type="text" value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => onSave(val)} className={`w-24 md:w-32 p-1.5 md:p-2 rounded-md md:rounded-lg text-xs md:text-sm text-gray-700 outline-none ${glassInput}`} placeholder={placeholder} />
+    <input type="text" value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => onSave(val)} className={`w-28 md:w-36 p-2 rounded-lg text-xs md:text-sm text-gray-700 outline-none ${glassInput}`} placeholder={placeholder} />
   );
 };
 
@@ -1074,24 +1077,24 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 pb-10 relative z-10">
-      <div className={`flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 p-4 md:p-6 lg:p-8 rounded-3xl print:hidden ${glassCard}`}>
+    <div className="space-y-5 md:space-y-6 pb-10 relative z-10">
+      <div className={`flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 md:p-8 rounded-3xl print:hidden ${glassCard}`}>
         <div>
-           <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">Rekapitulasi Bulanan</h2>
-           <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1">Pilih periode bulan dan halaqah untuk melihat hasil evaluasi.</p>
+           <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">Rekapitulasi Bulanan</h2>
+           <p className="text-sm text-gray-500 mt-1">Pilih periode dan halaqah untuk melihat hasil evaluasi.</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           {userRole === 'admin' && (
-            <div className="flex items-center gap-1.5 md:gap-2 bg-white/60 p-2 md:p-2.5 rounded-xl border border-white w-full sm:w-auto shadow-sm">
-              <Filter className="text-gray-400 w-4 h-4 md:w-5 md:h-5 ml-1 md:ml-2 shrink-0" />
-              <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-xs md:text-sm font-bold text-gray-600 p-1 w-full sm:w-40 md:w-48 cursor-pointer"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+            <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm p-2.5 rounded-xl border border-white w-full sm:w-auto shadow-sm">
+              <Filter className="text-[#26544d] w-5 h-5 ml-2 shrink-0" />
+              <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-sm font-bold text-gray-700 p-1 w-full sm:w-40 md:w-48 cursor-pointer"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
             </div>
           )}
-          <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
-             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className={`w-full sm:w-auto rounded-xl p-2 md:p-2.5 px-3 md:px-4 text-xs md:text-sm outline-none font-bold text-gray-700 min-w-[120px] shadow-sm ${glassInput}`} />
+          <div className="flex flex-row items-center gap-3 w-full sm:w-auto">
+             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className={`w-full sm:w-auto rounded-xl p-3 px-4 text-sm outline-none font-bold text-gray-700 min-w-[140px] shadow-sm ${glassInput}`} />
              <div className="flex gap-2 w-auto">
-                 <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-[#54af48] text-white text-xs md:text-sm font-bold rounded-xl shadow-lg hover:bg-[#46933c] transition-colors"><Download className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Excel</span></button>
-                 <button onClick={() => window.print()} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-gray-800 text-white text-xs md:text-sm font-bold rounded-xl shadow-lg hover:bg-gray-700 transition-colors"><Printer className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Cetak</span></button>
+                 <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-2 px-4 md:px-5 py-3 bg-[#54af48] text-white text-sm font-bold rounded-xl shadow-lg hover:bg-[#46933c] transition-transform active:scale-95"><Download className="w-5 h-5"/> <span className="hidden sm:inline">Excel</span></button>
+                 <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-4 md:px-5 py-3 bg-gray-800 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-gray-700 transition-transform active:scale-95"><Printer className="w-5 h-5"/> <span className="hidden sm:inline">Cetak</span></button>
              </div>
           </div>
         </div>
@@ -1099,61 +1102,61 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
       
       <div className={`${glassCard} rounded-3xl overflow-hidden`}>
         <div className="overflow-x-auto w-full pb-4">
-          <table className="w-full text-left whitespace-nowrap min-w-[900px] md:min-w-[1000px]">
+          <table className="w-full text-left whitespace-nowrap min-w-[1000px]">
             <thead className="text-white bg-[#26544d]">
-              <tr className="text-[10px] md:text-xs lg:text-sm">
-                <th className="p-2 md:p-3 lg:p-4 font-bold">Nama Santri</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold">Kls/Smt</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold">Kehadiran</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold border-l border-white/20">Target %</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold border-l border-white/20">Ziyadah (Awal - Akhir)</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold">Rata Z</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold border-l border-white/20">Muraja'ah (Awal - Akhir)</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold">Rata M</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold border-l border-white/20">S.P</th>
-                <th className="p-2 md:p-3 lg:p-4 font-bold">Keterangan</th>
+              <tr className="text-xs lg:text-sm">
+                <th className="p-3 lg:p-4 font-bold rounded-tl-3xl">Nama Santri</th>
+                <th className="p-3 lg:p-4 font-bold">Kls/Smt</th>
+                <th className="p-3 lg:p-4 font-bold">Kehadiran</th>
+                <th className="p-3 lg:p-4 font-bold border-l border-white/20">Target %</th>
+                <th className="p-3 lg:p-4 font-bold border-l border-white/20">Ziyadah (Awal - Akhir)</th>
+                <th className="p-3 lg:p-4 font-bold">Rata Z</th>
+                <th className="p-3 lg:p-4 font-bold border-l border-white/20">Muraja'ah (Awal - Akhir)</th>
+                <th className="p-3 lg:p-4 font-bold">Rata M</th>
+                <th className="p-3 lg:p-4 font-bold border-l border-white/20">S.P</th>
+                <th className="p-3 lg:p-4 font-bold rounded-tr-3xl">Keterangan</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/40 text-xs md:text-sm bg-white/40 backdrop-blur-sm">
               {groupedRecap.length === 0 ? (
-                <tr><td colSpan="10" className="p-6 md:p-10 text-center text-gray-500 font-medium italic bg-white/50">Data rekapitulasi belum tersedia.</td></tr>
+                <tr><td colSpan="10" className="p-8 md:p-12 text-center text-gray-500 font-medium italic bg-white/50">Data rekapitulasi belum tersedia.</td></tr>
               ) : (
                 groupedRecap.map(group => (
                   <React.Fragment key={group.pengampu.id}>
                     {userRole === 'admin' && selectedPengampuId === 'semua' && (
-                      <tr className="bg-white/80 border-b border-white">
-                        <td colSpan="10" className="p-2.5 md:p-3 px-3 md:px-4 font-bold text-[#26544d] text-[10px] md:text-xs uppercase tracking-widest"><Users className="w-3.5 h-3.5 md:w-4 md:h-4 inline mr-1 md:mr-2 text-[#54af48]"/> Halaqah {group.pengampu.name}</td>
+                      <tr className="bg-white/90 border-b border-white">
+                        <td colSpan="10" className="p-3 px-4 md:px-5 font-bold text-[#26544d] text-[10px] md:text-xs uppercase tracking-widest"><Users className="w-4 h-4 inline mr-2 text-[#54af48]"/> Halaqah {group.pengampu.name}</td>
                       </tr>
                     )}
                     {group.data.map(row => {
                         const sn = recapNotes.find(n => n.studentId === row.id && n.month === selectedMonth) || {};
                         return (
-                          <tr key={row.id} className="hover:bg-white/70 transition-colors">
-                            <td className="p-2 md:p-3 lg:p-4 font-bold text-gray-800">{row.name || 'Unknown'}</td>
-                            <td className="p-2 md:p-3 lg:p-4 text-gray-600 font-medium">{row.kelas} / {row.semester}</td>
-                            <td className="p-2 md:p-3 lg:p-4"><span className="bg-[#54af48]/10 text-[#54af48] px-2 md:px-3 py-1 md:py-1.5 rounded-md md:rounded-lg font-bold border border-[#54af48]/20">{row.kehadiran}</span> <span className="font-medium text-gray-500 ml-1">/ {row.totalHari}</span></td>
-                            <td className="p-2 md:p-3 lg:p-4 border-l border-white/50">
-                               <div className="flex items-center gap-2 md:gap-3 w-24 md:w-28">
-                                  <div className="w-full h-1.5 md:h-2 bg-white/60 rounded-full overflow-hidden shadow-inner border border-gray-200/50"><div className="h-full" style={{ width: `${row.persentase}%`, backgroundColor: row.persentase >= 100 ? theme.secondary : theme.accent }}></div></div>
-                                  <span className="font-black text-[10px] md:text-xs">{row.persentase}%</span>
+                          <tr key={row.id} className="hover:bg-white/80 transition-colors">
+                            <td className="p-3 lg:p-4 font-bold text-gray-800">{row.name || 'Unknown'}</td>
+                            <td className="p-3 lg:p-4 text-gray-600 font-medium">{row.kelas} / {row.semester}</td>
+                            <td className="p-3 lg:p-4"><span className="bg-[#54af48]/15 text-[#54af48] px-3 py-1.5 rounded-lg font-bold border border-[#54af48]/20">{row.kehadiran}</span> <span className="font-medium text-gray-500 ml-1">/ {row.totalHari}</span></td>
+                            <td className="p-3 lg:p-4 border-l border-white/50">
+                               <div className="flex items-center gap-3 w-28">
+                                  <div className="w-full h-2 bg-white/60 rounded-full overflow-hidden shadow-inner border border-gray-200/50"><div className="h-full" style={{ width: `${row.persentase}%`, backgroundColor: row.persentase >= 100 ? theme.secondary : theme.accent }}></div></div>
+                                  <span className="font-black text-xs">{row.persentase}%</span>
                                </div>
                             </td>
-                            <td className="p-2 md:p-3 lg:p-4 text-[10px] md:text-xs border-l border-white/50">
-                              <div className="flex flex-col gap-1 md:gap-1.5">
-                                <span className="bg-white/60 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-1 md:mr-2">Awl:</span> {row.zStart ? formatZiyadahSurahSafe(row.zStart) : '-'}</span>
-                                <span className="bg-white/60 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-1 md:mr-2">Akh:</span> {row.zEnd ? formatZiyadahSurahSafe(row.zEnd) : '-'}</span>
+                            <td className="p-3 lg:p-4 text-[10px] md:text-xs border-l border-white/50">
+                              <div className="flex flex-col gap-1.5">
+                                <span className="bg-white/80 px-2 py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-2">Awl:</span> {row.zStart ? formatZiyadahSurahSafe(row.zStart) : '-'}</span>
+                                <span className="bg-white/80 px-2 py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-2">Akh:</span> {row.zEnd ? formatZiyadahSurahSafe(row.zEnd) : '-'}</span>
                               </div>
                             </td>
-                            <td className="p-2 md:p-3 lg:p-4 font-black text-base md:text-lg" style={{ color: theme.primary }}>{row.avgZiyadah}</td>
-                            <td className="p-2 md:p-3 lg:p-4 text-[10px] md:text-xs border-l border-white/50">
-                              <div className="flex flex-col gap-1 md:gap-1.5">
-                                <span className="bg-white/60 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-1 md:mr-2">Awl:</span> {row.mStart ? `Juz ${row.mStart.fromJuz}` : '-'}</span>
-                                <span className="bg-white/60 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-1 md:mr-2">Akh:</span> {row.mEnd ? `Juz ${row.mEnd.toJuz}` : '-'}</span>
+                            <td className="p-3 lg:p-4 font-black text-lg" style={{ color: theme.primary }}>{row.avgZiyadah}</td>
+                            <td className="p-3 lg:p-4 text-[10px] md:text-xs border-l border-white/50">
+                              <div className="flex flex-col gap-1.5">
+                                <span className="bg-white/80 px-2 py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-2">Awl:</span> {row.mStart ? `Juz ${row.mStart.fromJuz}` : '-'}</span>
+                                <span className="bg-white/80 px-2 py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-2">Akh:</span> {row.mEnd ? `Juz ${row.mEnd.toJuz}` : '-'}</span>
                               </div>
                             </td>
-                            <td className="p-2 md:p-3 lg:p-4 font-black text-base md:text-lg" style={{ color: theme.primary }}>{row.avgMurajaah}</td>
-                            <td className="p-2 md:p-3 border-l border-white/50"><EditableSelectCell value={sn.sp} options={SP_OPTIONS} onSave={(val) => handleSaveNote(row.id, 'sp', val)} /></td>
-                            <td className="p-2 md:p-3"><EditableInputCell value={sn.keterangan} placeholder="Catatan..." onSave={(val) => handleSaveNote(row.id, 'keterangan', val)} /></td>
+                            <td className="p-3 lg:p-4 font-black text-lg" style={{ color: theme.primary }}>{row.avgMurajaah}</td>
+                            <td className="p-3 border-l border-white/50"><EditableSelectCell value={sn.sp} options={SP_OPTIONS} onSave={(val) => handleSaveNote(row.id, 'sp', val)} /></td>
+                            <td className="p-3"><EditableInputCell value={sn.keterangan} placeholder="Catatan..." onSave={(val) => handleSaveNote(row.id, 'keterangan', val)} /></td>
                           </tr>
                         )
                     })}
@@ -1180,10 +1183,10 @@ const WaliDashboardView = ({ students, records, user }) => {
   const student = students.find(s => s.id === user.studentId) || students[0];
   
   if (!student) return (
-     <div className={`flex flex-col items-center justify-center p-6 md:p-10 mt-6 md:mt-10 rounded-3xl text-center relative z-10 ${glassCard}`}>
-        <AlertTriangle className="w-12 h-12 md:w-16 md:h-16 text-yellow-400 mb-3 md:mb-4" />
-        <h3 className="text-lg md:text-xl font-bold text-gray-800">Profil Ananda Tidak Ditemukan</h3>
-        <p className="text-xs md:text-sm text-gray-500 mt-1 md:mt-2">Data profil Ananda mungkin telah diperbarui. Silakan hubungi admin.</p>
+     <div className={`flex flex-col items-center justify-center p-8 md:p-12 mt-8 md:mt-12 rounded-3xl text-center relative z-10 ${glassCard}`}>
+        <AlertTriangle className="w-16 h-16 text-yellow-400 mb-4 drop-shadow-md" />
+        <h3 className="text-xl font-bold text-gray-800">Profil Ananda Tidak Ditemukan</h3>
+        <p className="text-sm text-gray-500 mt-2">Data profil Ananda mungkin telah diperbarui. Silakan hubungi pengurus Markaz.</p>
      </div>
   );
   
@@ -1197,55 +1200,55 @@ const WaliDashboardView = ({ students, records, user }) => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 pb-10 relative z-10">
-      <div className={`p-4 md:p-5 lg:p-8 rounded-3xl ${glassCard}`}>
-         <h2 className="text-lg md:text-xl lg:text-3xl font-bold text-gray-800">Dashboard Ananda</h2>
-         <p className="text-[10px] md:text-sm text-gray-500 mt-0.5 md:mt-1">Pantau perkembangan tahfidz ananda secara real-time.</p>
+    <div className="space-y-6 md:space-y-8 pb-10 relative z-10">
+      <div className={`p-5 md:p-8 rounded-3xl ${glassCard}`}>
+         <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">Dashboard Ananda</h2>
+         <p className="text-xs md:text-sm text-gray-500 mt-1">Pantau perkembangan tahfidz ananda secara real-time.</p>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
-        <div className="lg:col-span-4 space-y-4 md:space-y-6">
-           <div className={`p-4 md:p-6 lg:p-8 rounded-3xl border-t-[6px] ${glassCard}`} style={{ borderTopColor: theme.primary }}>
-              <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
-                 <div className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-white font-bold text-xl md:text-2xl lg:text-3xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{student.name ? student.name.charAt(0) : '?'}</div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-4 space-y-6">
+           <div className={`p-6 md:p-8 rounded-3xl border-t-[8px] ${glassCard}`} style={{ borderTopColor: theme.primary }}>
+              <div className="flex items-center gap-4 mb-6">
+                 <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl lg:text-3xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{student.name ? student.name.charAt(0) : '?'}</div>
                  <div>
-                    <h3 className="font-bold text-base md:text-xl lg:text-2xl text-gray-800 leading-tight">{student.name || 'Unknown'}</h3>
-                    <p className="text-[10px] md:text-sm font-medium text-gray-500 mt-1 md:mt-1.5">Kls {student.kelas} • Smt {student.semester}</p>
+                    <h3 className="font-bold text-xl lg:text-2xl text-gray-800 leading-tight">{student.name || 'Unknown'}</h3>
+                    <p className="text-sm font-medium text-gray-500 mt-1.5">Kls {student.kelas} • Smt {student.semester}</p>
                  </div>
               </div>
               <div>
-                 <div className="flex justify-between items-end text-xs md:text-sm mb-2 md:mb-3">
+                 <div className="flex justify-between items-end text-sm mb-3">
                     <span className="font-bold text-gray-600">Pencapaian Hafalan</span>
-                    <span className="font-bold text-lg md:text-xl" style={{ color: theme.primary }}>{persentase}%</span>
+                    <span className="font-black text-xl" style={{ color: theme.primary }}>{persentase}%</span>
                  </div>
-                 <div className="w-full h-3 md:h-4 bg-white/60 rounded-full overflow-hidden shadow-inner border border-gray-200/50">
+                 <div className="w-full h-4 bg-white/60 rounded-full overflow-hidden shadow-inner border border-gray-200/50">
                     <div className="h-full transition-all duration-1000" style={{ width: `${persentase}%`, backgroundColor: persentase >= 100 ? theme.secondary : theme.accent }}></div>
                  </div>
-                 <p className="text-[10px] md:text-xs font-semibold text-gray-500 mt-2 md:mt-3 text-right">Tercapai {student.juzTercapai || 0} Juz dari target {targetJuz} Juz</p>
+                 <p className="text-[10px] md:text-xs font-semibold text-gray-500 mt-3 text-right">Tercapai {student.juzTercapai || 0} Juz dari target {targetJuz} Juz</p>
               </div>
-              <div className="bg-white/50 backdrop-blur-sm p-4 md:p-5 mt-4 md:mt-6 rounded-2xl border border-white shadow-sm">
-                 <h4 className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 md:mb-3">Target Semester Ini</h4>
-                 <div className="flex items-center gap-2 md:gap-3">
-                    <Award className={`w-5 h-5 md:w-7 md:h-7 ${persentase >= 100 ? "text-[#54af48]" : "text-gray-400"}`} />
-                    <span className={`font-bold text-sm md:text-lg lg:text-xl ${persentase >= 100 ? 'text-[#54af48]' : 'text-gray-600'}`}>Selesai {targetJuz} Juz</span>
+              <div className="bg-white/60 backdrop-blur-md p-5 mt-6 rounded-2xl border border-white shadow-sm">
+                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Target Semester Ini</h4>
+                 <div className="flex items-center gap-3">
+                    <Award className={`w-6 h-6 md:w-8 md:h-8 ${persentase >= 100 ? "text-[#54af48]" : "text-gray-400"}`} />
+                    <span className={`font-bold text-lg md:text-xl lg:text-2xl ${persentase >= 100 ? 'text-[#54af48]' : 'text-gray-600'}`}>Selesai {targetJuz} Juz</span>
                  </div>
               </div>
            </div>
         </div>
         
         <div className="lg:col-span-8 h-full">
-           <div className={`p-4 md:p-6 lg:p-8 rounded-3xl h-full flex flex-col ${glassCard}`}>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4 mb-4 md:mb-6 lg:mb-8">
-                 <h3 className="font-bold text-lg md:text-xl lg:text-2xl text-gray-800 flex items-center gap-2 md:gap-3"><Calendar className="w-5 h-5 md:w-7 md:h-7" style={{ color: theme.primary }}/> Mutaba'ah Harian</h3>
-                 <div className="flex items-center justify-between gap-3 md:gap-4 bg-white/60 backdrop-blur-sm p-1.5 md:p-2 lg:p-2.5 rounded-xl border border-white shadow-sm w-full sm:w-auto">
-                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-1.5 md:p-2 hover:bg-white rounded-lg shadow-sm transition-colors"><ChevronDown className="rotate-90 text-gray-600 w-4 h-4 md:w-5 md:h-5" /></button>
-                    <span className="font-bold text-sm md:text-base lg:text-lg w-28 md:w-32 lg:w-40 text-center text-gray-700">{["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
-                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-1.5 md:p-2 hover:bg-white rounded-lg shadow-sm transition-colors"><ChevronDown className="-rotate-90 text-gray-600 w-4 h-4 md:w-5 md:h-5" /></button>
+           <div className={`p-5 md:p-8 rounded-3xl h-full flex flex-col ${glassCard}`}>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
+                 <h3 className="font-bold text-lg md:text-xl lg:text-2xl text-gray-800 flex items-center gap-3"><Calendar className="w-6 h-6 md:w-7 md:h-7" style={{ color: theme.primary }}/> Mutaba'ah Harian</h3>
+                 <div className="flex items-center justify-between gap-4 bg-white/70 backdrop-blur-md p-2 rounded-xl border border-white shadow-sm w-full sm:w-auto">
+                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-white rounded-lg shadow-sm transition-colors active:scale-95"><ChevronDown className="rotate-90 text-[#26544d] w-5 h-5" /></button>
+                    <span className="font-bold text-sm md:text-base lg:text-lg w-32 md:w-40 text-center text-gray-800">{["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
+                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-2 hover:bg-white rounded-lg shadow-sm transition-colors active:scale-95"><ChevronDown className="-rotate-90 text-[#26544d] w-5 h-5" /></button>
                  </div>
               </div>
             
-            <div className="grid grid-cols-7 gap-2 md:gap-3 lg:gap-4 flex-1 content-start">
-              {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => <div key={d} className="text-center text-[10px] md:text-sm font-bold text-gray-500 py-1 md:py-2 uppercase tracking-widest">{d}</div>)}
+            <div className="grid grid-cols-7 gap-3 lg:gap-4 flex-1 content-start">
+              {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => <div key={d} className="text-center text-[10px] md:text-sm font-bold text-gray-500 py-2 uppercase tracking-widest">{d}</div>)}
               {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} className="p-2 md:p-3"></div>)}
               
               {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -1254,7 +1257,7 @@ const WaliDashboardView = ({ students, records, user }) => {
                 const record = records.find(r => r.studentId === student.id && r.date === dateStr);
                 const isToday = dateStr === getLocalYYYYMMDD(new Date());
                 
-                let statusColor = "bg-white/40 border-white/50 text-gray-500 shadow-sm"; 
+                let statusColor = "bg-white/50 border-white/60 text-gray-400 shadow-sm"; 
                 if (record) { 
                    if (record.presensi === 'Hadir') statusColor = "bg-[#54af48]/20 border-[#54af48]/30 text-[#26544d] shadow-md backdrop-blur-sm"; 
                    else if (record.presensi === 'Alpha') statusColor = "bg-red-100/80 border-red-200 text-red-700 shadow-md backdrop-blur-sm"; 
@@ -1265,9 +1268,9 @@ const WaliDashboardView = ({ students, records, user }) => {
                   <div 
                      key={day} 
                      onClick={() => { if(record) { setSelectedRecord(record); setSelectedDateStr(dateStr); setDetailModalOpen(true); } }}
-                     className={`relative flex items-center justify-center aspect-square w-full rounded-xl md:rounded-2xl border-2 ${statusColor} ${isToday ? 'border-blue-400 ring-2 ring-blue-200/50' : ''} ${record ? 'cursor-pointer hover:scale-105 active:scale-95 hover:shadow-lg' : ''} transition-all duration-200`}
+                     className={`relative flex items-center justify-center aspect-square w-full rounded-2xl border-2 ${statusColor} ${isToday ? 'border-blue-400 ring-2 ring-blue-200/50 font-black' : ''} ${record ? 'cursor-pointer hover:scale-105 active:scale-95 hover:shadow-lg' : ''} transition-all duration-200`}
                   >
-                    <span className="text-sm md:text-lg lg:text-xl font-bold">{day}</span>
+                    <span className="text-base md:text-lg lg:text-xl font-bold">{day}</span>
                   </div>
                 );
               })}
@@ -1280,20 +1283,20 @@ const WaliDashboardView = ({ students, records, user }) => {
          <div className="fixed inset-0 z-[9999] overflow-y-auto">
             <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
             <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-               <div className="m-auto bg-white/90 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md p-6 sm:p-8 animate-in fade-in zoom-in duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
-                  <div className="absolute top-0 left-0 w-full h-2 md:h-3" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}></div>
+               <div className="m-auto bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md p-6 sm:p-8 animate-in fade-in zoom-in duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <div className="absolute top-0 left-0 w-full h-3" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}></div>
 
-                  <div className="flex justify-between items-start mb-6 pt-2">
+                  <div className="flex justify-between items-start mb-6 pt-3">
                      <div>
                         <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tanggal Mutaba'ah</p>
-                        <h3 className="text-base sm:text-lg font-black text-gray-800">{formatIndoDate(selectedDateStr)}</h3>
+                        <h3 className="text-lg sm:text-xl font-black text-gray-800">{formatIndoDate(selectedDateStr)}</h3>
                      </div>
-                     <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-100/50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 rounded-full transition-colors"><X className="w-5 h-5"/></button>
+                     <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-100/50 hover:bg-gray-200/50 text-gray-400 hover:text-gray-600 rounded-full transition-colors"><X className="w-5 h-5"/></button>
                   </div>
                   
-                  <div className="mb-6 flex flex-col items-center bg-white/60 shadow-inner py-4 md:py-5 rounded-2xl border border-white">
-                     <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 md:mb-3">Status Kehadiran</p>
-                     <span className="inline-flex px-6 md:px-8 py-2 md:py-2.5 rounded-full text-sm md:text-base font-black uppercase tracking-widest text-white shadow-lg" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}>
+                  <div className="mb-6 flex flex-col items-center bg-white/80 shadow-inner py-5 rounded-2xl border border-gray-100">
+                     <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Status Kehadiran</p>
+                     <span className="inline-flex px-8 py-2.5 rounded-full text-sm md:text-base font-black uppercase tracking-widest text-white shadow-lg" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}>
                         {selectedRecord.presensi}
                      </span>
                   </div>
@@ -1301,64 +1304,64 @@ const WaliDashboardView = ({ students, records, user }) => {
                   {selectedRecord.presensi === 'Hadir' && (
                      <div className="space-y-4">
                         {selectedRecord.ziyadah ? (
-                           <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-md relative overflow-hidden flex flex-row items-center justify-between gap-4">
-                              <div className="flex items-center gap-3 md:gap-4">
-                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.primary + '15' }}>
-                                    <BookOpen className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/>
+                           <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-md relative overflow-hidden flex flex-row items-center justify-between gap-4">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.primary + '15' }}>
+                                    <BookOpen className="w-6 h-6" style={{ color: theme.primary }}/>
                                  </div>
                                  <div>
-                                    <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Ziyadah</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ziyadah</p>
                                     <p className="text-sm md:text-base font-bold text-gray-800">{formatZiyadahSurahSafe(selectedRecord.ziyadah)}</p>
                                  </div>
                               </div>
                               <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai Evaluasi</p>
-                                 <span className="text-xl md:text-2xl font-black" style={{ color: theme.primary }}>{selectedRecord.ziyadah.finalScore}</span>
+                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai Evaluasi</p>
+                                 <span className="text-2xl font-black" style={{ color: theme.primary }}>{selectedRecord.ziyadah.finalScore}</span>
                               </div>
                            </div>
                         ) : (
-                           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400 shadow-inner">Setoran Ziyadah belum tercatat</div>
+                           <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400 shadow-inner">Setoran Ziyadah belum tercatat</div>
                         )}
                         
                         {selectedRecord.murajaah ? (
-                           <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-md relative overflow-hidden flex flex-row items-center justify-between gap-4">
-                              <div className="flex items-center gap-3 md:gap-4">
-                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary + '15' }}>
-                                    <RotateCcw className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.secondary }}/>
+                           <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-md relative overflow-hidden flex flex-row items-center justify-between gap-4">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary + '15' }}>
+                                    <RotateCcw className="w-6 h-6" style={{ color: theme.secondary }}/>
                                  </div>
                                  <div>
-                                    <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Muraja'ah</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Muraja'ah</p>
                                     <p className="text-sm md:text-base font-bold text-gray-800">Juz {selectedRecord.murajaah.fromJuz} - Juz {selectedRecord.murajaah.toJuz}</p>
                                  </div>
                               </div>
                               <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                                 <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 md:mb-1">Nilai Evaluasi</p>
-                                 <span className="text-xl md:text-2xl font-black" style={{ color: theme.secondary }}>{selectedRecord.murajaah.finalScore}</span>
+                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai Evaluasi</p>
+                                 <span className="text-2xl font-black" style={{ color: theme.secondary }}>{selectedRecord.murajaah.finalScore}</span>
                               </div>
                            </div>
                         ) : (
-                           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400 shadow-inner">Setoran Muraja'ah belum tercatat</div>
+                           <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400 shadow-inner">Setoran Muraja'ah belum tercatat</div>
                         )}
                      </div>
                   )}
 
                   {selectedRecord.presensi === 'Izin/Sakit' && (
-                     <div className="bg-yellow-50 p-5 rounded-2xl border border-yellow-100 flex flex-col items-center text-center mt-2 shadow-inner">
-                        <AlertCircle className="w-6 h-6 text-yellow-500 mb-2"/>
-                        <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-1.5 md:mb-2">Keterangan Pengampu</p>
-                        <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || '-'}</p>
+                     <div className="bg-yellow-50 p-6 rounded-2xl border border-yellow-100 flex flex-col items-center text-center mt-2 shadow-inner">
+                        <AlertCircle className="w-8 h-8 text-yellow-500 mb-3"/>
+                        <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-2">Keterangan Pengampu</p>
+                        <p className="text-sm md:text-base font-bold text-gray-800 leading-relaxed">{selectedRecord.keterangan || '-'}</p>
                      </div>
                   )}
 
                   {selectedRecord.presensi === 'Alpha' && (
-                     <div className="bg-red-50 p-5 rounded-2xl border border-red-100 flex flex-col items-center text-center mt-2 shadow-inner">
-                        <AlertTriangle className="w-6 h-6 text-red-500 mb-2"/>
-                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1.5 md:mb-2">Catatan Sistem</p>
-                        <p className="text-sm md:text-base font-bold text-gray-800">{selectedRecord.keterangan || 'Tanpa keterangan lebih lanjut'}</p>
+                     <div className="bg-red-50 p-6 rounded-2xl border border-red-100 flex flex-col items-center text-center mt-2 shadow-inner">
+                        <AlertTriangle className="w-8 h-8 text-red-500 mb-3"/>
+                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-2">Catatan Sistem</p>
+                        <p className="text-sm md:text-base font-bold text-gray-800 leading-relaxed">{selectedRecord.keterangan || 'Tanpa keterangan lebih lanjut'}</p>
                      </div>
                   )}
 
-                  <button onClick={() => setDetailModalOpen(false)} className="mt-8 w-full py-3 md:py-3.5 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-colors">Tutup Detail Laporan</button>
+                  <button onClick={() => setDetailModalOpen(false)} className="mt-8 w-full py-3.5 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-colors active:scale-95">Tutup Detail Laporan</button>
                </div>
             </div>
          </div>
@@ -1415,15 +1418,14 @@ const MainApp = () => {
     <div className="min-h-screen bg-[#f0f4f3] flex font-sans text-gray-800 relative overflow-hidden">
       <GlassBackground />
 
-      {/* Header Mobile (Glassy) */}
-      <div className="md:hidden bg-white/70 backdrop-blur-md p-4 flex items-center justify-between shadow-sm fixed top-0 w-full z-40 border-b border-white">
-        <div className="flex items-center gap-2">
-          <BookOpen className="w-6 h-6" style={{ color: theme.primary }}/>
-          <span className="font-black text-lg text-gray-800 tracking-tight">Markaz Digiport</span>
-        </div>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-[#26544d] bg-white/50 rounded-xl border border-white shadow-sm">
+      {/* Header Mobile (Glassy) - KIRI: HAMBURGER, TENGAH/KANAN: TEKS */}
+      <div className="md:hidden bg-white/80 backdrop-blur-xl px-4 py-3 flex items-center gap-3 shadow-[0_2px_10px_rgb(0,0,0,0.05)] fixed top-0 w-full z-40 border-b border-white/80">
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2.5 text-[#26544d] bg-white rounded-xl border border-gray-100 shadow-sm active:scale-95 transition-transform">
           {isMobileMenuOpen ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}
         </button>
+        <div className="flex items-center gap-2">
+          <span className="font-black text-lg text-[#26544d] tracking-tight">Markaz Digiport</span>
+        </div>
       </div>
 
       {/* Overlay Mobile */}
@@ -1437,30 +1439,31 @@ const MainApp = () => {
         {/* Hiasan Bias Cahaya di dalam Sidebar */}
         <div className="absolute top-0 left-0 w-full h-64 bg-[#54af48] mix-blend-screen opacity-10 blur-3xl pointer-events-none"></div>
 
-        <div className="p-6 hidden md:block relative z-10">
+        {/* Logo Markaz di dalam Sidebar (Sekarang Tampil Juga di Mobile) */}
+        <div className="p-6 relative z-10 border-b border-white/10">
           <div className="flex items-center gap-3 mb-1">
              <BookOpen className="w-8 h-8 text-[#f9e653]" />
              <span className="font-black text-2xl text-white tracking-tight">Markaz Digiport</span>
           </div>
         </div>
         
-        <div className="px-4 py-4 md:py-2 flex-1 overflow-y-auto relative z-10">
+        <div className="px-5 py-5 flex-1 overflow-y-auto relative z-10">
            {/* Profil Pengguna */}
-           <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10 mb-6 flex items-center gap-3 shadow-inner">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#26544d] font-bold text-lg bg-[#f9e653] shadow-sm">{user.name ? user.name.charAt(0) : 'U'}</div>
+           <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10 mb-8 flex items-center gap-3 shadow-inner">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#26544d] font-bold text-lg bg-[#f9e653] shadow-sm shrink-0">{user.name ? user.name.charAt(0) : 'U'}</div>
               <div className="overflow-hidden">
                  <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-0.5">{user.role}</p>
                  <p className="text-sm font-bold text-white truncate">{user.name}</p>
               </div>
            </div>
 
-           <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-4 mb-3">Menu Navigasi</p>
+           <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-4 mb-3">Menu Utama</p>
            <nav className="space-y-2">
               {menuItems.map(item => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
-                  <button key={item.id} onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold text-sm ${isActive ? 'bg-white/20 backdrop-blur-md text-white shadow-lg border border-white/20' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}>
+                  <button key={item.id} onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm ${isActive ? 'bg-white/20 backdrop-blur-md text-white shadow-lg border border-white/20' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}>
                     <Icon className={`w-5 h-5 ${isActive ? 'text-[#f9e653]' : 'text-white/50'}`}/> {item.label}
                   </button>
                 );
@@ -1469,15 +1472,15 @@ const MainApp = () => {
         </div>
         
         {/* Tombol Logout */}
-        <div className="p-4 border-t border-white/10 relative z-10">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-300 hover:bg-red-500/20 transition-colors font-bold text-sm border border-transparent hover:border-red-500/30">
-             <LogOut className="w-5 h-5"/> Keluar Aplikasi
+        <div className="p-5 border-t border-white/10 relative z-10">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-red-300 hover:bg-red-500/20 transition-colors font-bold text-sm border border-transparent hover:border-red-500/30">
+             <LogOut className="w-5 h-5"/> Keluar
           </button>
         </div>
       </div>
 
-      {/* Konten Menu Utama (Area Kanan) */}
-      <div className="flex-1 flex flex-col min-h-screen relative z-10 w-full overflow-hidden pt-16 md:pt-0">
+      {/* Konten Menu Utama (Area Kanan) - Pindah ke bawah dikit di mobile karena ada header */}
+      <div className="flex-1 flex flex-col min-h-screen relative z-10 w-full overflow-hidden pt-[68px] md:pt-0">
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto h-full">
             {activeTab === 'admin' && user.role === 'admin' && <AdminView pengampus={pengampus} students={students} />}
