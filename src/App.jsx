@@ -723,7 +723,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
             </div>
           )}
           <div className="flex items-center gap-1.5 md:gap-2 bg-white/60 backdrop-blur-sm p-2 md:p-2.5 rounded-xl border border-white/50 w-full sm:w-auto shadow-sm">
-             <label className="text-xs md:text-sm font-bold text-gray-600 px-1 md:px-2">Tanggal Laporan:</label>
+             <label className="text-xs md:text-sm font-bold text-gray-600 px-1 md:px-2">Tanggal:</label>
              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className={`border-none bg-white rounded-lg p-1.5 md:p-2 text-xs md:text-sm outline-none font-medium shadow-sm w-full ${glassInput}`}/>
           </div>
         </div>
@@ -1090,8 +1090,8 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
           <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
              <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className={`w-full sm:w-auto rounded-xl p-2 md:p-2.5 px-3 md:px-4 text-xs md:text-sm outline-none font-bold text-gray-700 min-w-[120px] shadow-sm ${glassInput}`} />
              <div className="flex gap-2 w-auto">
-                 <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-[#54af48] text-white text-xs md:text-sm font-bold rounded-xl shadow-lg hover:bg-[#46933c] transition-colors"><Download className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Unduh Excel</span></button>
-                 <button onClick={() => window.print()} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-gray-800 text-white text-xs md:text-sm font-bold rounded-xl shadow-lg hover:bg-gray-700 transition-colors"><Printer className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Cetak Rekap</span></button>
+                 <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-[#54af48] text-white text-xs md:text-sm font-bold rounded-xl shadow-lg hover:bg-[#46933c] transition-colors"><Download className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Excel</span></button>
+                 <button onClick={() => window.print()} className="flex items-center justify-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 bg-gray-800 text-white text-xs md:text-sm font-bold rounded-xl shadow-lg hover:bg-gray-700 transition-colors"><Printer className="w-4 h-4 md:w-5 md:h-5"/> <span className="hidden sm:inline">Cetak</span></button>
              </div>
           </div>
         </div>
