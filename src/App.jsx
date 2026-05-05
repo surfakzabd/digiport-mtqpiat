@@ -101,8 +101,8 @@ const formatZiyadahSurahSafe = (z) => {
   const s1 = QURAN_SURAHS[z.fromSurah]?.[0] || 'Unknown';
   const s2 = QURAN_SURAHS[z.toSurah]?.[0] || 'Unknown';
   return z.fromSurah === z.toSurah 
-    ? `${s1} ay ${z.fromAyah}-${z.toAyah}` 
-    : `${s1} ay ${z.fromAyah} - ${s2} ay ${z.toAyah}`;
+    ? `${s1} : ${z.fromAyah}-${z.toAyah}` 
+    : `${s1} : ${z.fromAyah} - ${s2} : ${z.toAyah}`;
 };
 
 // ==========================================
@@ -125,7 +125,9 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
       <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
       <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-        <div className="m-auto bg-white/90 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-sm p-6 md:p-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+        <div className="m-auto bg-white/95 backdrop-blur-xl border border-red-500/40 rounded-3xl shadow-2xl w-full max-w-sm pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 animate-in fade-in zoom-in duration-200 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="absolute top-0 left-0 w-full h-2 md:h-2.5 bg-red-500"></div>
+          
           <div className="flex items-center gap-4 text-red-600 mb-4">
             <div className="p-3 bg-red-50 rounded-2xl">
               <AlertTriangle className="w-7 h-7" />
@@ -161,7 +163,9 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
       <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
       <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-        <div className="m-auto bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-6 md:p-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+        <div className="m-auto bg-white/95 backdrop-blur-xl border rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 animate-in fade-in zoom-in duration-200 relative overflow-hidden" onClick={e => e.stopPropagation()} style={{ borderColor: theme.primary + '50' }}>
+          <div className="absolute top-0 left-0 w-full h-2 md:h-2.5" style={{ backgroundColor: theme.primary }}></div>
+
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-3">
               <div className="p-2.5 bg-[#26544d]/10 rounded-xl">
@@ -254,7 +258,9 @@ const ResetAccessModal = ({ isOpen, target, onSave, onCancel }) => {
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
       <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
       <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-        <div className="m-auto bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md p-6 md:p-8 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+        <div className="m-auto bg-white/95 backdrop-blur-xl border border-yellow-500/40 rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 animate-in fade-in zoom-in duration-200 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="absolute top-0 left-0 w-full h-2 md:h-2.5 bg-yellow-500"></div>
+
           <div className="flex items-center justify-between mb-5">
             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-3">
               <div className="p-2.5 bg-[#f9e653]/20 rounded-xl">
@@ -342,8 +348,10 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-6 bg-[#f0f4f3] relative overflow-hidden">
       <GlassBackground />
-      <div className={`relative z-10 p-6 md:p-10 rounded-[2rem] w-full max-w-[90%] sm:max-w-md ${glassCard} border-t-[8px]`} style={{ borderTopColor: theme.primary }}>
-        <div className="text-center mb-8 md:mb-10">
+      <div className={`relative z-10 px-6 pb-6 pt-8 md:px-10 md:pb-10 md:pt-12 rounded-[2rem] w-full max-w-[90%] sm:max-w-md bg-white/80 backdrop-blur-xl border shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden`} style={{ borderColor: theme.primary + '50' }}>
+        <div className="absolute top-0 left-0 w-full h-2 md:h-2.5" style={{ backgroundColor: theme.primary }}></div>
+
+        <div className="text-center mb-8 md:mb-10 mt-2">
           <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-5 bg-white rounded-2xl shadow-lg flex items-center justify-center border border-gray-100">
              <BookOpen className="w-8 h-8 md:w-10 md:h-10" style={{ color: theme.primary }} />
           </div>
@@ -434,7 +442,7 @@ const SettingsView = () => {
                  <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Kata Sandi Baru</label>
                  <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="w-5 h-5 text-gray-400" /></div>
-                    <input type="text" required minLength={6} value={newPassword} onChange={e => setNewPassword(e.target.value)} className={`w-full pl-11 pr-4 py-3 md:py-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Masukkan minimal 6 karakter" />
+                    <input type="text" required minLength={6} value={newPassword} onChange={e => setNewPassword(e.target.value)} className={`w-full pl-11 pr-4 py-3 md:py-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Minimal 6 karakter" />
                  </div>
               </div>
               <button type="submit" disabled={loading} className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-white text-sm md:text-base font-bold shadow-lg transition-transform active:scale-95 flex justify-center items-center gap-2.5 hover:opacity-90" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50`, opacity: loading ? 0.7 : 1 }}>
@@ -539,7 +547,7 @@ const AdminView = ({ pengampus, students }) => {
            </div>
            <div>
              <h2 className="text-xl md:text-2xl font-bold text-gray-800">Tambah Pengampu</h2>
-             <p className="text-xs md:text-sm text-gray-500 mt-1">Pendaftaran akun otomatis terhubung dengan sistem keamanan berenkripsi.</p>
+             <p className="text-xs md:text-sm text-gray-500 mt-1">Akun otomatis terhubung dengan sistem keamanan berenkripsi.</p>
            </div>
         </div>
         
@@ -603,13 +611,14 @@ const AdminView = ({ pengampus, students }) => {
                 
                 {isExpanded && (
                   <div className="border-t border-white/40 bg-white/30 p-4 md:p-6 lg:p-8 animate-in slide-in-from-top-4 duration-200">
-                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white/60 backdrop-blur-md p-4 md:p-5 rounded-2xl shadow-sm border border-white mb-6 md:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end relative overflow-hidden">
+                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white/60 backdrop-blur-md p-4 md:p-5 rounded-2xl shadow-sm border mb-6 md:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end relative overflow-hidden" style={{ borderColor: theme.secondary + '50' }}>
                       <div className="absolute top-0 left-0 w-2 h-full" style={{ backgroundColor: theme.secondary }}></div>
+                      
                       <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Nama Santri</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="Nama Lengkap" /></div>
                       <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Kls/Smt</label><div className="flex gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className={`w-1/2 p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className={`w-1/2 p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
                       <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className={`w-full p-2.5 md:p-3 border-r-0 rounded-l-xl text-sm outline-none ${glassInput}`} /><span className="bg-white/50 p-2.5 md:p-3 border border-white/50 border-l-0 rounded-r-xl text-[10px] md:text-xs text-gray-500 font-bold">Juz</span></div></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="tanpaspasi" /></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Kata Sandi</label><div className="flex gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="Minimal 6" /><button type="submit" disabled={isProcessing} className="p-2.5 md:p-3 rounded-xl text-white font-bold transition-transform active:scale-95 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary, opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Plus className="w-5 h-5"/>}</button></div></div>
+                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="Tanpa Spasi" /></div>
+                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Sandi Akses</label><div className="flex gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="Minimal 6 karakter" /><button type="submit" disabled={isProcessing} className="p-2.5 md:p-3 rounded-xl text-white font-bold transition-transform active:scale-95 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary, opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Plus className="w-5 h-5"/>}</button></div></div>
                     </form>
                     
                     <div className="overflow-x-auto bg-white/70 backdrop-blur-md rounded-2xl border border-white shadow-sm w-full">
@@ -638,7 +647,7 @@ const AdminView = ({ pengampus, students }) => {
                                      </div>
                                    </td>
                                    <td className="p-4 lg:p-5 text-center">
-                                      <button onClick={() => setResetTarget({ type: 'student', data: s })} className="text-[#eab308] hover:text-[#ca9a04] p-2 hover:bg-yellow-50 rounded-full transition-colors mr-1.5 drop-shadow-sm bg-white/50" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4 md:w-5 md:h-5"/></button>
+                                      <button onClick={() => setResetTarget({ type: 'student', data: s })} className="text-[#eab308] hover:text-[#ca9a04] p-2 hover:bg-yellow-50 rounded-full transition-colors mr-1.5 drop-shadow-sm bg-white/50" title="Atur Ulang Akses"><Key className="w-4 h-4 md:w-5 md:h-5"/></button>
                                       <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-[#54af48] hover:text-[#46933c] p-2 hover:bg-green-50 rounded-full transition-colors mr-1.5 drop-shadow-sm bg-white/50" title="Edit Profil"><Edit className="w-4 h-4 md:w-5 md:h-5"/></button>
                                       <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors drop-shadow-sm bg-white/50" title="Hapus Data"><Trash2 className="w-4 h-4 md:w-5 md:h-5"/></button>
                                    </td>
@@ -684,7 +693,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
           const hasRecord = records.some(r => r.studentId === student.id && r.date === yesterdayStr);
           if (!hasRecord) {
              const recordId = `${student.id}_${yesterdayStr}`;
-             const payload = { studentId: student.id, date: yesterdayStr, presensi: 'Alpha', keterangan: 'Tercatat otomatis oleh sistem (Laporan kosong)', autoGenerated: true };
+             const payload = { studentId: student.id, date: yesterdayStr, presensi: 'Alpha', keterangan: 'Tercatat otomatis (kosong)', autoGenerated: true };
              try { await setDoc(doc(db, getCollectionPath('records'), recordId), payload); } catch (e) {}
           }
        }
@@ -921,10 +930,10 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
                    </div>
                    <div className="mt-4 p-4 md:p-5 rounded-2xl border-[3px] flex items-center justify-between bg-white/90 backdrop-blur-md shadow-md transition-all" style={{ borderColor: theme.primary }}>
                       <div><p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Skor Akhir</p><div className="flex items-baseline gap-2"><span className="text-3xl md:text-4xl font-black" style={{ color: theme.primary }}>{ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}</span></div></div>
-                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Koreksi Manual</label><input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="Otomatis" className={`w-20 md:w-24 px-3 py-2 text-base font-bold text-center rounded-xl ${glassInput}`} style={{ focusRingColor: theme.secondary, focusRingWidth: '2px' }} /></div>
+                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Ubah Manual</label><input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="-" className={`w-20 md:w-24 px-3 py-2 text-base font-bold text-center rounded-xl ${glassInput}`} style={{ focusRingColor: theme.secondary, focusRingWidth: '2px' }} /></div>
                    </div>
                 </div>
-             ) : (<div className="flex-1 flex items-center justify-center py-8"><p className="text-sm text-gray-400 italic font-medium">Borang Ziyadah ditutup sementara.</p></div>)}
+             ) : (<div className="flex-1 flex items-center justify-center py-8"><p className="text-sm text-gray-400 italic font-medium">Kolom Ziyadah ditutup sementara.</p></div>)}
           </div>
           
           <div className={`p-5 md:p-6 lg:p-8 rounded-3xl border shadow-sm flex flex-col transition-all ${!isMurajaahActive ? 'border-white/50 bg-white/40' : 'border-white bg-white/70 backdrop-blur-md'}`}>
@@ -947,10 +956,10 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
                    </div>
                    <div className="mt-4 p-4 md:p-5 rounded-2xl border-[3px] flex items-center justify-between bg-white/90 backdrop-blur-md shadow-md transition-all" style={{ borderColor: theme.secondary }}>
                       <div><p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Skor Akhir</p><div className="flex items-baseline gap-2"><span className="text-3xl md:text-4xl font-black" style={{ color: theme.secondary }}>{murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}</span></div></div>
-                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Koreksi Manual</label><input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="Otomatis" className={`w-20 md:w-24 px-3 py-2 text-base font-bold text-center rounded-xl outline-none ${glassInput}`} style={{ focusRingColor: theme.primary, focusRingWidth: '2px' }} /></div>
+                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Ubah Manual</label><input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="-" className={`w-20 md:w-24 px-3 py-2 text-base font-bold text-center rounded-xl outline-none ${glassInput}`} style={{ focusRingColor: theme.primary, focusRingWidth: '2px' }} /></div>
                    </div>
                 </div>
-             ) : (<div className="flex-1 flex items-center justify-center py-8"><p className="text-sm text-gray-400 italic font-medium">Borang Muraja'ah ditutup sementara.</p></div>)}
+             ) : (<div className="flex-1 flex items-center justify-center py-8"><p className="text-sm text-gray-400 italic font-medium">Kolom Muraja'ah ditutup sementara.</p></div>)}
           </div>
         </div>
       )}
@@ -1203,12 +1212,14 @@ const WaliDashboardView = ({ students, records, user }) => {
     <div className="space-y-6 md:space-y-8 pb-10 relative z-10">
       <div className={`p-5 md:p-8 rounded-3xl ${glassCard}`}>
          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">Dashboard Ananda</h2>
-         <p className="text-xs md:text-sm text-gray-500 mt-1">Pantau perkembangan tahfidz ananda secara real-time.</p>
+         <p className="text-xs md:text-sm text-gray-500 mt-1">Pantau perkembangan tahfidz Ananda secara real-time.</p>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-4 space-y-6">
-           <div className={`p-6 md:p-8 rounded-3xl border-t-[8px] ${glassCard}`} style={{ borderTopColor: theme.primary }}>
+           <div className={`pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 rounded-3xl bg-white/80 backdrop-blur-xl border shadow-lg relative overflow-hidden`} style={{ borderColor: theme.primary + '50' }}>
+              <div className="absolute top-0 left-0 w-full h-2 md:h-2.5" style={{ backgroundColor: theme.primary }}></div>
+
               <div className="flex items-center gap-4 mb-6">
                  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl lg:text-3xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{student.name ? student.name.charAt(0) : '?'}</div>
                  <div>
@@ -1283,10 +1294,10 @@ const WaliDashboardView = ({ students, records, user }) => {
          <div className="fixed inset-0 z-[9999] overflow-y-auto">
             <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
             <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-               <div className="m-auto bg-white/95 backdrop-blur-xl border border-white/60 rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md p-6 sm:p-8 animate-in fade-in zoom-in duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
-                  <div className="absolute top-0 left-0 w-full h-3" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}></div>
+               <div className="m-auto bg-white/95 backdrop-blur-xl border rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 animate-in fade-in zoom-in duration-200 flex flex-col relative overflow-hidden" onClick={e => e.stopPropagation()} style={{ borderColor: selectedRecord.presensi === 'Hadir' ? theme.secondary + '60' : selectedRecord.presensi === 'Alpha' ? '#ef444460' : theme.warning + '60' }}>
+                  <div className="absolute top-0 left-0 w-full h-2 md:h-2.5" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}></div>
 
-                  <div className="flex justify-between items-start mb-6 pt-3">
+                  <div className="flex justify-between items-start mb-6 pt-2">
                      <div>
                         <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tanggal Mutaba'ah</p>
                         <h3 className="text-lg sm:text-xl font-black text-gray-800">{formatIndoDate(selectedDateStr)}</h3>
@@ -1315,7 +1326,7 @@ const WaliDashboardView = ({ students, records, user }) => {
                                  </div>
                               </div>
                               <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai Evaluasi</p>
+                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</p>
                                  <span className="text-2xl font-black" style={{ color: theme.primary }}>{selectedRecord.ziyadah.finalScore}</span>
                               </div>
                            </div>
@@ -1335,7 +1346,7 @@ const WaliDashboardView = ({ students, records, user }) => {
                                  </div>
                               </div>
                               <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai Evaluasi</p>
+                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</p>
                                  <span className="text-2xl font-black" style={{ color: theme.secondary }}>{selectedRecord.murajaah.finalScore}</span>
                               </div>
                            </div>
@@ -1357,7 +1368,7 @@ const WaliDashboardView = ({ students, records, user }) => {
                      <div className="bg-red-50 p-6 rounded-2xl border border-red-100 flex flex-col items-center text-center mt-2 shadow-inner">
                         <AlertTriangle className="w-8 h-8 text-red-500 mb-3"/>
                         <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-2">Catatan Sistem</p>
-                        <p className="text-sm md:text-base font-bold text-gray-800 leading-relaxed">{selectedRecord.keterangan || 'Tanpa keterangan lebih lanjut'}</p>
+                        <p className="text-sm md:text-base font-bold text-gray-800 leading-relaxed">{selectedRecord.keterangan || 'Santri tidak hadir'}</p>
                      </div>
                   )}
 
@@ -1515,7 +1526,9 @@ class ErrorBoundary extends React.Component {
       return (
         <div className="min-h-screen bg-[#f0f4f3] p-6 flex flex-col items-center justify-center font-sans relative overflow-hidden">
           <GlassBackground />
-          <div className={`relative z-10 p-6 md:p-8 rounded-3xl max-w-lg w-full text-center border-t-8 border-gray-400 ${glassCard}`}>
+          <div className={`relative z-10 px-6 pb-6 pt-8 md:px-8 md:pb-8 md:pt-10 rounded-3xl max-w-lg w-full text-center border overflow-hidden bg-white/80 backdrop-blur-xl shadow-lg border-gray-400/50`}>
+            <div className="absolute top-0 left-0 w-full h-2 md:h-3 bg-gray-400"></div>
+            
             <AlertTriangle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h1 className="text-xl md:text-2xl font-black text-gray-800">Mohon Maaf, Terjadi Kendala Sistem</h1>
             <p className="text-gray-500 mt-3 text-sm md:text-base leading-relaxed">
@@ -1550,7 +1563,9 @@ function AppStarter() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#f0f4f3] font-sans relative overflow-hidden">
          <GlassBackground />
-         <div className={`relative z-10 p-6 md:p-8 rounded-3xl max-w-lg text-center border-t-8 border-yellow-500 ${glassCard}`}>
+         <div className={`relative z-10 px-6 pb-6 pt-8 md:px-8 md:pb-8 md:pt-10 rounded-3xl max-w-lg text-center border overflow-hidden bg-white/80 backdrop-blur-xl shadow-lg border-yellow-500/50`}>
+             <div className="absolute top-0 left-0 w-full h-2 md:h-3 bg-yellow-500"></div>
+
              <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-bounce drop-shadow-md" />
              <h1 className="text-xl md:text-2xl font-black text-gray-800 mb-3">Mohon Perhatian</h1>
              <p className="text-gray-600 mb-4 text-sm md:text-base leading-relaxed">
