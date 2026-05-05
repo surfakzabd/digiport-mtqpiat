@@ -375,7 +375,7 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
           </div>
           
           <button type="submit" disabled={loading} className="w-full mt-3 md:mt-4 p-3 md:p-4 rounded-xl text-white text-sm md:text-base font-bold shadow-xl hover:opacity-90 transition-all flex justify-center items-center" style={{ backgroundColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c', shadowColor: `${role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c'}50`, opacity: loading ? 0.7 : 1 }}>
-            {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk Sistem'}
+            {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk'}
           </button>
         </form>
       </div>
