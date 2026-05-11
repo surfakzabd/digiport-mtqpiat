@@ -56,14 +56,15 @@ const theme = {
   primary: '#26544d',
   secondary: '#54af48',
   accent: '#f9e653',
-  bg: '#f0f4f3',
+  bg: '#f4f7f6', // Slightly lighter for cleaner contrast
   white: '#ffffff',
   danger: '#ef4444',
   warning: '#eab308'
 };
 
-const glassCard = "bg-white/80 backdrop-blur-xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)]";
-const glassInput = "bg-white/60 backdrop-blur-md border border-white/60 text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-[#54af48]/40 transition-all shadow-inner";
+// UI Classes Baru: Lebih bersih, bayangan lebih soft, rounded konsisten
+const glassCard = "bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] rounded-2xl";
+const glassInput = "bg-white/50 backdrop-blur-md border border-gray-200/50 text-gray-800 placeholder-gray-400 focus:bg-white/90 focus:ring-2 focus:ring-[#54af48]/40 focus:border-transparent transition-all shadow-sm rounded-xl outline-none";
 
 const QURAN_SURAHS = [
   ["Al-Fatihah",7], ["Al-Baqarah",286], ["Ali 'Imran",200], ["An-Nisa'",176], ["Al-Ma'idah",120], ["Al-An'am",165], ["Al-A'raf",206], ["Al-Anfal",75], ["At-Taubah",129], ["Yunus",109],
@@ -101,44 +102,37 @@ const formatZiyadahSurahSafe = (z) => {
   const s1 = QURAN_SURAHS[z.fromSurah]?.[0] || 'Unknown';
   const s2 = QURAN_SURAHS[z.toSurah]?.[0] || 'Unknown';
   return z.fromSurah === z.toSurah 
-    ? `${s1} : ${z.fromAyah}-${z.toAyah}` 
-    : `${s1} : ${z.fromAyah} - ${s2} : ${z.toAyah}`;
+    ? `${s1} ay ${z.fromAyah}-${z.toAyah}` 
+    : `${s1} ay ${z.fromAyah} - ${s2} ay ${z.toAyah}`;
 };
 
 // ==========================================
-// BACKGROUND GLASSMORPHISM BLOBS (REUSABLE)
+// BACKGROUND GLASSMORPHISM (MINIMALIST)
 // ==========================================
 const GlassBackground = () => (
-  <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-    <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#54af48] rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
-    <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-[#26544d] rounded-full mix-blend-multiply filter blur-[128px] opacity-15"></div>
-    <div className="absolute top-[20%] right-[10%] w-[400px] h-[400px] bg-[#f9e653] rounded-full mix-blend-multiply filter blur-[128px] opacity-[0.12]"></div>
+  <div className="fixed inset-0 pointer-events-none z-0 bg-[#f4f7f6]">
+    <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-gradient-to-br from-[#54af48]/10 to-transparent rounded-full blur-[100px]"></div>
+    <div className="absolute bottom-[-10%] right-[-5%] w-[60vw] h-[60vw] bg-gradient-to-tl from-[#26544d]/10 to-transparent rounded-full blur-[100px]"></div>
   </div>
 );
 
 // ==========================================
 // 3. KOMPONEN MODAL (REUSABLE)
 // ==========================================
-const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "Hapus Data" }) => {
+const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "Hapus" }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
-      <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
-      <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-        <div className="m-auto bg-white/95 backdrop-blur-xl border border-red-500/40 rounded-3xl shadow-2xl w-full max-w-sm pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 animate-in fade-in zoom-in duration-200 relative overflow-hidden" onClick={e => e.stopPropagation()}>
-          <div className="absolute top-0 left-0 w-full h-2 md:h-2.5 bg-red-500"></div>
-          
-          <div className="flex items-center gap-4 text-red-600 mb-4">
-            <div className="p-3 bg-red-50 rounded-2xl">
-              <AlertTriangle className="w-7 h-7" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-800 leading-tight">{title}</h3>
-          </div>
-          <p className="text-sm md:text-base text-gray-600 mb-6 leading-relaxed">{message}</p>
-          <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end">
-            <button onClick={onCancel} className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-sm md:text-base text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 transition-colors shadow-sm">Batal</button>
-            <button onClick={onConfirm} className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-sm md:text-base bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/30 transition-transform active:scale-95">{confirmText}</button>
-          </div>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+      <div className="bg-white/95 backdrop-blur-xl border border-white/80 rounded-2xl shadow-2xl w-full max-w-sm p-6 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center gap-3 text-red-500 mb-3">
+          <AlertTriangle className="w-6 h-6" />
+          <h3 className="text-lg font-bold text-gray-800 leading-tight">{title}</h3>
+        </div>
+        <p className="text-sm text-gray-600 mb-6 leading-relaxed">{message}</p>
+        <div className="flex gap-3 justify-end">
+          <button onClick={onCancel} className="px-4 py-2 rounded-xl font-semibold text-sm text-gray-600 bg-gray-100/80 hover:bg-gray-200 transition-colors">Batal</button>
+          <button onClick={onConfirm} className="px-4 py-2 rounded-xl font-semibold text-sm bg-red-500 text-white hover:bg-red-600 shadow-md shadow-red-500/20 transition-colors">{confirmText}</button>
         </div>
       </div>
     </div>
@@ -160,75 +154,69 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
-      <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
-      <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-        <div className="m-auto bg-white/95 backdrop-blur-xl border rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 animate-in fade-in zoom-in duration-200 relative overflow-hidden" onClick={e => e.stopPropagation()} style={{ borderColor: theme.primary + '50' }}>
-          <div className="absolute top-0 left-0 w-full h-2 md:h-2.5" style={{ backgroundColor: theme.primary }}></div>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+      <div className="bg-white/95 backdrop-blur-xl border border-white/80 rounded-2xl shadow-2xl w-full max-w-md p-6 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             <Edit className="w-5 h-5 text-[#26544d]"/> 
+             Edit {isStudent ? 'Data Santri' : 'Pengampu'}
+          </h3>
+          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1.5 bg-gray-100 rounded-full transition-colors"><X className="w-4 h-4"/></button>
+        </div>
 
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-3">
-              <div className="p-2.5 bg-[#26544d]/10 rounded-xl">
-                 <Edit className="w-5 h-5 md:w-6 md:h-6" style={{ color: theme.primary }}/> 
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Nama Lengkap</label>
+            <input required type="text" name="name" value={formData.name || ''} onChange={handleChange} className={`w-full p-2.5 text-sm ${glassInput}`} />
+          </div>
+          
+          {isStudent && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Kelas</label>
+                  <select name="kelas" value={formData.kelas || '1'} onChange={handleChange} className={`w-full p-2.5 text-sm ${glassInput}`}>
+                    <option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Semester</label>
+                  <select name="semester" value={formData.semester || '1'} onChange={handleChange} className={`w-full p-2.5 text-sm ${glassInput}`}>
+                    {[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
               </div>
-              Edit {isStudent ? 'Data Santri' : 'Pengampu'}
-            </h3>
-            <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-2 bg-gray-100/50 hover:bg-gray-200/50 rounded-full transition-colors"><X className="w-5 h-5"/></button>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Halaqah</label>
+                  <select name="pengampuId" value={formData.pengampuId || ''} onChange={handleChange} className={`w-full p-2.5 text-sm ${glassInput}`}>
+                    {pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Target Tercapai</label>
+                  <div className="flex">
+                    <input type="number" min="0" max="30" name="juzTercapai" value={formData.juzTercapai || 0} onChange={handleChange} className={`w-full p-2.5 border-r-0 rounded-l-xl text-sm ${glassInput}`} />
+                    <span className="bg-gray-100/50 p-2.5 border border-gray-200/50 border-l-0 rounded-r-xl text-xs text-gray-500 font-bold flex items-center">Juz</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Username <span className="lowercase font-medium">(Tetap)</span></label>
+            <input type="text" name="username" value={formData.username || ''} disabled className="w-full p-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-400 cursor-not-allowed outline-none font-medium" />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
-            <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nama Lengkap</label>
-              <input required type="text" name="name" value={formData.name || ''} onChange={handleChange} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} />
-            </div>
-            
-            {isStudent && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Kelas</label>
-                    <select name="kelas" value={formData.kelas || '1'} onChange={handleChange} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`}>
-                      <option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Semester</label>
-                    <select name="semester" value={formData.semester || '1'} onChange={handleChange} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`}>
-                      {[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Halaqah</label>
-                    <select name="pengampuId" value={formData.pengampuId || ''} onChange={handleChange} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`}>
-                      {pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Target Tercapai</label>
-                    <div className="flex">
-                      <input type="number" min="0" max="30" name="juzTercapai" value={formData.juzTercapai || 0} onChange={handleChange} className={`w-full p-3 border-r-0 rounded-l-xl text-sm md:text-base outline-none ${glassInput}`} />
-                      <span className="bg-white/70 backdrop-blur-sm p-3 border border-white/50 border-l-0 rounded-r-xl text-xs text-gray-500 font-bold">Juz</span>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Username <span className="lowercase font-medium">(Tetap)</span></label>
-              <input type="text" name="username" value={formData.username || ''} disabled className="w-full p-3 border border-gray-200 rounded-xl text-sm md:text-base bg-gray-100/50 text-gray-400 cursor-not-allowed outline-none font-medium" />
-            </div>
-
-            <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-6 mt-6 border-t border-gray-200/50">
-              <button type="button" onClick={onCancel} className="px-5 py-3 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-white hover:bg-gray-50 transition-colors w-full sm:w-auto shadow-sm border border-gray-200">Batal</button>
-              <button type="submit" className="px-5 py-3 rounded-xl font-bold text-sm md:text-base text-white shadow-lg transition-transform active:scale-95 w-full sm:w-auto flex justify-center items-center gap-2 hover:opacity-90" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50` }}>
-                <Check className="w-5 h-5"/> Simpan Data
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex gap-3 justify-end pt-4 mt-2">
+            <button type="button" onClick={onCancel} className="px-4 py-2.5 rounded-xl font-bold text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full sm:w-auto">Batal</button>
+            <button type="submit" className="px-4 py-2.5 rounded-xl font-bold text-sm text-white bg-[#26544d] hover:bg-[#1f453f] transition-colors w-full sm:w-auto flex justify-center items-center gap-2 shadow-md">
+              Simpan Data
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -255,49 +243,43 @@ const ResetAccessModal = ({ isOpen, target, onSave, onCancel }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
-      <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
-      <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-        <div className="m-auto bg-white/95 backdrop-blur-xl border border-yellow-500/40 rounded-3xl shadow-2xl w-full max-w-[90%] md:max-w-md pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 animate-in fade-in zoom-in duration-200 relative overflow-hidden" onClick={e => e.stopPropagation()}>
-          <div className="absolute top-0 left-0 w-full h-2 md:h-2.5 bg-yellow-500"></div>
-
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-3">
-              <div className="p-2.5 bg-[#f9e653]/20 rounded-xl">
-                 <Key className="w-5 h-5 md:w-6 md:h-6 text-yellow-600"/>
-              </div>
-              Atur Ulang Akses
-            </h3>
-            <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-2 bg-gray-100/50 hover:bg-gray-200/50 rounded-full transition-colors"><X className="w-5 h-5"/></button>
-          </div>
-          
-          <div className="bg-yellow-50/80 backdrop-blur-sm p-4 rounded-xl border border-yellow-200/50 mb-6 shadow-inner">
-             <p className="text-xs md:text-sm text-yellow-800 font-medium leading-relaxed">
-               Untuk menjaga privasi, sandi lama tidak dapat dilihat. Silakan buat <b>username baru</b> (atau tambah angka) dan sandi yang baru. Data riwayat santri akan tetap aman.
-             </p>
-          </div>
-
-          {error && <div className="p-4 bg-red-50/80 backdrop-blur-sm text-red-600 rounded-xl text-xs md:text-sm font-bold border border-red-200/50 flex items-start gap-2 mb-5 shadow-inner"><AlertCircle className="w-5 h-5 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span></div>}
-
-          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
-            <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Username Baru</label>
-              <input required type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput} focus:ring-yellow-400/50`} />
-            </div>
-            <div>
-              <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Sandi Baru</label>
-              <input required type="text" minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput} focus:ring-yellow-400/50`} />
-            </div>
-
-            <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end pt-6 mt-6 border-t border-gray-200/50">
-              <button type="button" onClick={onCancel} className="px-5 py-3 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors w-full sm:w-auto shadow-sm">Batal</button>
-              <button type="submit" disabled={isProcessing} className="px-5 py-3 rounded-xl font-bold text-sm md:text-base text-gray-800 bg-[#f9e653] hover:bg-[#e0cf4a] shadow-lg shadow-[#f9e653]/30 transition-transform active:scale-95 w-full sm:w-auto flex justify-center items-center gap-2">
-                {isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-800"></div> : <Key className="w-5 h-5"/>} 
-                {isProcessing ? 'Memproses...' : 'Terapkan Akses'}
-              </button>
-            </div>
-          </form>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+      <div className="bg-white/95 backdrop-blur-xl border border-white/80 rounded-2xl shadow-2xl w-full max-w-md p-6 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+             <Key className="w-5 h-5 text-[#eab308]"/>
+             Atur Ulang Akses
+          </h3>
+          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1.5 bg-gray-100 rounded-full transition-colors"><X className="w-4 h-4"/></button>
         </div>
+        
+        <div className="bg-yellow-50/80 p-3 rounded-xl border border-yellow-200/50 mb-5">
+           <p className="text-xs text-yellow-800 font-medium leading-relaxed">
+             Untuk menjaga privasi, sandi lama tidak dapat dilihat. Silakan buat <b>username baru</b> (atau tambah angka) dan sandi yang baru.
+           </p>
+        </div>
+
+        {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-200 flex items-start gap-2 mb-4"><AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span></div>}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Username Baru</label>
+            <input required type="text" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} className={`w-full p-2.5 text-sm ${glassInput}`} />
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Sandi Baru (Min. 6 Karakter)</label>
+            <input required type="text" minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={`w-full p-2.5 text-sm ${glassInput}`} />
+          </div>
+
+          <div className="flex gap-3 justify-end pt-4 mt-2">
+            <button type="button" onClick={onCancel} className="px-4 py-2.5 rounded-xl font-bold text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full sm:w-auto">Batal</button>
+            <button type="submit" disabled={isProcessing} className="px-4 py-2.5 rounded-xl font-bold text-sm text-gray-800 bg-[#f9e653] hover:bg-[#e0cf4a] transition-colors w-full sm:w-auto flex justify-center items-center gap-2 shadow-md">
+              {isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-800"></div> : <Key className="w-4 h-4"/>} 
+              {isProcessing ? 'Memproses...' : 'Terapkan Akses'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -332,11 +314,11 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
          if (role === 'pengampu') {
            const user = pengampus.find(p => p.username === username);
            if (user) onLogin({ role: 'pengampu', name: user.name, id: user.id });
-           else throw new Error("Profil tidak ditemukan. Silakan hubungi Admin.");
+           else throw new Error("Akun terdaftar, namun profil tidak ditemukan. Silakan hubungi Admin.");
          } else if (role === 'wali') {
            const user = students.find(s => s.username === username);
-           if (user) onLogin({ role: 'wali', name: user.name, studentId: user.id });
-           else throw new Error("Profil tidak ditemukan. Silakan hubungi Admin.");
+           if (user) onLogin({ role: 'wali', name: `Wali ${user.name}`, studentId: user.id });
+           else throw new Error("Akun terdaftar, namun profil tidak ditemukan. Silakan hubungi Admin.");
          }
        }
     } catch (err) {
@@ -346,49 +328,47 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-6 bg-[#f0f4f3] relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-transparent relative overflow-hidden">
       <GlassBackground />
-      <div className={`relative z-10 px-6 pb-6 pt-8 md:px-10 md:pb-10 md:pt-12 rounded-[2rem] w-full max-w-[90%] sm:max-w-md bg-white/80 backdrop-blur-xl border shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden`} style={{ borderColor: theme.primary + '50' }}>
-        <div className="absolute top-0 left-0 w-full h-2 md:h-2.5" style={{ backgroundColor: theme.primary }}></div>
-
-        <div className="text-center mb-8 md:mb-10 mt-2">
-          <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-5 bg-white rounded-2xl shadow-lg flex items-center justify-center border border-gray-100">
-             <BookOpen className="w-8 h-8 md:w-10 md:h-10" style={{ color: theme.primary }} />
+      <div className={`relative z-10 p-6 md:p-8 w-full max-w-sm ${glassCard}`}>
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-4 bg-white/80 rounded-2xl shadow-sm flex items-center justify-center border border-white">
+             <BookOpen className="w-8 h-8" style={{ color: theme.primary }} />
           </div>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight">Markaz Digiport</h1>
-          <p className="text-xs md:text-sm text-gray-500 font-medium mt-1.5">Sistem Presensi & Mutaba'ah Santri</p>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">Markaz Digiport</h1>
+          <p className="text-xs text-gray-500 font-medium mt-1">Sistem Presensi & Mutaba'ah</p>
         </div>
 
-        <div className="flex bg-gray-100/50 backdrop-blur-sm p-1.5 rounded-xl mb-6 md:mb-8 border border-white/50 shadow-inner">
-          <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs md:text-sm font-bold rounded-lg transition-all ${role === 'wali' ? 'bg-white text-gray-800 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
-          <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs md:text-sm font-bold rounded-lg transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
-          <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs md:text-sm font-bold rounded-lg transition-all ${role === 'admin' ? 'bg-white text-gray-800 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
+        <div className="flex bg-gray-100/50 p-1 rounded-xl mb-6 border border-white/50">
+          <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${role === 'wali' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
+          <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
+          <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${role === 'admin' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
         </div>
 
         {error && (
-           <div className="mb-5 p-3.5 md:p-4 bg-red-50/80 backdrop-blur-sm text-red-600 rounded-xl text-xs md:text-sm font-bold border border-red-200/50 flex items-start gap-2.5 shadow-inner">
-             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span>
+           <div className="mb-5 p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100 flex items-start gap-2">
+             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span>
            </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-             <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Username</label>
+             <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Username</label>
              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><User className="w-5 h-5 text-gray-400" /></div>
-                <input required type="text" value={username} onChange={e => setUsername(e.target.value.replace(/\s+/g, ''))} className={`w-full pl-11 pr-4 py-3 md:py-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan username" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><User className="w-4 h-4 text-gray-400" /></div>
+                <input required type="text" value={username} onChange={e => setUsername(e.target.value.replace(/\s+/g, ''))} className={`w-full pl-10 pr-4 py-2.5 text-sm ${glassInput}`} placeholder="Masukkan username" />
              </div>
           </div>
           <div>
-             <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Kata Sandi</label>
+             <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Kata Sandi</label>
              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="w-5 h-5 text-gray-400" /></div>
-                <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className={`w-full pl-11 pr-4 py-3 md:py-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} style={{ focusRingColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : theme.accent }} placeholder="Masukkan kata sandi" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><Lock className="w-4 h-4 text-gray-400" /></div>
+                <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className={`w-full pl-10 pr-4 py-2.5 text-sm ${glassInput}`} placeholder="Masukkan kata sandi" />
              </div>
           </div>
           
-          <button type="submit" disabled={loading} className="w-full mt-4 md:mt-6 p-3.5 md:p-4 rounded-xl text-white text-sm md:text-base font-bold shadow-xl hover:opacity-90 active:scale-95 transition-all flex justify-center items-center" style={{ backgroundColor: role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c', shadowColor: `${role === 'pengampu' ? theme.secondary : role === 'admin' ? theme.primary : '#d4c02c'}50`, opacity: loading ? 0.7 : 1 }}>
-            {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk'}
+          <button type="submit" disabled={loading} className="w-full mt-2 py-3 rounded-xl text-white text-sm font-bold shadow-md hover:bg-opacity-90 transition-all flex justify-center items-center bg-[#26544d]">
+            {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk Sistem'}
           </button>
         </form>
       </div>
@@ -410,7 +390,7 @@ const SettingsView = () => {
     setLoading(true);
     try {
        await updatePassword(auth.currentUser, newPassword);
-       setStatus({ type: 'success', msg: 'Kata sandi berhasil diperbarui! Silakan gunakan untuk login berikutnya.' });
+       setStatus({ type: 'success', msg: 'Kata sandi berhasil diperbarui! Silakan gunakan sandi baru ini untuk login berikutnya.' });
        setNewPassword('');
     } catch (err) {
        if (err.code === 'auth/requires-recent-login') setStatus({ type: 'error', msg: 'Sesi Anda terlalu lama. Demi keamanan, silakan Keluar (Logout) dan Masuk kembali sebelum memperbarui sandi.' });
@@ -420,33 +400,32 @@ const SettingsView = () => {
   };
 
   return (
-     <div className="space-y-4 md:space-y-6 pb-10">
-        <div className={`p-5 md:p-8 lg:p-10 rounded-3xl max-w-2xl ${glassCard}`}>
-           <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 flex items-center gap-3 md:gap-4">
-             <div className="p-3 bg-[#26544d]/10 rounded-2xl"><Key className="w-6 h-6 md:w-8 md:h-8" style={{ color: theme.primary }}/></div>
-             Pengaturan Akun
+     <div className="space-y-6 pb-10">
+        <div className={`p-6 md:p-8 max-w-2xl ${glassCard}`}>
+           <h2 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3">
+             <Settings className="w-6 h-6 text-[#26544d]"/> Pengaturan Akun
            </h2>
-           <p className="text-sm text-gray-500 mt-2 md:mt-3">Kelola kata sandi Anda secara berkala demi keamanan akun.</p>
+           <p className="text-sm text-gray-500 mt-2">Kelola kata sandi Anda secara berkala untuk menjaga keamanan akun akses sistem.</p>
            
-           <hr className="my-6 md:my-8 border-gray-200/50" />
+           <hr className="my-6 border-gray-200/50" />
 
            {status.msg && (
-              <div className={`p-4 md:p-5 rounded-2xl mb-6 md:mb-8 text-sm font-bold flex items-start gap-3 shadow-inner ${status.type === 'error' ? 'bg-red-50/80 backdrop-blur-sm text-red-600 border border-red-200/50' : 'bg-green-50/80 backdrop-blur-sm text-green-600 border border-green-200/50'}`}>
-                 {status.type === 'error' ? <AlertCircle className="w-6 h-6 shrink-0"/> : <Check className="w-6 h-6 shrink-0"/>}
-                 <span className="leading-relaxed mt-0.5">{status.msg}</span>
+              <div className={`p-4 rounded-xl mb-6 text-sm font-bold flex items-start gap-3 ${status.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                 {status.type === 'error' ? <AlertCircle className="w-5 h-5 shrink-0"/> : <Check className="w-5 h-5 shrink-0"/>}
+                 <span className="leading-relaxed">{status.msg}</span>
               </div>
            )}
 
-           <form onSubmit={handleUpdate} className="space-y-5 md:space-y-6">
+           <form onSubmit={handleUpdate} className="space-y-5">
               <div>
-                 <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5 md:mb-2">Kata Sandi Baru</label>
+                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Kata Sandi Baru</label>
                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="w-5 h-5 text-gray-400" /></div>
-                    <input type="text" required minLength={6} value={newPassword} onChange={e => setNewPassword(e.target.value)} className={`w-full pl-11 pr-4 py-3 md:py-3.5 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Minimal 6 karakter" />
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><Lock className="w-5 h-5 text-gray-400" /></div>
+                    <input type="text" required minLength={6} value={newPassword} onChange={e => setNewPassword(e.target.value)} className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm ${glassInput}`} placeholder="Masukkan minimal 6 karakter" />
                  </div>
               </div>
-              <button type="submit" disabled={loading} className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-white text-sm md:text-base font-bold shadow-lg transition-transform active:scale-95 flex justify-center items-center gap-2.5 hover:opacity-90" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50`, opacity: loading ? 0.7 : 1 }}>
-                 {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Key className="w-5 h-5"/>}
+              <button type="submit" disabled={loading} className="px-6 py-3 rounded-xl text-white text-sm font-bold shadow-md bg-[#26544d] hover:bg-[#1f453f] transition-colors flex justify-center items-center gap-2 w-full sm:w-auto">
+                 {loading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Key className="w-4 h-4"/>}
                  Perbarui Kata Sandi
               </button>
            </form>
@@ -489,7 +468,7 @@ const AdminView = ({ pengampus, students }) => {
       const authUid = await createFirebaseAuthUser(newPengampu.username.replace(/\s+/g, ''), newPengampu.password);
       await setDoc(doc(db, getCollectionPath('pengampus'), authUid), { id: authUid, name: newPengampu.name, username: newPengampu.username.replace(/\s+/g, '') });
       setNewPengampu({ name: '', username: '', password: '' });
-    } catch (err) { setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah digunakan." : "Gagal mendaftarkan akun."); } finally { setIsProcessing(false); }
+    } catch (err) { setFormError(err.code === 'auth/email-already-in-use' ? "Username tersebut sudah digunakan pengguna lain." : "Gagal mendaftarkan akun ke sistem keamanan."); } finally { setIsProcessing(false); }
   };
 
   const handleAddStudent = async (e, pengampuId) => {
@@ -503,7 +482,7 @@ const AdminView = ({ pengampus, students }) => {
         semester: parseInt(newStudent.semester), juzTercapai: parseInt(newStudent.juzTercapai), kelas: newStudent.kelas
       });
       setNewStudent({ name: '', kelas: '1', semester: '1', username: '', password: '', juzTercapai: 0 });
-    } catch (err) { setFormError(err.code === 'auth/email-already-in-use' ? "Username sudah digunakan." : "Gagal mendaftarkan akun."); } finally { setIsProcessing(false); }
+    } catch (err) { setFormError(err.code === 'auth/email-already-in-use' ? "Username tersebut sudah digunakan pengguna lain." : "Gagal mendaftarkan akun ke sistem keamanan."); } finally { setIsProcessing(false); }
   };
 
   const executeDelete = async () => {
@@ -529,127 +508,122 @@ const AdminView = ({ pengampus, students }) => {
       await updateDoc(doc(db, getCollectionPath(collectionName), resetTarget.data.id), { username: newUsername });
       setResetTarget(null);
     } catch (err) {
-      if (err.code === 'auth/email-already-in-use') throw new Error("Username sudah digunakan. Silakan coba kombinasi lain.");
+      if (err.code === 'auth/email-already-in-use') throw new Error("Username sudah terpakai. Silakan coba kombinasi lain.");
       throw new Error("Sistem belum dapat memproses pengaturan ulang akses.");
     }
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 pb-10">
+    <div className="space-y-6 pb-10">
       <ConfirmModal isOpen={deleteTarget !== null} title={`Hapus Data ${deleteTarget?.type === 'pengampu' ? 'Pengampu' : 'Santri'}?`} message={`Apakah Anda yakin ingin menghapus profil "${deleteTarget?.name}" secara permanen?`} onConfirm={executeDelete} onCancel={() => setDeleteTarget(null)} />
       <EditModal isOpen={editTarget !== null} target={editTarget} pengampus={pengampus} onSave={executeEdit} onCancel={() => setEditTarget(null)} />
       <ResetAccessModal isOpen={resetTarget !== null} target={resetTarget} onSave={executeResetAccess} onCancel={() => setResetTarget(null)} />
 
-      <div className={`p-5 md:p-8 rounded-3xl ${glassCard}`}>
-        <div className="flex items-center gap-4 mb-6 md:mb-8">
-           <div className="p-3 md:p-4 bg-white/80 rounded-2xl shadow-sm border border-white">
-             <UserPlus className="w-6 h-6 md:w-8 md:h-8" style={{ color: theme.primary }}/>
+      <div className={`p-6 md:p-8 ${glassCard}`}>
+        <div className="flex items-center gap-4 mb-6">
+           <div className="p-3 bg-white/80 rounded-xl shadow-sm border border-gray-100">
+             <UserPlus className="w-6 h-6 text-[#26544d]"/>
            </div>
            <div>
-             <h2 className="text-xl md:text-2xl font-bold text-gray-800">Tambah Pengampu</h2>
-             <p className="text-xs md:text-sm text-gray-500 mt-1">Akun otomatis terhubung dengan sistem keamanan berenkripsi.</p>
+             <h2 className="text-lg md:text-xl font-bold text-gray-800">Tambah Pengampu</h2>
+             <p className="text-xs text-gray-500 mt-1">Pendaftaran akun otomatis terhubung dengan sistem keamanan berenkripsi.</p>
            </div>
         </div>
         
-        {formError && <div className="p-4 bg-red-50/80 backdrop-blur-sm text-red-700 rounded-xl mb-5 text-sm font-medium border border-red-200/50 flex items-center gap-2 shadow-inner"><AlertCircle className="w-5 h-5"/> {formError}</div>}
+        {formError && <div className="p-3 bg-red-50 text-red-600 rounded-xl mb-5 text-sm font-medium border border-red-100 flex items-center gap-2"><AlertCircle className="w-4 h-4"/> {formError}</div>}
         
-        <form onSubmit={handleAddPengampu} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 items-end">
+        <form onSubmit={handleAddPengampu} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div className="w-full">
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Nama Lengkap</label>
-            <input required type="text" value={newPengampu.name} onChange={e=>setNewPengampu({...newPengampu, name: e.target.value})} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Misal: Ust. Fulan" />
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Nama Lengkap</label>
+            <input required type="text" value={newPengampu.name} onChange={e=>setNewPengampu({...newPengampu, name: e.target.value})} className={`w-full p-2.5 text-sm ${glassInput}`} placeholder="Misal: Ust. Fulan" />
           </div>
           <div className="w-full">
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Username</label>
-            <input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Tanpa Spasi" />
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Username</label>
+            <input required type="text" value={newPengampu.username} onChange={e=>setNewPengampu({...newPengampu, username: e.target.value})} className={`w-full p-2.5 text-sm ${glassInput}`} placeholder="tanpaspasi" />
           </div>
           <div className="w-full">
-            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Kata Sandi</label>
-            <input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} minLength={6} className={`w-full p-3 rounded-xl text-sm md:text-base outline-none ${glassInput}`} placeholder="Minimal 6 karakter" />
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Sandi (Min. 6 Karakter)</label>
+            <input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} minLength={6} className={`w-full p-2.5 text-sm ${glassInput}`} placeholder="Minimal 6 karakter" />
           </div>
-          <button type="submit" disabled={isProcessing} className="w-full p-3 rounded-xl text-white font-bold transition-transform active:scale-95 flex items-center justify-center gap-2 shadow-lg text-sm md:text-base" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}50`, opacity: isProcessing ? 0.7 : 1 }}>
-            {isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Plus className="w-5 h-5"/>} 
+          <button type="submit" disabled={isProcessing} className="w-full p-2.5 rounded-xl text-white font-bold transition-colors bg-[#26544d] hover:bg-[#1f453f] flex items-center justify-center gap-2 shadow-md text-sm" style={{ opacity: isProcessing ? 0.7 : 1 }}>
+            {isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4"/>} 
             {isProcessing ? 'Memproses...' : 'Tambahkan'}
           </button>
         </form>
       </div>
 
-      <div className="space-y-4 md:space-y-5">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 gap-3 mb-2">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3">
-            <Users className="w-6 h-6 md:w-7 md:h-7" style={{ color: theme.primary }}/> Daftar Halaqah & Santri
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
+          <h2 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2.5">
+            <Users className="w-5 h-5 text-[#26544d]"/> Daftar Halaqah & Santri
           </h2>
+          <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#54af48] bg-green-50 border border-green-100 px-3 py-1.5 rounded-lg">
+             <ShieldCheck className="w-3.5 h-3.5"/> Keamanan Aktif
+          </span>
         </div>
         
         {pengampus.map(pengampu => {
             const isExpanded = expandedPengampuId === pengampu.id;
             const pengampuStudents = students.filter(s => s.pengampuId === pengampu.id);
             return (
-              <div key={pengampu.id} className={`rounded-3xl transition-all duration-300 overflow-hidden ${glassCard} ${isExpanded ? 'border-[#54af48]/50 shadow-lg' : 'hover:border-white'}`}>
-                <div className={`p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer gap-4 transition-colors ${isExpanded ? 'bg-white/40' : 'hover:bg-white/40'}`} onClick={() => setExpandedPengampuId(isExpanded ? null : pengampu.id)}>
+              <div key={pengampu.id} className={`transition-all duration-300 overflow-hidden ${glassCard}`}>
+                <div className={`p-4 md:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer gap-4 transition-colors ${isExpanded ? 'bg-white/40' : 'hover:bg-white/40'}`} onClick={() => setExpandedPengampuId(isExpanded ? null : pengampu.id)}>
                   <div className="flex items-center gap-4 flex-1 w-full">
-                     <div className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{pengampu.name.charAt(0)}</div>
+                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0 bg-[#26544d]">{pengampu.name.charAt(0)}</div>
                      <div>
-                        <h3 className="text-lg md:text-xl font-bold text-gray-800 leading-tight">{pengampu.name}</h3>
-                        <div className="flex flex-wrap gap-2 text-xs text-gray-500 mt-1.5">
-                           <span className="bg-white/60 px-2.5 py-1 rounded-md border border-white shadow-sm">ID: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
-                           <span className="bg-[#54af48]/10 text-[#54af48] px-2.5 py-1 rounded-md border border-[#54af48]/20 flex items-center gap-1 font-semibold shadow-sm">
-                              <ShieldCheck className="w-3.5 h-3.5"/> Sandi Terenkripsi
-                           </span>
+                        <h3 className="text-base md:text-lg font-bold text-gray-800 leading-tight">{pengampu.name}</h3>
+                        <div className="flex flex-wrap gap-2 text-xs text-gray-500 mt-1">
+                           <span className="bg-gray-100/50 px-2 py-0.5 rounded-md border border-gray-200">ID: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
                         </div>
                      </div>
                   </div>
-                  <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-gray-200/50 sm:border-none">
-                     <div className="text-xs md:text-sm font-bold text-[#26544d] bg-white/80 px-4 py-2 rounded-xl shadow-sm border border-white">{pengampuStudents.length} Santri</div>
-                     <div className="flex items-center gap-1.5 md:gap-2">
-                        <button onClick={(e) => { e.stopPropagation(); setResetTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#eab308] p-2 hover:bg-[#f9e653]/20 rounded-full transition-colors drop-shadow-sm bg-white/50" title="Atur Ulang Akses Sandi"><Key className="w-5 h-5"/></button>
-                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#54af48] p-2 hover:bg-[#54af48]/20 rounded-full transition-colors drop-shadow-sm bg-white/50" title="Edit Profil"><Edit className="w-5 h-5"/></button>
-                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-400 p-2 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors drop-shadow-sm bg-white/50" title="Hapus Data"><Trash2 className="w-5 h-5"/></button>
-                        <div className={`p-2 rounded-full transition-colors ml-2 bg-white shadow-sm border border-white/50 ${isExpanded ? 'text-gray-800' : 'text-gray-400'}`}>{isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}</div>
+                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-gray-100 sm:border-none">
+                     <div className="text-xs font-bold text-[#26544d] bg-[#26544d]/10 px-3 py-1.5 rounded-lg border border-[#26544d]/10">{pengampuStudents.length} Santri</div>
+                     <div className="flex items-center gap-1">
+                        <button onClick={(e) => { e.stopPropagation(); setResetTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#eab308] p-1.5 hover:bg-yellow-50 rounded-lg transition-colors" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#54af48] p-1.5 hover:bg-green-50 rounded-lg transition-colors" title="Edit Profil"><Edit className="w-4 h-4"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-400 p-1.5 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Hapus Data"><Trash2 className="w-4 h-4"/></button>
+                        <div className={`p-1 transition-colors ml-1 ${isExpanded ? 'text-gray-800' : 'text-gray-400'}`}>{isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}</div>
                      </div>
                   </div>
                 </div>
                 
                 {isExpanded && (
-                  <div className="border-t border-white/40 bg-white/30 p-4 md:p-6 lg:p-8 animate-in slide-in-from-top-4 duration-200">
-                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white/60 backdrop-blur-md p-4 md:p-5 rounded-2xl shadow-sm border mb-6 md:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end relative overflow-hidden" style={{ borderColor: theme.secondary + '50' }}>
-                      <div className="absolute top-0 left-0 w-2 h-full" style={{ backgroundColor: theme.secondary }}></div>
-                      
-                      <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Nama Santri</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="Nama Lengkap" /></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Kls/Smt</label><div className="flex gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className={`w-1/2 p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className={`w-1/2 p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className={`w-full p-2.5 md:p-3 border-r-0 rounded-l-xl text-sm outline-none ${glassInput}`} /><span className="bg-white/50 p-2.5 md:p-3 border border-white/50 border-l-0 rounded-r-xl text-[10px] md:text-xs text-gray-500 font-bold">Juz</span></div></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="Tanpa Spasi" /></div>
-                      <div className="col-span-1"><label className="text-[10px] md:text-xs uppercase font-bold text-gray-500 mb-1.5 block">Sandi Akses</label><div className="flex gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`} placeholder="Minimal 6 karakter" /><button type="submit" disabled={isProcessing} className="p-2.5 md:p-3 rounded-xl text-white font-bold transition-transform active:scale-95 shadow-md flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary, opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Plus className="w-5 h-5"/>}</button></div></div>
+                  <div className="border-t border-gray-100 bg-white/30 p-4 md:p-6 animate-in slide-in-from-top-2 duration-200">
+                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white/50 p-4 rounded-xl border border-white mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Nama Santri Baru</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className={`w-full p-2 rounded-lg text-sm ${glassInput}`} placeholder="Nama Lengkap" /></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Kls/Smt</label><div className="flex gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className={`w-1/2 p-2 rounded-lg text-sm ${glassInput}`}><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className={`w-1/2 p-2 rounded-lg text-sm ${glassInput}`}>{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className={`w-full p-2 border-r-0 rounded-l-lg text-sm ${glassInput}`} /><span className="bg-gray-50 p-2 border border-gray-200/50 border-l-0 rounded-r-lg text-[10px] text-gray-500 font-bold">Juz</span></div></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className={`w-full p-2 rounded-lg text-sm ${glassInput}`} placeholder="tanpaspasi" /></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Sandi Akses</label><div className="flex gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className={`w-full p-2 rounded-lg text-sm ${glassInput}`} placeholder="Min. 6" /><button type="submit" disabled={isProcessing} className="p-2 rounded-lg text-white font-bold transition-colors bg-[#54af48] hover:bg-[#46933c] shadow-sm flex items-center justify-center shrink-0" style={{ opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4"/>}</button></div></div>
                     </form>
                     
-                    <div className="overflow-x-auto bg-white/70 backdrop-blur-md rounded-2xl border border-white shadow-sm w-full">
-                       <table className="w-full text-left whitespace-nowrap min-w-[700px]">
-                          <thead className="bg-white/50 text-gray-500 border-b border-white/60 text-xs uppercase tracking-wider">
+                    <div className="overflow-x-auto bg-white/50 rounded-xl border border-white">
+                       <table className="w-full text-left whitespace-nowrap min-w-[650px]">
+                          <thead className="text-gray-500 border-b border-white/80 text-[11px] uppercase tracking-wider">
                              <tr>
-                               <th className="p-4 lg:p-5 font-bold">Nama Santri</th>
-                               <th className="p-4 lg:p-5 font-bold">Kls/Smt</th>
-                               <th className="p-4 lg:p-5 font-bold">Juz Tercapai</th>
-                               <th className="p-4 lg:p-5 font-bold">Status Keamanan</th>
-                               <th className="p-4 lg:p-5 font-bold text-center">Tindakan</th>
+                               <th className="p-3 font-bold">Nama Santri</th>
+                               <th className="p-3 font-bold">Kls/Smt</th>
+                               <th className="p-3 font-bold">Juz Tercapai</th>
+                               <th className="p-3 font-bold">Status Keamanan</th>
+                               <th className="p-3 font-bold text-center">Tindakan</th>
                              </tr>
                           </thead>
-                          <tbody className="divide-y divide-white/40 text-sm">
-                             {pengampuStudents.length === 0 ? <tr><td colSpan="5" className="p-6 md:p-8 text-center text-gray-400 italic">Belum ada data santri yang ditambahkan.</td></tr> : pengampuStudents.map(s => (
-                                <tr key={s.id} className="hover:bg-white/50 transition-colors">
-                                   <td className="p-4 lg:p-5 font-bold text-gray-800">{s.name}</td>
-                                   <td className="p-4 lg:p-5 text-gray-600 font-medium">{s.kelas} / {s.semester}</td>
-                                   <td className="p-4 lg:p-5 font-bold" style={{ color: theme.secondary }}>{s.juzTercapai} Juz</td>
-                                   <td className="p-4 lg:p-5">
-                                     <div className="flex gap-2">
-                                       <span className="bg-white/60 px-3 py-1 rounded-lg text-xs font-semibold text-gray-600 border border-white shadow-sm">{s.username}</span>
-                                       <span className="bg-[#54af48]/10 text-[#54af48] px-3 py-1 rounded-lg text-xs font-bold border border-[#54af48]/20 flex items-center gap-1.5 shadow-sm">
-                                          <ShieldCheck className="w-3.5 h-3.5"/> Sandi Terenkripsi
-                                       </span>
+                          <tbody className="divide-y divide-white/60 text-sm">
+                             {pengampuStudents.length === 0 ? <tr><td colSpan="5" className="p-6 text-center text-gray-400 italic">Belum ada data santri yang ditambahkan.</td></tr> : pengampuStudents.map(s => (
+                                <tr key={s.id} className="hover:bg-white/60 transition-colors">
+                                   <td className="p-3 font-bold text-gray-800">{s.name}</td>
+                                   <td className="p-3 text-gray-600 text-xs">{s.kelas} / {s.semester}</td>
+                                   <td className="p-3 font-bold text-[#54af48] text-xs">{s.juzTercapai} Juz</td>
+                                   <td className="p-3">
+                                     <div className="flex gap-2 text-[10px]">
+                                       <span className="bg-gray-100/50 px-2 py-1 rounded-md text-gray-600 border border-gray-200/50">{s.username}</span>
                                      </div>
                                    </td>
-                                   <td className="p-4 lg:p-5 text-center">
-                                      <button onClick={() => setResetTarget({ type: 'student', data: s })} className="text-[#eab308] hover:text-[#ca9a04] p-2 hover:bg-yellow-50 rounded-full transition-colors mr-1.5 drop-shadow-sm bg-white/50" title="Atur Ulang Akses"><Key className="w-4 h-4 md:w-5 md:h-5"/></button>
-                                      <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-[#54af48] hover:text-[#46933c] p-2 hover:bg-green-50 rounded-full transition-colors mr-1.5 drop-shadow-sm bg-white/50" title="Edit Profil"><Edit className="w-4 h-4 md:w-5 md:h-5"/></button>
-                                      <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors drop-shadow-sm bg-white/50" title="Hapus Data"><Trash2 className="w-4 h-4 md:w-5 md:h-5"/></button>
+                                   <td className="p-3 text-center">
+                                      <button onClick={() => setResetTarget({ type: 'student', data: s })} className="text-[#eab308] p-1.5 hover:bg-yellow-50 rounded-lg transition-colors mr-1" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4"/></button>
+                                      <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-[#54af48] p-1.5 hover:bg-green-50 rounded-lg transition-colors mr-1" title="Edit Profil"><Edit className="w-4 h-4"/></button>
+                                      <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-400 p-1.5 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors" title="Hapus Data"><Trash2 className="w-4 h-4"/></button>
                                    </td>
                                 </tr>
                              ))}
@@ -693,7 +667,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
           const hasRecord = records.some(r => r.studentId === student.id && r.date === yesterdayStr);
           if (!hasRecord) {
              const recordId = `${student.id}_${yesterdayStr}`;
-             const payload = { studentId: student.id, date: yesterdayStr, presensi: 'Alpha', keterangan: 'Tercatat otomatis (kosong)', autoGenerated: true };
+             const payload = { studentId: student.id, date: yesterdayStr, presensi: 'Alpha', keterangan: 'Tercatat otomatis oleh sistem (Laporan tidak diisi)', autoGenerated: true };
              try { await setDoc(doc(db, getCollectionPath('records'), recordId), payload); } catch (e) {}
           }
        }
@@ -719,39 +693,39 @@ const HarianView = ({ students, records, pengampus, user }) => {
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 pb-10">
+    <div className="space-y-6 pb-10">
       <ConfirmModal isOpen={recordToDelete !== null} title="Ulangi Laporan?" message="Tindakan ini akan mengosongkan kembali form setoran hari ini untuk santri tersebut." confirmText="Kosongkan Form" onConfirm={executeDeleteRecord} onCancel={() => setRecordToDelete(null)} />
       
-      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 md:p-8 rounded-3xl ${glassCard}`}>
+      <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 md:p-6 ${glassCard}`}>
         <div>
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">Laporan Harian</h2>
-          <p className="text-sm text-gray-500 mt-1">Isi presensi, ziyadah, dan muraja'ah santri Anda.</p>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800">Laporan Harian</h2>
+          <p className="text-sm text-gray-500 mt-1">Isi presensi, setoran ziyadah, dan muraja'ah santri.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           {user.role === 'admin' && (
-            <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm p-2.5 rounded-xl border border-white/50 w-full sm:w-auto shadow-sm">
-              <Filter className="text-[#26544d] ml-2 w-5 h-5" />
+            <div className="flex items-center gap-2 bg-white/60 p-2 rounded-xl border border-gray-100 w-full sm:w-auto">
+              <Filter className="text-[#26544d] ml-2 w-4 h-4" />
               <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-sm font-bold text-gray-700 p-1 cursor-pointer w-full"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
             </div>
           )}
-          <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm p-2.5 rounded-xl border border-white/50 w-full sm:w-auto shadow-sm">
-             <label className="text-sm font-bold text-[#26544d] px-2">Tanggal:</label>
-             <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className={`border-none bg-white rounded-lg p-2 text-sm outline-none font-medium shadow-sm w-full ${glassInput}`}/>
+          <div className="flex items-center gap-2 bg-white/60 p-2 rounded-xl border border-gray-100 w-full sm:w-auto">
+             <label className="text-xs font-bold text-gray-500 px-2 uppercase tracking-wide">Tanggal:</label>
+             <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className={`border-none bg-transparent rounded-lg px-2 text-sm outline-none font-bold text-gray-800 w-full`}/>
           </div>
         </div>
       </div>
 
-      <div className="space-y-5 md:space-y-6 lg:space-y-8">
+      <div className="space-y-5">
         {groupedStudents.length === 0 ? (
-          <div className={`text-center p-8 md:p-12 rounded-3xl border-2 border-dashed border-gray-300 text-gray-400 font-medium text-base ${glassCard}`}>Tidak ada data santri pada filter yang Anda pilih.</div>
+          <div className={`text-center p-8 rounded-2xl border border-dashed border-gray-300 text-gray-400 text-sm ${glassCard}`}>Tidak ada data santri pada filter yang Anda pilih.</div>
         ) : (
           groupedStudents.map(group => (
-            <div key={group.pengampu.id} className="space-y-4">
+            <div key={group.pengampu.id} className="space-y-3">
               {user.role === 'admin' && selectedPengampuId === 'semua' && (
-                <div className="flex items-center gap-4 pt-4 pb-2">
-                   <div className="h-px bg-white/50 shadow-sm flex-1"></div>
-                   <span className="font-bold text-[#26544d] uppercase text-xs md:text-sm px-4 md:px-5 py-2 bg-white/80 backdrop-blur-md rounded-full border border-white shadow-sm flex items-center gap-2"><BookOpen className="w-4 h-4 md:w-5 md:h-5" style={{ color: theme.secondary }}/> Halaqah {group.pengampu.name}</span>
-                   <div className="h-px bg-white/50 shadow-sm flex-1"></div>
+                <div className="flex items-center gap-3 pt-3 pb-1">
+                   <div className="h-px bg-gray-200 flex-1"></div>
+                   <span className="font-bold text-gray-500 uppercase text-[11px] px-3 py-1 bg-white/50 rounded-full border border-gray-200 flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5" style={{ color: theme.secondary }}/> Halaqah {group.pengampu.name}</span>
+                   <div className="h-px bg-gray-200 flex-1"></div>
                 </div>
               )}
               {group.students.map(student => {
@@ -763,14 +737,14 @@ const HarianView = ({ students, records, pengampus, user }) => {
                 const isExpanded = expandedStudent === student.id;
 
                 return (
-                  <div key={student.id} className={`rounded-3xl transition-all duration-300 ${glassCard} ${isExpanded ? 'border-[#54af48]/50 shadow-lg ring-2 ring-[#54af48]/20' : 'hover:border-white'}`}>
-                    <div className={`p-4 md:p-5 lg:p-7 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors ${!isExpanded ? 'hover:bg-white/50 cursor-pointer' : 'bg-white/40'}`} onClick={() => !todayRecord && setExpandedStudent(isExpanded ? null : student.id)}>
+                  <div key={student.id} className={`transition-all duration-300 ${glassCard} ${isExpanded ? 'ring-1 ring-[#54af48]/30 shadow-md' : 'hover:border-white'}`}>
+                    <div className={`p-4 md:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors ${!isExpanded ? 'hover:bg-white/40 cursor-pointer' : 'bg-white/30'}`} onClick={() => !todayRecord && setExpandedStudent(isExpanded ? null : student.id)}>
                       
                       <div className="flex items-center gap-4 w-full sm:w-auto" onClick={(e) => { if(todayRecord) { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); } }}>
-                        <div className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{student.name ? student.name.charAt(0) : '?'}</div>
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0 bg-[#26544d]">{student.name ? student.name.charAt(0) : '?'}</div>
                         <div>
-                           <h3 className="text-lg md:text-xl font-bold text-gray-800">{student.name || 'Unknown'}</h3>
-                           <p className="text-xs md:text-sm font-medium text-gray-500 mt-1">Kelas {student.kelas} • Smt {student.semester}</p>
+                           <h3 className="text-base md:text-lg font-bold text-gray-800">{student.name || 'Unknown'}</h3>
+                           <p className="text-xs text-gray-500 mt-0.5">Kelas {student.kelas} • Smt {student.semester}</p>
                         </div>
                       </div>
 
@@ -778,29 +752,29 @@ const HarianView = ({ students, records, pengampus, user }) => {
                         {todayRecord ? (
                           <div className="flex items-center gap-3 w-full justify-between sm:justify-end">
                             <div className="flex flex-col items-start sm:items-end text-left sm:text-right">
-                              <span className={`px-3 md:px-4 py-1.5 rounded-xl text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2 shadow-sm border ${todayRecord.presensi === 'Hadir' ? 'bg-[#54af48]/10 text-[#54af48] border-[#54af48]/30' : todayRecord.presensi === 'Alpha' ? 'bg-red-100/80 text-red-700 border-red-200' : 'bg-[#f9e653]/30 text-yellow-800 border-[#f9e653]/50'}`}>{todayRecord.presensi}</span>
+                              <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider mb-1.5 border ${todayRecord.presensi === 'Hadir' ? 'bg-[#54af48]/10 text-[#54af48] border-[#54af48]/20' : todayRecord.presensi === 'Alpha' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-yellow-50 text-yellow-700 border-yellow-100'}`}>{todayRecord.presensi}</span>
                               {todayRecord.presensi === 'Hadir' && (
-                                <div className="text-xs font-medium text-gray-600 flex flex-col gap-1">
+                                <div className="text-[11px] font-medium text-gray-600 flex flex-col gap-0.5">
                                   {todayRecord.ziyadah && (<div><span className="font-bold text-[#54af48]">Ziyadah:</span> {formatZiyadahSurahSafe(todayRecord.ziyadah)} <span className="font-bold text-[#54af48] ml-1">[{todayRecord.ziyadah.finalScore}]</span></div>)}
-                                  {todayRecord.murajaah && (<div><span className="font-bold text-yellow-600">Muraja'ah:</span> Juz {todayRecord.murajaah.fromJuz === todayRecord.murajaah.toJuz ? todayRecord.murajaah.fromJuz : `${todayRecord.murajaah.fromJuz}-${todayRecord.murajaah.toJuz}`} <span className="font-bold text-yellow-700 ml-1">[{todayRecord.murajaah.finalScore}]</span></div>)}
+                                  {todayRecord.murajaah && (<div><span className="font-bold text-yellow-600">Muraja'ah:</span> Juz {todayRecord.murajaah.fromJuz === todayRecord.murajaah.toJuz ? todayRecord.murajaah.fromJuz : `${todayRecord.murajaah.fromJuz}-${todayRecord.murajaah.toJuz}`} <span className="font-bold text-yellow-600 ml-1">[{todayRecord.murajaah.finalScore}]</span></div>)}
                                 </div>
                               )}
-                              {todayRecord.presensi !== 'Hadir' && (<div className="text-xs text-gray-500 truncate w-40 md:w-56"><span className="font-bold">Ket:</span> {todayRecord.keterangan || '-'}</div>)}
+                              {todayRecord.presensi !== 'Hadir' && (<div className="text-xs text-gray-500 truncate w-40"><span className="font-bold">Ket:</span> {todayRecord.keterangan || '-'}</div>)}
                             </div>
-                            <div className="flex sm:flex-col gap-2 border-l-0 sm:border-l border-white/50 pl-0 sm:pl-3 shrink-0">
-                               <button onClick={(e) => { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); }} className={`p-2 md:p-2.5 rounded-xl transition-colors drop-shadow-sm ${isExpanded ? 'bg-blue-100/80 text-blue-700 border border-blue-200' : 'text-gray-500 bg-white/70 hover:bg-white border border-white hover:text-blue-600'}`} title="Ubah Laporan"><Edit className="w-5 h-5"/></button>
-                               <button onClick={(e) => { e.stopPropagation(); setRecordToDelete(todayRecord.id); }} className="p-2 md:p-2.5 rounded-xl text-gray-500 bg-white/70 hover:bg-white border border-white hover:text-red-600 transition-colors drop-shadow-sm" title="Ulangi (Kosongkan)"><RotateCcw className="w-5 h-5"/></button>
+                            <div className="flex sm:flex-col gap-1.5 border-l-0 sm:border-l border-gray-200 pl-0 sm:pl-3 shrink-0">
+                               <button onClick={(e) => { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); }} className={`p-1.5 rounded-lg transition-colors ${isExpanded ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:bg-gray-50 hover:text-blue-600'}`} title="Ubah Laporan"><Edit className="w-4 h-4"/></button>
+                               <button onClick={(e) => { e.stopPropagation(); setRecordToDelete(todayRecord.id); }} className="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="Ulangi (Kosongkan)"><RotateCcw className="w-4 h-4"/></button>
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-between w-full gap-4">
-                             <span className="px-4 py-2 rounded-xl text-xs md:text-sm font-bold bg-white/60 border border-white text-[#26544d] shadow-sm">Menunggu Laporan</span>
-                             <div className={`p-2 rounded-full transition-colors bg-white/60 shadow-sm border border-white ${isExpanded ? 'bg-white' : ''}`}>{isExpanded ? <ChevronUp className="w-6 h-6 text-gray-800" /> : <ChevronDown className="w-6 h-6 text-gray-500" />}</div>
+                          <div className="flex items-center justify-between w-full gap-3">
+                             <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-50 text-gray-500 border border-gray-100">Menunggu</span>
+                             <div className={`p-1.5 rounded-full transition-colors ${isExpanded ? 'bg-white' : ''}`}>{isExpanded ? <ChevronUp className="w-5 h-5 text-gray-800" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}</div>
                           </div>
                         )}
                       </div>
                     </div>
-                    {isExpanded && (<div className="p-4 md:p-6 lg:p-8 border-t border-white/50 bg-white/30 animate-in slide-in-from-top-4 duration-300"><StudentDailyForm student={student} date={selectedDate} existingRecord={todayRecord} lastZiyadah={lastZiyadah} lastMurajaah={lastMurajaah} onSaveSuccess={() => setExpandedStudent(null)} /></div>)}
+                    {isExpanded && (<div className="p-4 md:p-6 border-t border-gray-100 bg-white/40 animate-in slide-in-from-top-2 duration-200"><StudentDailyForm student={student} date={selectedDate} existingRecord={todayRecord} lastZiyadah={lastZiyadah} lastMurajaah={lastMurajaah} onSaveSuccess={() => setExpandedStudent(null)} /></div>)}
                   </div>
                 );
               })}
@@ -868,129 +842,108 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
 
   const ErrorRow = ({ label, penalty, value, onChange, colorTheme }) => {
      const themes = { 
-       green: { dot: 'bg-green-500', badge: 'bg-[#54af48]/20 text-[#54af48] border border-[#54af48]/30', text: 'text-[#54af48]' }, 
-       yellow: { dot: 'bg-[#f9e653]', badge: 'bg-[#f9e653]/30 text-yellow-800 border border-[#f9e653]/50', text: 'text-yellow-700' }, 
-       red: { dot: 'bg-red-500', badge: 'bg-red-100 text-red-700 border border-red-200', text: 'text-red-700' } 
+       green: { badge: 'bg-[#54af48]/10 text-[#54af48]', text: 'text-[#54af48]' }, 
+       yellow: { badge: 'bg-yellow-100/50 text-yellow-700', text: 'text-yellow-700' }, 
+       red: { badge: 'bg-red-50 text-red-600', text: 'text-red-600' } 
      };
      const t = themes[colorTheme];
      return (
-        <div className="flex items-center justify-between py-3 border-b border-white/40 last:border-0">
-           <div className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${t.dot} shadow-sm`}></div>
-              <span className="text-xs md:text-sm font-bold text-gray-700">{label}</span>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm ${t.badge}`}>{penalty}</span>
+        <div className="flex items-center justify-between py-2 border-b border-gray-100/50 last:border-0">
+           <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-700">{label}</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${t.badge}`}>{penalty}</span>
            </div>
-           <div className="flex items-center bg-white/80 backdrop-blur-md rounded-xl border border-white overflow-hidden h-9 md:h-10 shadow-sm">
-              <button type="button" onClick={() => onChange(Math.max(0, value - 1))} className="px-3 h-full hover:bg-gray-100 text-gray-500 transition-colors active:bg-gray-200"><Minus className="w-4 h-4"/></button>
-              <div className={`w-10 md:w-12 text-center text-sm font-bold bg-white/50 h-full flex items-center justify-center border-x border-white/50 ${t.text}`}>{value}</div>
-              <button type="button" onClick={() => onChange(value + 1)} className="px-3 h-full hover:bg-gray-100 text-gray-500 transition-colors active:bg-gray-200"><Plus className="w-4 h-4"/></button>
+           <div className="flex items-center bg-white rounded-lg border border-gray-200 overflow-hidden h-8">
+              <button type="button" onClick={() => onChange(Math.max(0, value - 1))} className="px-2.5 h-full hover:bg-gray-50 text-gray-400 transition-colors"><Minus className="w-3.5 h-3.5"/></button>
+              <div className={`w-8 text-center text-xs font-bold bg-gray-50 h-full flex items-center justify-center border-x border-gray-200 ${t.text}`}>{value}</div>
+              <button type="button" onClick={() => onChange(value + 1)} className="px-2.5 h-full hover:bg-gray-50 text-gray-400 transition-colors"><Plus className="w-3.5 h-3.5"/></button>
            </div>
         </div>
      );
   };
 
   return (
-    <div className="space-y-5 md:space-y-6">
-      {errorMsg && <div className="p-4 bg-red-50/90 text-red-700 rounded-xl text-sm font-bold border border-red-200 shadow-inner flex items-center gap-3"><AlertCircle className="w-5 h-5"/> {errorMsg}</div>}
+    <div className="space-y-4">
+      {errorMsg && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100 flex items-center gap-2"><AlertCircle className="w-4 h-4"/> {errorMsg}</div>}
       
-      <div className={`p-5 md:p-6 rounded-3xl border border-white shadow-sm bg-white/60 backdrop-blur-md`}>
-        <label className="block text-sm font-bold text-gray-800 mb-3 md:mb-4 uppercase tracking-widest text-center md:text-left">Status Presensi</label>
-        <div className="grid grid-cols-3 gap-2 md:gap-4">
+      <div className="p-4 rounded-2xl bg-white/60 border border-white">
+        <label className="block text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-wider text-center md:text-left">Status Presensi</label>
+        <div className="grid grid-cols-3 gap-2">
           {['Hadir', 'Izin/Sakit', 'Alpha'].map(status => (
-            <button key={status} onClick={() => {setPresensi(status); setErrorMsg('');}} className={`w-full py-3 md:py-4 px-2 rounded-2xl text-xs md:text-sm font-bold border-2 transition-all shadow-sm ${presensi === status ? 'text-white scale-[1.02] border-transparent shadow-md' : 'border-white bg-white/80 text-gray-500 hover:bg-white'}`} style={presensi === status ? { backgroundColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, color: '#fff' } : {}}>{status}</button>
+            <button key={status} onClick={() => {setPresensi(status); setErrorMsg('');}} className={`w-full py-2.5 px-2 rounded-xl text-xs font-bold transition-colors ${presensi === status ? 'text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'}`} style={presensi === status ? { backgroundColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning } : {}}>{status}</button>
           ))}
         </div>
       </div>
 
       {presensi === 'Hadir' && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 md:gap-8">
-          <div className={`p-5 md:p-6 lg:p-8 rounded-3xl border shadow-sm flex flex-col transition-all ${!isZiyadahActive ? 'border-white/50 bg-white/40' : 'border-white bg-white/70 backdrop-blur-md'}`}>
-             <div className="flex justify-between items-center mb-5 md:mb-6">
-                <h4 className={`font-bold text-base md:text-lg flex items-center gap-3 ${!isZiyadahActive ? 'text-gray-400' : 'text-gray-800'}`}><div className={`p-2.5 rounded-xl ${!isZiyadahActive ? 'bg-white/50' : 'bg-[#54af48]/15 border border-[#54af48]/20'}`}><BookOpen className="w-5 h-5" style={{ color: !isZiyadahActive ? '#9ca3af' : theme.primary }}/></div> Setoran Ziyadah</h4>
-                <button type="button" onClick={() => setIsZiyadahActive(!isZiyadahActive)} className={`w-12 h-6 md:w-14 md:h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner border border-white/50 ${isZiyadahActive ? 'bg-[#54af48]' : 'bg-gray-300'}`}><div className={`bg-white w-4 h-4 md:w-5 md:h-5 rounded-full shadow transform transition-transform ${isZiyadahActive ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div></button>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className={`p-4 rounded-2xl border transition-all ${!isZiyadahActive ? 'border-transparent bg-white/40' : 'border-white bg-white/70 shadow-sm'}`}>
+             <div className="flex justify-between items-center mb-4">
+                <h4 className={`font-bold text-sm flex items-center gap-2 ${!isZiyadahActive ? 'text-gray-400' : 'text-gray-800'}`}><BookOpen className="w-4 h-4" style={{ color: !isZiyadahActive ? '#9ca3af' : theme.primary }}/> Setoran Ziyadah</h4>
+                <button type="button" onClick={() => setIsZiyadahActive(!isZiyadahActive)} className={`w-10 h-5 flex items-center rounded-full p-1 cursor-pointer transition-colors ${isZiyadahActive ? 'bg-[#54af48]' : 'bg-gray-300'}`}><div className={`bg-white w-3.5 h-3.5 rounded-full shadow-sm transform transition-transform ${isZiyadahActive ? 'translate-x-5' : 'translate-x-0'}`}></div></button>
              </div>
-             {isZiyadahActive ? (
-                <div className="space-y-4 md:space-y-5 flex-1 flex flex-col animate-in slide-in-from-top-2">
-                   <div className="space-y-3 bg-white/50 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-white shadow-inner">
-                      <div className="grid grid-cols-2 gap-3">
-                         <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Dari Surat</label><select value={ziyadah.fromSurah} onChange={(e) => setZiyadah({...ziyadah, fromSurah: parseInt(e.target.value), fromAyah: 1})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
-                         <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Ayat</label><select value={ziyadah.fromAyah} onChange={(e) => setZiyadah({...ziyadah, fromAyah: parseInt(e.target.value)})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{Array.from({length: getAyahCount(ziyadah.fromSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
+             {isZiyadahActive && (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                   <div className="space-y-2 bg-white/50 p-3 rounded-xl border border-white">
+                      <div className="grid grid-cols-2 gap-2">
+                         <div><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Dari Surat</label><select value={ziyadah.fromSurah} onChange={(e) => setZiyadah({...ziyadah, fromSurah: parseInt(e.target.value), fromAyah: 1})} className={`w-full p-2 rounded-lg text-xs ${glassInput}`}>{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
+                         <div><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Ayat</label><select value={ziyadah.fromAyah} onChange={(e) => setZiyadah({...ziyadah, fromAyah: parseInt(e.target.value)})} className={`w-full p-2 rounded-lg text-xs ${glassInput}`}>{Array.from({length: getAyahCount(ziyadah.fromSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                         <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Sampai Surat</label><select value={ziyadah.toSurah} onChange={(e) => setZiyadah({...ziyadah, toSurah: parseInt(e.target.value), toAyah: 1})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
-                         <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Ayat</label><select value={ziyadah.toAyah} onChange={(e) => setZiyadah({...ziyadah, toAyah: parseInt(e.target.value)})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{Array.from({length: getAyahCount(ziyadah.toSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
-                      </div>
-                   </div>
-                   <div className="flex-1">
-                      <div className="bg-white/50 backdrop-blur-md rounded-2xl px-4 border py-2 border-white shadow-sm">
-                         <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={ziyadah.tajwid} onChange={(v) => setZiyadah({...ziyadah, tajwid: v})} colorTheme="green" />
-                         <ErrorRow label="Lupa / Tersendat" penalty="-1" value={ziyadah.lupa} onChange={(v) => setZiyadah({...ziyadah, lupa: v})} colorTheme="yellow" />
-                         <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={ziyadah.lupaBimbingan} onChange={(v) => setZiyadah({...ziyadah, lupaBimbingan: v})} colorTheme="red" />
+                      <div className="grid grid-cols-2 gap-2">
+                         <div><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Sampai Surat</label><select value={ziyadah.toSurah} onChange={(e) => setZiyadah({...ziyadah, toSurah: parseInt(e.target.value), toAyah: 1})} className={`w-full p-2 rounded-lg text-xs ${glassInput}`}>{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
+                         <div><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Ayat</label><select value={ziyadah.toAyah} onChange={(e) => setZiyadah({...ziyadah, toAyah: parseInt(e.target.value)})} className={`w-full p-2 rounded-lg text-xs ${glassInput}`}>{Array.from({length: getAyahCount(ziyadah.toSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
                       </div>
                    </div>
-                   <div className="mt-4 p-4 md:p-5 rounded-2xl border-[3px] flex items-center justify-between bg-white/90 backdrop-blur-md shadow-md transition-all" style={{ borderColor: theme.primary }}>
-                      <div><p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Skor Akhir</p><div className="flex items-baseline gap-2"><span className="text-3xl md:text-4xl font-black" style={{ color: theme.primary }}>{ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}</span></div></div>
-                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Ubah Manual</label><input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="-" className={`w-20 md:w-24 px-3 py-2 text-base font-bold text-center rounded-xl ${glassInput}`} style={{ focusRingColor: theme.secondary, focusRingWidth: '2px' }} /></div>
+                   <div className="bg-white/50 rounded-xl px-3 py-1 border border-white">
+                      <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={ziyadah.tajwid} onChange={(v) => setZiyadah({...ziyadah, tajwid: v})} colorTheme="green" />
+                      <ErrorRow label="Lupa / Tersendat" penalty="-1" value={ziyadah.lupa} onChange={(v) => setZiyadah({...ziyadah, lupa: v})} colorTheme="yellow" />
+                      <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={ziyadah.lupaBimbingan} onChange={(v) => setZiyadah({...ziyadah, lupaBimbingan: v})} colorTheme="red" />
+                   </div>
+                   <div className="flex items-center justify-between">
+                      <div><p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">Skor Akhir</p><span className="text-2xl font-black" style={{ color: theme.primary }}>{ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}</span></div>
+                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Koreksi Manual</label><input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="Auto" className={`w-16 px-2 py-1.5 text-sm font-bold text-center rounded-lg ${glassInput}`} /></div>
                    </div>
                 </div>
-             ) : (<div className="flex-1 flex items-center justify-center py-8"><p className="text-sm text-gray-400 italic font-medium">Kolom Ziyadah ditutup sementara.</p></div>)}
+             )}
           </div>
           
-          <div className={`p-5 md:p-6 lg:p-8 rounded-3xl border shadow-sm flex flex-col transition-all ${!isMurajaahActive ? 'border-white/50 bg-white/40' : 'border-white bg-white/70 backdrop-blur-md'}`}>
-             <div className="flex justify-between items-center mb-5 md:mb-6">
-                <h4 className={`font-bold text-base md:text-lg flex items-center gap-3 ${!isMurajaahActive ? 'text-gray-400' : 'text-gray-800'}`}><div className={`p-2.5 rounded-xl ${!isMurajaahActive ? 'bg-white/50' : 'bg-[#f9e653]/20 border border-[#f9e653]/30'}`}><RotateCcw className="w-5 h-5" style={{ color: !isMurajaahActive ? '#9ca3af' : theme.secondary }}/></div> Setoran Muraja'ah</h4>
-                <button type="button" onClick={() => setIsMurajaahActive(!isMurajaahActive)} className={`w-12 h-6 md:w-14 md:h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner border border-white/50 ${isMurajaahActive ? 'bg-[#f9e653]' : 'bg-gray-300'}`}><div className={`bg-white w-4 h-4 md:w-5 md:h-5 rounded-full shadow transform transition-transform ${isMurajaahActive ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div></button>
+          <div className={`p-4 rounded-2xl border transition-all ${!isMurajaahActive ? 'border-transparent bg-white/40' : 'border-white bg-white/70 shadow-sm'}`}>
+             <div className="flex justify-between items-center mb-4">
+                <h4 className={`font-bold text-sm flex items-center gap-2 ${!isMurajaahActive ? 'text-gray-400' : 'text-gray-800'}`}><RotateCcw className="w-4 h-4" style={{ color: !isMurajaahActive ? '#9ca3af' : theme.secondary }}/> Setoran Muraja'ah</h4>
+                <button type="button" onClick={() => setIsMurajaahActive(!isMurajaahActive)} className={`w-10 h-5 flex items-center rounded-full p-1 cursor-pointer transition-colors ${isMurajaahActive ? 'bg-[#f9e653]' : 'bg-gray-300'}`}><div className={`bg-white w-3.5 h-3.5 rounded-full shadow-sm transform transition-transform ${isMurajaahActive ? 'translate-x-5' : 'translate-x-0'}`}></div></button>
              </div>
-             {isMurajaahActive ? (
-                <div className="space-y-4 md:space-y-5 flex-1 flex flex-col animate-in slide-in-from-top-2">
-                   <div className="grid grid-cols-2 gap-3 bg-white/50 backdrop-blur-md p-4 md:p-5 rounded-2xl border border-white shadow-inner">
-                      <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Dari Juz</label><select value={murajaah.fromJuz} onChange={(e) => setMurajaah({...murajaah, fromJuz: parseInt(e.target.value)})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
-                      <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Sampai Juz</label><select value={murajaah.toJuz} onChange={(e) => setMurajaah({...murajaah, toJuz: parseInt(e.target.value)})} className={`w-full p-2.5 md:p-3 rounded-xl text-sm outline-none ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
+             {isMurajaahActive && (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                   <div className="grid grid-cols-2 gap-2 bg-white/50 p-3 rounded-xl border border-white">
+                      <div><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Dari Juz</label><select value={murajaah.fromJuz} onChange={(e) => setMurajaah({...murajaah, fromJuz: parseInt(e.target.value)})} className={`w-full p-2 rounded-lg text-xs ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
+                      <div><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Sampai Juz</label><select value={murajaah.toJuz} onChange={(e) => setMurajaah({...murajaah, toJuz: parseInt(e.target.value)})} className={`w-full p-2 rounded-lg text-xs ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
                    </div>
-                   <div className="flex-1">
-                      <div className="bg-white/50 backdrop-blur-md rounded-2xl px-4 border py-2 border-white shadow-sm">
-                         <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={murajaah.tajwid} onChange={(v) => setMurajaah({...murajaah, tajwid: v})} colorTheme="green" />
-                         <ErrorRow label="Lupa / Tersendat" penalty="-1" value={murajaah.lupa} onChange={(v) => setMurajaah({...murajaah, lupa: v})} colorTheme="yellow" />
-                         <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={murajaah.lupaBimbingan} onChange={(v) => setMurajaah({...murajaah, lupaBimbingan: v})} colorTheme="red" />
-                      </div>
+                   <div className="bg-white/50 rounded-xl px-3 py-1 border border-white">
+                      <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={murajaah.tajwid} onChange={(v) => setMurajaah({...murajaah, tajwid: v})} colorTheme="green" />
+                      <ErrorRow label="Lupa / Tersendat" penalty="-1" value={murajaah.lupa} onChange={(v) => setMurajaah({...murajaah, lupa: v})} colorTheme="yellow" />
+                      <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={murajaah.lupaBimbingan} onChange={(v) => setMurajaah({...murajaah, lupaBimbingan: v})} colorTheme="red" />
                    </div>
-                   <div className="mt-4 p-4 md:p-5 rounded-2xl border-[3px] flex items-center justify-between bg-white/90 backdrop-blur-md shadow-md transition-all" style={{ borderColor: theme.secondary }}>
-                      <div><p className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Skor Akhir</p><div className="flex items-baseline gap-2"><span className="text-3xl md:text-4xl font-black" style={{ color: theme.secondary }}>{murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}</span></div></div>
-                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Ubah Manual</label><input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="-" className={`w-20 md:w-24 px-3 py-2 text-base font-bold text-center rounded-xl outline-none ${glassInput}`} style={{ focusRingColor: theme.primary, focusRingWidth: '2px' }} /></div>
+                   <div className="flex items-center justify-between">
+                      <div><p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">Skor Akhir</p><span className="text-2xl font-black" style={{ color: theme.secondary }}>{murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}</span></div>
+                      <div className="flex flex-col items-end"><label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Koreksi Manual</label><input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="Auto" className={`w-16 px-2 py-1.5 text-sm font-bold text-center rounded-lg ${glassInput}`} /></div>
                    </div>
                 </div>
-             ) : (<div className="flex-1 flex items-center justify-center py-8"><p className="text-sm text-gray-400 italic font-medium">Kolom Muraja'ah ditutup sementara.</p></div>)}
+             )}
           </div>
         </div>
       )}
 
       {presensi === 'Izin/Sakit' && (
-        <div className="p-5 md:p-6 lg:p-8 rounded-3xl border shadow-sm flex flex-col transition-all border-white bg-white/70 backdrop-blur-md animate-in slide-in-from-top-2">
-           <div className="flex justify-between items-center mb-4 md:mb-5">
-              <h4 className="font-bold text-base md:text-lg flex items-center gap-3 text-gray-800">
-                 <div className="p-2.5 rounded-xl bg-[#f9e653]/20 border border-[#f9e653]/30">
-                    <AlertCircle className="w-5 h-5 text-yellow-600"/>
-                 </div> 
-                 Keterangan Izin / Sakit
-              </h4>
-           </div>
-           <div className="space-y-4 flex-1 flex flex-col">
-              <div className="bg-white/50 p-4 md:p-5 rounded-2xl border border-white shadow-inner">
-                 <textarea 
-                    value={keterangan} 
-                    onChange={(e) => setKeterangan(e.target.value)} 
-                    placeholder="Contoh: Ananda sedang sakit demam dan membutuhkan istirahat..." 
-                    className={`w-full p-4 text-sm rounded-xl resize-none h-28 md:h-32 font-medium text-gray-700 ${glassInput}`} 
-                 />
-              </div>
-           </div>
+        <div className="p-4 rounded-2xl bg-white/70 border border-white shadow-sm animate-in fade-in duration-200">
+           <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-2">Keterangan Izin / Sakit</label>
+           <textarea value={keterangan} onChange={(e) => setKeterangan(e.target.value)} placeholder="Tulis keterangan di sini..." className={`w-full p-3 text-sm rounded-xl resize-none h-24 ${glassInput}`} />
         </div>
       )}
 
-      <div className="flex justify-end pt-4 relative z-10">
-        <button onClick={handleSave} disabled={saving} className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-base text-white font-bold shadow-xl transition-transform active:scale-95 hover:opacity-90" style={{ backgroundColor: theme.primary, shadowColor: `${theme.primary}60` }}>
-          {saving ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div> : <Check className="w-6 h-6"/>}
-          {saving ? 'Menyimpan...' : 'Simpan Laporan'}
+      <div className="flex justify-end pt-2">
+        <button onClick={handleSave} disabled={saving} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm text-white font-bold bg-[#26544d] hover:bg-[#1f453f] transition-colors shadow-md">
+          {saving ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Check className="w-4 h-4"/>}
+          Simpan Laporan
         </button>
       </div>
     </div>
@@ -1001,7 +954,7 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
 // 8. VIEW: REKAPITULASI (MANDIRI)
 // ==========================================
 const EditableSelectCell = ({ value, options, onSave }) => (
-  <select value={value || ''} onChange={(e) => onSave(e.target.value)} className={`w-20 md:w-24 p-2 rounded-lg text-xs md:text-sm font-semibold text-gray-700 outline-none ${glassInput}`}>
+  <select value={value || ''} onChange={(e) => onSave(e.target.value)} className="w-20 p-1.5 rounded-lg text-xs font-semibold text-gray-700 bg-white border border-gray-200 outline-none focus:ring-1 focus:ring-[#54af48]">
     <option value="">- SP -</option>{options.map(o => <option key={o} value={o}>{o}</option>)}
   </select>
 );
@@ -1009,7 +962,7 @@ const EditableInputCell = ({ value, onSave, placeholder }) => {
   const [val, setVal] = useState(value || ''); 
   useEffect(() => setVal(value || ''), [value]); 
   return (
-    <input type="text" value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => onSave(val)} className={`w-28 md:w-36 p-2 rounded-lg text-xs md:text-sm text-gray-700 outline-none ${glassInput}`} placeholder={placeholder} />
+    <input type="text" value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => onSave(val)} className="w-28 p-1.5 rounded-lg text-xs text-gray-700 bg-white border border-gray-200 outline-none focus:ring-1 focus:ring-[#54af48]" placeholder={placeholder} />
   );
 };
 
@@ -1086,85 +1039,81 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
   };
 
   return (
-    <div className="space-y-5 md:space-y-6 pb-10 relative z-10">
-      <div className={`flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 md:p-8 rounded-3xl print:hidden ${glassCard}`}>
+    <div className="space-y-5 pb-10">
+      <div className={`flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 md:p-6 print:hidden ${glassCard}`}>
         <div>
-           <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">Rekapitulasi Bulanan</h2>
-           <p className="text-sm text-gray-500 mt-1">Pilih periode dan halaqah untuk melihat hasil evaluasi.</p>
+           <h2 className="text-xl md:text-2xl font-bold text-gray-800">Rekapitulasi</h2>
+           <p className="text-sm text-gray-500 mt-1">Evaluasi bulanan santri.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           {userRole === 'admin' && (
-            <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm p-2.5 rounded-xl border border-white w-full sm:w-auto shadow-sm">
-              <Filter className="text-[#26544d] w-5 h-5 ml-2 shrink-0" />
-              <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-sm font-bold text-gray-700 p-1 w-full sm:w-40 md:w-48 cursor-pointer"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+            <div className="flex items-center gap-2 bg-white/60 p-2 rounded-xl border border-gray-100 w-full sm:w-auto">
+              <Filter className="text-[#26544d] w-4 h-4 ml-2" />
+              <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-sm font-bold text-gray-700 p-1 w-full sm:w-32 cursor-pointer"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
             </div>
           )}
-          <div className="flex flex-row items-center gap-3 w-full sm:w-auto">
-             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className={`w-full sm:w-auto rounded-xl p-3 px-4 text-sm outline-none font-bold text-gray-700 min-w-[140px] shadow-sm ${glassInput}`} />
-             <div className="flex gap-2 w-auto">
-                 <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-2 px-4 md:px-5 py-3 bg-[#54af48] text-white text-sm font-bold rounded-xl shadow-lg hover:bg-[#46933c] transition-transform active:scale-95"><Download className="w-5 h-5"/> <span className="hidden sm:inline">Excel</span></button>
-                 <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-4 md:px-5 py-3 bg-gray-800 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-gray-700 transition-transform active:scale-95"><Printer className="w-5 h-5"/> <span className="hidden sm:inline">Cetak</span></button>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className={`w-full sm:w-auto rounded-xl p-2.5 px-3 text-sm outline-none font-bold text-gray-700 ${glassInput}`} />
+             <div className="flex gap-2">
+                 <button onClick={handleDownloadExcel} className="p-2.5 bg-[#54af48] text-white rounded-xl shadow-sm hover:bg-[#46933c] transition-colors" title="Unduh Excel"><Download className="w-5 h-5"/></button>
+                 <button onClick={() => window.print()} className="p-2.5 bg-gray-800 text-white rounded-xl shadow-sm hover:bg-gray-700 transition-colors" title="Cetak"><Printer className="w-5 h-5"/></button>
              </div>
           </div>
         </div>
       </div>
       
-      <div className={`${glassCard} rounded-3xl overflow-hidden`}>
-        <div className="overflow-x-auto w-full pb-4">
-          <table className="w-full text-left whitespace-nowrap min-w-[1000px]">
-            <thead className="text-white bg-[#26544d]">
-              <tr className="text-xs lg:text-sm">
-                <th className="p-3 lg:p-4 font-bold rounded-tl-3xl">Nama Santri</th>
-                <th className="p-3 lg:p-4 font-bold">Kls/Smt</th>
-                <th className="p-3 lg:p-4 font-bold">Kehadiran</th>
-                <th className="p-3 lg:p-4 font-bold border-l border-white/20">Target %</th>
-                <th className="p-3 lg:p-4 font-bold border-l border-white/20">Ziyadah (Awal - Akhir)</th>
-                <th className="p-3 lg:p-4 font-bold">Rata Z</th>
-                <th className="p-3 lg:p-4 font-bold border-l border-white/20">Muraja'ah (Awal - Akhir)</th>
-                <th className="p-3 lg:p-4 font-bold">Rata M</th>
-                <th className="p-3 lg:p-4 font-bold border-l border-white/20">S.P</th>
-                <th className="p-3 lg:p-4 font-bold rounded-tr-3xl">Keterangan</th>
+      <div className={`${glassCard} overflow-hidden`}>
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left whitespace-nowrap min-w-[900px]">
+            <thead className="bg-white border-b border-gray-200">
+              <tr className="text-[11px] text-gray-500 uppercase tracking-wider">
+                <th className="p-4 font-bold">Nama Santri</th>
+                <th className="p-4 font-bold">Kls/Smt</th>
+                <th className="p-4 font-bold">Kehadiran</th>
+                <th className="p-4 font-bold">Target</th>
+                <th className="p-4 font-bold">Ziyadah</th>
+                <th className="p-4 font-bold text-[#26544d]">Rata Z</th>
+                <th className="p-4 font-bold">Muraja'ah</th>
+                <th className="p-4 font-bold text-[#54af48]">Rata M</th>
+                <th className="p-4 font-bold">SP</th>
+                <th className="p-4 font-bold">Catatan</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/40 text-xs md:text-sm bg-white/40 backdrop-blur-sm">
+            <tbody className="divide-y divide-gray-100 text-sm bg-white/30">
               {groupedRecap.length === 0 ? (
-                <tr><td colSpan="10" className="p-8 md:p-12 text-center text-gray-500 font-medium italic bg-white/50">Data rekapitulasi belum tersedia.</td></tr>
+                <tr><td colSpan="10" className="p-8 text-center text-gray-500 italic bg-white/50">Data belum tersedia.</td></tr>
               ) : (
                 groupedRecap.map(group => (
                   <React.Fragment key={group.pengampu.id}>
                     {userRole === 'admin' && selectedPengampuId === 'semua' && (
-                      <tr className="bg-white/90 border-b border-white">
-                        <td colSpan="10" className="p-3 px-4 md:px-5 font-bold text-[#26544d] text-[10px] md:text-xs uppercase tracking-widest"><Users className="w-4 h-4 inline mr-2 text-[#54af48]"/> Halaqah {group.pengampu.name}</td>
+                      <tr className="bg-gray-50/80">
+                        <td colSpan="10" className="p-3 px-4 font-bold text-gray-700 text-[10px] uppercase tracking-widest"><Users className="w-3.5 h-3.5 inline mr-1.5 text-gray-400"/> Halaqah {group.pengampu.name}</td>
                       </tr>
                     )}
                     {group.data.map(row => {
                         const sn = recapNotes.find(n => n.studentId === row.id && n.month === selectedMonth) || {};
                         return (
                           <tr key={row.id} className="hover:bg-white/80 transition-colors">
-                            <td className="p-3 lg:p-4 font-bold text-gray-800">{row.name || 'Unknown'}</td>
-                            <td className="p-3 lg:p-4 text-gray-600 font-medium">{row.kelas} / {row.semester}</td>
-                            <td className="p-3 lg:p-4"><span className="bg-[#54af48]/15 text-[#54af48] px-3 py-1.5 rounded-lg font-bold border border-[#54af48]/20">{row.kehadiran}</span> <span className="font-medium text-gray-500 ml-1">/ {row.totalHari}</span></td>
-                            <td className="p-3 lg:p-4 border-l border-white/50">
-                               <div className="flex items-center gap-3 w-28">
-                                  <div className="w-full h-2 bg-white/60 rounded-full overflow-hidden shadow-inner border border-gray-200/50"><div className="h-full" style={{ width: `${row.persentase}%`, backgroundColor: row.persentase >= 100 ? theme.secondary : theme.accent }}></div></div>
-                                  <span className="font-black text-xs">{row.persentase}%</span>
+                            <td className="p-4 font-bold text-gray-800">{row.name || 'Unknown'}</td>
+                            <td className="p-4 text-gray-600 text-xs">{row.kelas} / {row.semester}</td>
+                            <td className="p-4"><span className="font-bold text-[#26544d]">{row.kehadiran}</span><span className="text-xs text-gray-400 ml-1">/{row.totalHari}</span></td>
+                            <td className="p-4">
+                               <div className="flex items-center gap-2 w-24">
+                                  <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full" style={{ width: `${row.persentase}%`, backgroundColor: row.persentase >= 100 ? theme.secondary : theme.accent }}></div></div>
+                                  <span className="font-bold text-[10px] text-gray-600">{row.persentase}%</span>
                                </div>
                             </td>
-                            <td className="p-3 lg:p-4 text-[10px] md:text-xs border-l border-white/50">
-                              <div className="flex flex-col gap-1.5">
-                                <span className="bg-white/80 px-2 py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-2">Awl:</span> {row.zStart ? formatZiyadahSurahSafe(row.zStart) : '-'}</span>
-                                <span className="bg-white/80 px-2 py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-2">Akh:</span> {row.zEnd ? formatZiyadahSurahSafe(row.zEnd) : '-'}</span>
-                              </div>
+                            <td className="p-4 text-[10px] text-gray-600 space-y-1">
+                               <div><span className="font-bold text-gray-400">Awl:</span> {row.zStart ? formatZiyadahSurahSafe(row.zStart) : '-'}</div>
+                               <div><span className="font-bold text-gray-400">Akh:</span> {row.zEnd ? formatZiyadahSurahSafe(row.zEnd) : '-'}</div>
                             </td>
-                            <td className="p-3 lg:p-4 font-black text-lg" style={{ color: theme.primary }}>{row.avgZiyadah}</td>
-                            <td className="p-3 lg:p-4 text-[10px] md:text-xs border-l border-white/50">
-                              <div className="flex flex-col gap-1.5">
-                                <span className="bg-white/80 px-2 py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-2">Awl:</span> {row.mStart ? `Juz ${row.mStart.fromJuz}` : '-'}</span>
-                                <span className="bg-white/80 px-2 py-1 rounded-md shadow-sm border border-white"><span className="font-bold text-gray-400 mr-2">Akh:</span> {row.mEnd ? `Juz ${row.mEnd.toJuz}` : '-'}</span>
-                              </div>
+                            <td className="p-4 font-black text-base text-[#26544d]">{row.avgZiyadah}</td>
+                            <td className="p-4 text-[10px] text-gray-600 space-y-1">
+                               <div><span className="font-bold text-gray-400">Awl:</span> {row.mStart ? `Juz ${row.mStart.fromJuz}` : '-'}</div>
+                               <div><span className="font-bold text-gray-400">Akh:</span> {row.mEnd ? `Juz ${row.mEnd.toJuz}` : '-'}</div>
                             </td>
-                            <td className="p-3 lg:p-4 font-black text-lg" style={{ color: theme.primary }}>{row.avgMurajaah}</td>
-                            <td className="p-3 border-l border-white/50"><EditableSelectCell value={sn.sp} options={SP_OPTIONS} onSave={(val) => handleSaveNote(row.id, 'sp', val)} /></td>
+                            <td className="p-4 font-black text-base text-[#54af48]">{row.avgMurajaah}</td>
+                            <td className="p-3"><EditableSelectCell value={sn.sp} options={SP_OPTIONS} onSave={(val) => handleSaveNote(row.id, 'sp', val)} /></td>
                             <td className="p-3"><EditableInputCell value={sn.keterangan} placeholder="Catatan..." onSave={(val) => handleSaveNote(row.id, 'keterangan', val)} /></td>
                           </tr>
                         )
@@ -1192,10 +1141,10 @@ const WaliDashboardView = ({ students, records, user }) => {
   const student = students.find(s => s.id === user.studentId) || students[0];
   
   if (!student) return (
-     <div className={`flex flex-col items-center justify-center p-8 md:p-12 mt-8 md:mt-12 rounded-3xl text-center relative z-10 ${glassCard}`}>
-        <AlertTriangle className="w-16 h-16 text-yellow-400 mb-4 drop-shadow-md" />
-        <h3 className="text-xl font-bold text-gray-800">Profil Ananda Tidak Ditemukan</h3>
-        <p className="text-sm text-gray-500 mt-2">Data profil Ananda mungkin telah diperbarui. Silakan hubungi pengurus Markaz.</p>
+     <div className={`flex flex-col items-center justify-center p-8 mt-8 rounded-2xl text-center ${glassCard}`}>
+        <AlertTriangle className="w-12 h-12 text-yellow-400 mb-3" />
+        <h3 className="text-lg font-bold text-gray-800">Profil Tidak Ditemukan</h3>
+        <p className="text-sm text-gray-500 mt-1">Silakan hubungi pengurus Markaz.</p>
      </div>
   );
   
@@ -1209,58 +1158,49 @@ const WaliDashboardView = ({ students, records, user }) => {
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 pb-10 relative z-10">
-      <div className={`p-5 md:p-8 rounded-3xl ${glassCard}`}>
-         <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">Dashboard Ananda</h2>
-         <p className="text-xs md:text-sm text-gray-500 mt-1">Pantau perkembangan tahfidz Ananda secara real-time.</p>
+    <div className="space-y-6 pb-10">
+      <div className={`p-5 md:p-6 rounded-3xl ${glassCard}`}>
+         <h2 className="text-xl md:text-2xl font-bold text-gray-800">Dashboard Ananda</h2>
+         <p className="text-sm text-gray-500 mt-1">Pantau perkembangan tahfidz harian.</p>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-4 space-y-6">
-           <div className={`pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 rounded-3xl bg-white/80 backdrop-blur-xl border shadow-lg relative overflow-hidden`} style={{ borderColor: theme.primary + '50' }}>
-              <div className="absolute top-0 left-0 w-full h-2 md:h-2.5" style={{ backgroundColor: theme.primary }}></div>
-
+           <div className={`p-6 rounded-3xl ${glassCard}`}>
               <div className="flex items-center gap-4 mb-6">
-                 <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl lg:text-3xl shadow-lg shrink-0" style={{ backgroundColor: theme.primary }}>{student.name ? student.name.charAt(0) : '?'}</div>
+                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl bg-[#26544d]">{student.name ? student.name.charAt(0) : '?'}</div>
                  <div>
-                    <h3 className="font-bold text-xl lg:text-2xl text-gray-800 leading-tight">{student.name || 'Unknown'}</h3>
-                    <p className="text-sm font-medium text-gray-500 mt-1.5">Kls {student.kelas} • Smt {student.semester}</p>
+                    <h3 className="font-bold text-lg text-gray-800 leading-tight">{student.name || 'Unknown'}</h3>
+                    <p className="text-xs text-gray-500 mt-1">Kls {student.kelas} • Smt {student.semester}</p>
                  </div>
               </div>
-              <div>
-                 <div className="flex justify-between items-end text-sm mb-3">
-                    <span className="font-bold text-gray-600">Pencapaian Hafalan</span>
-                    <span className="font-black text-xl" style={{ color: theme.primary }}>{persentase}%</span>
+              <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                 <div className="flex justify-between items-end text-sm mb-2">
+                    <span className="font-bold text-gray-500 text-xs uppercase tracking-wider">Hafalan</span>
+                    <span className="font-black text-lg text-[#26544d]">{persentase}%</span>
                  </div>
-                 <div className="w-full h-4 bg-white/60 rounded-full overflow-hidden shadow-inner border border-gray-200/50">
+                 <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
                     <div className="h-full transition-all duration-1000" style={{ width: `${persentase}%`, backgroundColor: persentase >= 100 ? theme.secondary : theme.accent }}></div>
                  </div>
-                 <p className="text-[10px] md:text-xs font-semibold text-gray-500 mt-3 text-right">Tercapai {student.juzTercapai || 0} Juz dari target {targetJuz} Juz</p>
-              </div>
-              <div className="bg-white/60 backdrop-blur-md p-5 mt-6 rounded-2xl border border-white shadow-sm">
-                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Target Semester Ini</h4>
-                 <div className="flex items-center gap-3">
-                    <Award className={`w-6 h-6 md:w-8 md:h-8 ${persentase >= 100 ? "text-[#54af48]" : "text-gray-400"}`} />
-                    <span className={`font-bold text-lg md:text-xl lg:text-2xl ${persentase >= 100 ? 'text-[#54af48]' : 'text-gray-600'}`}>Selesai {targetJuz} Juz</span>
-                 </div>
+                 <p className="text-[10px] text-gray-400 mt-2 text-right">Tercapai {student.juzTercapai || 0} Juz dari target {targetJuz} Juz</p>
               </div>
            </div>
         </div>
         
         <div className="lg:col-span-8 h-full">
-           <div className={`p-5 md:p-8 rounded-3xl h-full flex flex-col ${glassCard}`}>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
-                 <h3 className="font-bold text-lg md:text-xl lg:text-2xl text-gray-800 flex items-center gap-3"><Calendar className="w-6 h-6 md:w-7 md:h-7" style={{ color: theme.primary }}/> Mutaba'ah Harian</h3>
-                 <div className="flex items-center justify-between gap-4 bg-white/70 backdrop-blur-md p-2 rounded-xl border border-white shadow-sm w-full sm:w-auto">
-                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-white rounded-lg shadow-sm transition-colors active:scale-95"><ChevronDown className="rotate-90 text-[#26544d] w-5 h-5" /></button>
-                    <span className="font-bold text-sm md:text-base lg:text-lg w-32 md:w-40 text-center text-gray-800">{["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
-                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-2 hover:bg-white rounded-lg shadow-sm transition-colors active:scale-95"><ChevronDown className="-rotate-90 text-[#26544d] w-5 h-5" /></button>
+           <div className={`p-5 md:p-6 rounded-3xl h-full flex flex-col ${glassCard}`}>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                 <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2"><Calendar className="w-5 h-5 text-[#26544d]"/> Mutaba'ah</h3>
+                 <div className="flex items-center justify-between gap-3 bg-white/60 p-1.5 rounded-xl border border-gray-100 w-full sm:w-auto">
+                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-1.5 hover:bg-white rounded-lg transition-colors"><ChevronDown className="rotate-90 text-gray-500 w-4 h-4" /></button>
+                    <span className="font-bold text-sm w-32 text-center text-gray-700">{["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
+                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-1.5 hover:bg-white rounded-lg transition-colors"><ChevronDown className="-rotate-90 text-gray-500 w-4 h-4" /></button>
                  </div>
               </div>
             
-            <div className="grid grid-cols-7 gap-3 lg:gap-4 flex-1 content-start">
-              {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => <div key={d} className="text-center text-[10px] md:text-sm font-bold text-gray-500 py-2 uppercase tracking-widest">{d}</div>)}
-              {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} className="p-2 md:p-3"></div>)}
+            <div className="grid grid-cols-7 gap-2 flex-1 content-start">
+              {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => <div key={d} className="text-center text-[10px] font-bold text-gray-400 py-1 uppercase tracking-widest">{d}</div>)}
+              {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} className="p-2"></div>)}
               
               {Array.from({ length: daysInMonth }).map((_, i) => {
                 const day = i + 1; 
@@ -1268,20 +1208,20 @@ const WaliDashboardView = ({ students, records, user }) => {
                 const record = records.find(r => r.studentId === student.id && r.date === dateStr);
                 const isToday = dateStr === getLocalYYYYMMDD(new Date());
                 
-                let statusColor = "bg-white/50 border-white/60 text-gray-400 shadow-sm"; 
+                let statusColor = "bg-white/40 border-transparent text-gray-400"; 
                 if (record) { 
-                   if (record.presensi === 'Hadir') statusColor = "bg-[#54af48]/20 border-[#54af48]/30 text-[#26544d] shadow-md backdrop-blur-sm"; 
-                   else if (record.presensi === 'Alpha') statusColor = "bg-red-100/80 border-red-200 text-red-700 shadow-md backdrop-blur-sm"; 
-                   else statusColor = "bg-[#f9e653]/30 border-[#f9e653]/50 text-yellow-800 shadow-md backdrop-blur-sm"; 
+                   if (record.presensi === 'Hadir') statusColor = "bg-[#54af48]/10 border-[#54af48]/20 text-[#26544d] font-bold"; 
+                   else if (record.presensi === 'Alpha') statusColor = "bg-red-50 border-red-100 text-red-600 font-bold"; 
+                   else statusColor = "bg-yellow-50 border-yellow-100 text-yellow-700 font-bold"; 
                 }
 
                 return (
                   <div 
                      key={day} 
                      onClick={() => { if(record) { setSelectedRecord(record); setSelectedDateStr(dateStr); setDetailModalOpen(true); } }}
-                     className={`relative flex items-center justify-center aspect-square w-full rounded-2xl border-2 ${statusColor} ${isToday ? 'border-blue-400 ring-2 ring-blue-200/50 font-black' : ''} ${record ? 'cursor-pointer hover:scale-105 active:scale-95 hover:shadow-lg' : ''} transition-all duration-200`}
+                     className={`relative flex items-center justify-center aspect-square w-full rounded-xl border ${statusColor} ${isToday ? 'ring-2 ring-[#26544d]/30 font-black' : ''} ${record ? 'cursor-pointer hover:bg-white transition-colors' : ''}`}
                   >
-                    <span className="text-base md:text-lg lg:text-xl font-bold">{day}</span>
+                    <span className="text-sm md:text-base">{day}</span>
                   </div>
                 );
               })}
@@ -1291,89 +1231,67 @@ const WaliDashboardView = ({ students, records, user }) => {
       </div>
 
       {detailModalOpen && selectedRecord && (
-         <div className="fixed inset-0 z-[9999] overflow-y-auto">
-            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
-            <div className="flex min-h-full p-4 sm:p-6 relative z-10">
-               <div className="m-auto bg-white/95 backdrop-blur-xl border rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md pt-8 pb-6 px-6 md:pt-10 md:pb-8 md:px-8 animate-in fade-in zoom-in duration-200 flex flex-col relative overflow-hidden" onClick={e => e.stopPropagation()} style={{ borderColor: selectedRecord.presensi === 'Hadir' ? theme.secondary + '60' : selectedRecord.presensi === 'Alpha' ? '#ef444460' : theme.warning + '60' }}>
-                  <div className="absolute top-0 left-0 w-full h-2 md:h-2.5" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}></div>
-
-                  <div className="flex justify-between items-start mb-6 pt-2">
-                     <div>
-                        <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tanggal Mutaba'ah</p>
-                        <h3 className="text-lg sm:text-xl font-black text-gray-800">{formatIndoDate(selectedDateStr)}</h3>
-                     </div>
-                     <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-100/50 hover:bg-gray-200/50 text-gray-400 hover:text-gray-600 rounded-full transition-colors"><X className="w-5 h-5"/></button>
+         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
+            <div className="bg-white/95 backdrop-blur-xl border border-white/80 rounded-2xl shadow-2xl w-full max-w-sm p-6 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+               
+               <div className="flex justify-between items-start mb-5">
+                  <div>
+                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Tanggal Mutaba'ah</p>
+                     <h3 className="text-base font-bold text-gray-800">{formatIndoDate(selectedDateStr)}</h3>
                   </div>
-                  
-                  <div className="mb-6 flex flex-col items-center bg-white/80 shadow-inner py-5 rounded-2xl border border-gray-100">
-                     <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Status Kehadiran</p>
-                     <span className="inline-flex px-8 py-2.5 rounded-full text-sm md:text-base font-black uppercase tracking-widest text-white shadow-lg" style={{ backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning }}>
-                        {selectedRecord.presensi}
-                     </span>
-                  </div>
-
-                  {selectedRecord.presensi === 'Hadir' && (
-                     <div className="space-y-4">
-                        {selectedRecord.ziyadah ? (
-                           <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-md relative overflow-hidden flex flex-row items-center justify-between gap-4">
-                              <div className="flex items-center gap-4">
-                                 <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.primary + '15' }}>
-                                    <BookOpen className="w-6 h-6" style={{ color: theme.primary }}/>
-                                 </div>
-                                 <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ziyadah</p>
-                                    <p className="text-sm md:text-base font-bold text-gray-800">{formatZiyadahSurahSafe(selectedRecord.ziyadah)}</p>
-                                 </div>
-                              </div>
-                              <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</p>
-                                 <span className="text-2xl font-black" style={{ color: theme.primary }}>{selectedRecord.ziyadah.finalScore}</span>
-                              </div>
-                           </div>
-                        ) : (
-                           <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400 shadow-inner">Setoran Ziyadah belum tercatat</div>
-                        )}
-                        
-                        {selectedRecord.murajaah ? (
-                           <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-md relative overflow-hidden flex flex-row items-center justify-between gap-4">
-                              <div className="flex items-center gap-4">
-                                 <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: theme.secondary + '15' }}>
-                                    <RotateCcw className="w-6 h-6" style={{ color: theme.secondary }}/>
-                                 </div>
-                                 <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Muraja'ah</p>
-                                    <p className="text-sm md:text-base font-bold text-gray-800">Juz {selectedRecord.murajaah.fromJuz} - Juz {selectedRecord.murajaah.toJuz}</p>
-                                 </div>
-                              </div>
-                              <div className="text-right shrink-0 border-l border-gray-100 pl-4">
-                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Nilai</p>
-                                 <span className="text-2xl font-black" style={{ color: theme.secondary }}>{selectedRecord.murajaah.finalScore}</span>
-                              </div>
-                           </div>
-                        ) : (
-                           <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100 text-center text-xs font-semibold text-gray-400 shadow-inner">Setoran Muraja'ah belum tercatat</div>
-                        )}
-                     </div>
-                  )}
-
-                  {selectedRecord.presensi === 'Izin/Sakit' && (
-                     <div className="bg-yellow-50 p-6 rounded-2xl border border-yellow-100 flex flex-col items-center text-center mt-2 shadow-inner">
-                        <AlertCircle className="w-8 h-8 text-yellow-500 mb-3"/>
-                        <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-2">Keterangan Pengampu</p>
-                        <p className="text-sm md:text-base font-bold text-gray-800 leading-relaxed">{selectedRecord.keterangan || '-'}</p>
-                     </div>
-                  )}
-
-                  {selectedRecord.presensi === 'Alpha' && (
-                     <div className="bg-red-50 p-6 rounded-2xl border border-red-100 flex flex-col items-center text-center mt-2 shadow-inner">
-                        <AlertTriangle className="w-8 h-8 text-red-500 mb-3"/>
-                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-2">Catatan Sistem</p>
-                        <p className="text-sm md:text-base font-bold text-gray-800 leading-relaxed">{selectedRecord.keterangan || 'Santri tidak hadir'}</p>
-                     </div>
-                  )}
-
-                  <button onClick={() => setDetailModalOpen(false)} className="mt-8 w-full py-3.5 rounded-xl font-bold text-sm md:text-base text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-colors active:scale-95">Tutup Detail Laporan</button>
+                  <button onClick={() => setDetailModalOpen(false)} className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full transition-colors"><X className="w-4 h-4"/></button>
                </div>
+               
+               <div className="mb-5 bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                  <span className={`inline-block px-4 py-1 rounded-md text-xs font-bold uppercase tracking-widest ${selectedRecord.presensi === 'Hadir' ? 'bg-[#54af48]/10 text-[#54af48]' : selectedRecord.presensi === 'Alpha' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-700'}`}>
+                     {selectedRecord.presensi}
+                  </span>
+               </div>
+
+               {selectedRecord.presensi === 'Hadir' && (
+                  <div className="space-y-3">
+                     {selectedRecord.ziyadah ? (
+                        <div className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between">
+                           <div>
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Ziyadah</p>
+                              <p className="text-sm font-bold text-gray-800">{formatZiyadahSurahSafe(selectedRecord.ziyadah)}</p>
+                           </div>
+                           <span className="text-xl font-black text-[#26544d]">{selectedRecord.ziyadah.finalScore}</span>
+                        </div>
+                     ) : (
+                        <div className="bg-gray-50 p-3 rounded-xl text-center text-xs text-gray-400">Ziyadah belum tercatat</div>
+                     )}
+                     
+                     {selectedRecord.murajaah ? (
+                        <div className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between">
+                           <div>
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Muraja'ah</p>
+                              <p className="text-sm font-bold text-gray-800">Juz {selectedRecord.murajaah.fromJuz} - Juz {selectedRecord.murajaah.toJuz}</p>
+                           </div>
+                           <span className="text-xl font-black text-[#54af48]">{selectedRecord.murajaah.finalScore}</span>
+                        </div>
+                     ) : (
+                        <div className="bg-gray-50 p-3 rounded-xl text-center text-xs text-gray-400">Muraja'ah belum tercatat</div>
+                     )}
+                  </div>
+               )}
+
+               {selectedRecord.presensi === 'Izin/Sakit' && (
+                  <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100 text-center">
+                     <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-1">Keterangan</p>
+                     <p className="text-sm font-medium text-gray-800">{selectedRecord.keterangan || '-'}</p>
+                  </div>
+               )}
+
+               {selectedRecord.presensi === 'Alpha' && (
+                  <div className="bg-red-50 p-4 rounded-xl border border-red-100 text-center">
+                     <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1">Sistem</p>
+                     <p className="text-sm font-medium text-gray-800">{selectedRecord.keterangan || 'Tanpa keterangan'}</p>
+                  </div>
+               )}
+
+               <button onClick={() => setDetailModalOpen(false)} className="mt-6 w-full py-2.5 rounded-xl font-bold text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Tutup</button>
             </div>
          </div>
       )}
@@ -1382,7 +1300,7 @@ const WaliDashboardView = ({ students, records, user }) => {
 };
 
 // ==========================================
-// 10. KERANGKA UTAMA & MENU SAMPING (SIDEBAR KIRI)
+// 10. KERANGKA UTAMA & MENU SAMPING
 // ==========================================
 const MainApp = () => {
   const [user, setUser] = useState(null);
@@ -1426,74 +1344,69 @@ const MainApp = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f0f4f3] flex font-sans text-gray-800 relative overflow-hidden">
+    <div className="min-h-screen bg-[#f4f7f6] flex font-sans text-gray-800 relative overflow-hidden">
       <GlassBackground />
 
-      {/* Header Mobile (Glassy) - KIRI: HAMBURGER, TENGAH/KANAN: TEKS */}
-      <div className="md:hidden bg-white/80 backdrop-blur-xl px-4 py-3 flex items-center gap-3 shadow-[0_2px_10px_rgb(0,0,0,0.05)] fixed top-0 w-full z-40 border-b border-white/80">
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2.5 text-[#26544d] bg-white rounded-xl border border-gray-100 shadow-sm active:scale-95 transition-transform">
-          {isMobileMenuOpen ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}
-        </button>
-        <div className="flex items-center gap-2">
-          <span className="font-black text-lg text-[#26544d] tracking-tight">Markaz Digiport</span>
+      {/* Header Mobile */}
+      <div className="md:hidden bg-white/60 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-white fixed top-0 w-full z-40">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-700 bg-white/50 rounded-lg hover:bg-white transition-colors">
+            {isMobileMenuOpen ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}
+          </button>
         </div>
+        <span className="font-bold text-sm text-[#26544d] uppercase tracking-widest">Markaz</span>
       </div>
 
       {/* Overlay Mobile */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
+        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
 
-      {/* Sidebar Desktop & Mobile (Dikembalikan ke Kiri dengan Warna Primary Solid & Aksen Glass) */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:translate-x-0 md:static md:flex-shrink-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{ backgroundColor: theme.primary }}>
+      {/* Sidebar - Solid Sleek Dark Green */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out flex flex-col md:translate-x-0 md:static md:flex-shrink-0 bg-[#26544d] shadow-2xl ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         
-        {/* Hiasan Bias Cahaya di dalam Sidebar */}
-        <div className="absolute top-0 left-0 w-full h-64 bg-[#54af48] mix-blend-screen opacity-10 blur-3xl pointer-events-none"></div>
-
-        {/* Logo Markaz di dalam Sidebar (Sekarang Tampil Juga di Mobile) */}
-        <div className="p-6 relative z-10 border-b border-white/10">
-          <div className="flex items-center gap-3 mb-1">
-             <BookOpen className="w-8 h-8 text-[#f9e653]" />
-             <span className="font-black text-2xl text-white tracking-tight">Markaz Digiport</span>
+        <div className="p-6 flex items-center gap-3 border-b border-white/10">
+          <div className="bg-white/10 p-2 rounded-lg"><BookOpen className="w-6 h-6 text-[#f9e653]" /></div>
+          <div>
+            <h1 className="font-black text-lg text-white tracking-tight leading-none">MARKAZ</h1>
+            <span className="text-[9px] font-bold text-[#54af48] tracking-widest uppercase">Digiport</span>
           </div>
         </div>
         
-        <div className="px-5 py-5 flex-1 overflow-y-auto relative z-10">
-           {/* Profil Pengguna */}
-           <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/10 mb-8 flex items-center gap-3 shadow-inner">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-[#26544d] font-bold text-lg bg-[#f9e653] shadow-sm shrink-0">{user.name ? user.name.charAt(0) : 'U'}</div>
+        <div className="px-4 py-6 flex-1 overflow-y-auto">
+           <div className="bg-[#1f453f] p-3 rounded-xl mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-[#26544d] font-bold bg-[#f9e653]">{user.name ? user.name.charAt(0) : 'U'}</div>
               <div className="overflow-hidden">
-                 <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider mb-0.5">{user.role}</p>
+                 <p className="text-[9px] font-bold text-[#54af48] uppercase tracking-wider">{user.role}</p>
                  <p className="text-sm font-bold text-white truncate">{user.name}</p>
               </div>
            </div>
 
-           <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-4 mb-3">Menu Utama</p>
-           <nav className="space-y-2">
+           <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-2 mb-2">Navigasi</p>
+           <nav className="space-y-1.5">
               {menuItems.map(item => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
-                  <button key={item.id} onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold text-sm ${isActive ? 'bg-white/20 backdrop-blur-md text-white shadow-lg border border-white/20' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}>
-                    <Icon className={`w-5 h-5 ${isActive ? 'text-[#f9e653]' : 'text-white/50'}`}/> {item.label}
+                  <button key={item.id} onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-sm font-medium ${isActive ? 'bg-[#54af48] text-white shadow-md' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}>
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/50'}`}/> {item.label}
                   </button>
                 );
               })}
            </nav>
         </div>
         
-        {/* Tombol Logout */}
-        <div className="p-5 border-t border-white/10 relative z-10">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-red-300 hover:bg-red-500/20 transition-colors font-bold text-sm border border-transparent hover:border-red-500/30">
-             <LogOut className="w-5 h-5"/> Keluar
+        <div className="p-4 border-t border-white/10">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-400/10 transition-colors text-sm font-medium">
+             <LogOut className="w-4 h-4"/> Keluar Aplikasi
           </button>
         </div>
       </div>
 
-      {/* Konten Menu Utama (Area Kanan) - Pindah ke bawah dikit di mobile karena ada header */}
-      <div className="flex-1 flex flex-col min-h-screen relative z-10 w-full overflow-hidden pt-[68px] md:pt-0">
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto h-full">
+      {/* Konten Utama */}
+      <div className="flex-1 flex flex-col min-h-screen relative w-full overflow-hidden pt-[56px] md:pt-0">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 z-10">
+          <div className="max-w-6xl mx-auto">
             {activeTab === 'admin' && user.role === 'admin' && <AdminView pengampus={pengampus} students={students} />}
             {activeTab === 'dashboard' && user.role === 'wali' && <WaliDashboardView students={students} records={records} user={user} />}
             {activeTab === 'harian' && <HarianView students={students} records={records} pengampus={pengampus} user={user} />}
@@ -1512,42 +1425,23 @@ const MainApp = () => {
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null, showDetails: false };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
-    console.error("Crash tertangkap oleh ErrorBoundary:", error, errorInfo);
-    this.setState({ errorInfo });
+    console.error("Crash:", error, errorInfo);
   }
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#f0f4f3] p-6 flex flex-col items-center justify-center font-sans relative overflow-hidden">
-          <GlassBackground />
-          <div className={`relative z-10 px-6 pb-6 pt-8 md:px-8 md:pb-8 md:pt-10 rounded-3xl max-w-lg w-full text-center border overflow-hidden bg-white/80 backdrop-blur-xl shadow-lg border-gray-400/50`}>
-            <div className="absolute top-0 left-0 w-full h-2 md:h-3 bg-gray-400"></div>
-            
-            <AlertTriangle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h1 className="text-xl md:text-2xl font-black text-gray-800">Mohon Maaf, Terjadi Kendala Sistem</h1>
-            <p className="text-gray-500 mt-3 text-sm md:text-base leading-relaxed">
-              Sistem kami sedang mengalami sedikit gangguan. Jangan khawatir, data Anda tetap aman. Silakan segarkan (muat ulang) halaman ini untuk mencoba kembali.
-            </p>
-            <button onClick={() => window.location.reload()} className="mt-6 px-6 py-3 bg-gray-800 text-white font-bold rounded-xl shadow-xl hover:bg-gray-700 transition-colors w-full sm:w-auto">
-               Muat Ulang Halaman
-            </button>
-            
-            <div className="mt-6 pt-6 border-t border-gray-200">
-               <button onClick={() => this.setState({ showDetails: !this.state.showDetails })} className="text-[10px] md:text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest">
-                  {this.state.showDetails ? 'Tutup Detail Teknis' : 'Tampilkan Pesan Log (Admin)'}
-               </button>
-               {this.state.showDetails && (
-                  <div className="mt-4 p-4 bg-gray-900/90 backdrop-blur-md text-green-400 text-left text-xs md:text-sm font-mono rounded-xl overflow-auto max-h-48 shadow-inner border border-gray-800">
-                     {this.state.error && this.state.error.toString()}
-                  </div>
-               )}
-            </div>
+        <div className="min-h-screen bg-[#f4f7f6] p-6 flex items-center justify-center font-sans">
+          <div className="bg-white p-8 rounded-2xl max-w-sm w-full text-center shadow-lg border border-gray-100">
+            <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <h1 className="text-lg font-bold text-gray-800">Sistem Mengalami Kendala</h1>
+            <p className="text-sm text-gray-500 mt-2 mb-6">Silakan segarkan halaman ini.</p>
+            <button onClick={() => window.location.reload()} className="px-5 py-2.5 bg-[#26544d] text-white font-bold rounded-xl text-sm w-full">Muat Ulang</button>
           </div>
         </div>
       );
@@ -1561,19 +1455,12 @@ function AppStarter() {
   
   if (!isConfigValid) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#f0f4f3] font-sans relative overflow-hidden">
-         <GlassBackground />
-         <div className={`relative z-10 px-6 pb-6 pt-8 md:px-8 md:pb-8 md:pt-10 rounded-3xl max-w-lg text-center border overflow-hidden bg-white/80 backdrop-blur-xl shadow-lg border-yellow-500/50`}>
-             <div className="absolute top-0 left-0 w-full h-2 md:h-3 bg-yellow-500"></div>
-
-             <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-bounce drop-shadow-md" />
-             <h1 className="text-xl md:text-2xl font-black text-gray-800 mb-3">Mohon Perhatian</h1>
-             <p className="text-gray-600 mb-4 text-sm md:text-base leading-relaxed">
-               Sistem belum dapat memuat karena pengaturan keamanan (Konfigurasi Firebase) belum terbaca secara utuh.
-             </p>
-             <p className="text-gray-500 text-xs md:text-sm bg-white/50 backdrop-blur-sm p-3 rounded-xl border border-white font-medium shadow-inner">
-               Silakan periksa kembali berkas pengaturan (.env) dan pastikan Anda memuat ulang (Refresh) halaman ini.
-             </p>
+      <div className="min-h-screen bg-[#f4f7f6] flex items-center justify-center p-6 font-sans">
+         <div className="bg-white p-8 rounded-2xl max-w-sm w-full text-center shadow-lg border border-gray-100">
+             <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+             <h1 className="text-lg font-bold text-gray-800 mb-2">Konfigurasi Tertunda</h1>
+             <p className="text-sm text-gray-500 mb-4">Sistem sedang memuat kunci keamanan Firebase.</p>
+             <button onClick={() => window.location.reload()} className="px-5 py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold rounded-xl text-sm w-full transition-colors">Coba Lagi</button>
          </div>
       </div>
     );
