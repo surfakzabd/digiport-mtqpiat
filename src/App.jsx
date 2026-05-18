@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Users, BookOpen, Calendar, Settings, LogOut, 
   Download, Printer, Plus, Minus, Check, X, ChevronDown, ChevronUp,
-  Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User, ShieldCheck, Key
+  Award, AlertCircle, UserPlus, Trash2, AlertTriangle, Filter, Edit, RotateCcw, Menu, Lock, User, ShieldCheck, Key, ArrowRight
 } from 'lucide-react';
 
 import { initializeApp, getApps, deleteApp } from 'firebase/app';
@@ -33,7 +33,7 @@ try {
     storageBucket: envStorageBucket,
     messagingSenderId: envSenderId,
     appId: envAppId,
-    measurementId: envMeasurementId
+    measuerementId: envMeasurementId
   };
   
   if (firebaseConfig.apiKey && firebaseConfig.apiKey.length > 5) {
@@ -287,9 +287,9 @@ const ResetAccessModal = ({ isOpen, target, onSave, onCancel }) => {
   );
 };
 
-// ==========================================
+// ===============================
 // 4. TAMPILAN LOGIN (AUTENTIKASI)
-// ==========================================
+// ===============================
 const LoginScreen = ({ onLogin, pengampus, students }) => {
   const [role, setRole] = useState('wali');
   const [username, setUsername] = useState('');
@@ -330,49 +330,62 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-transparent relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#f4f7f6] relative overflow-hidden">
       <GlassBackground />
-      <div className={`relative z-10 p-6 md:p-10 w-full max-w-sm ${glassCard}`}>
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center border border-gray-200">
-             <BookOpen className="w-8 h-8" style={{ color: theme.primary }} />
+      
+      {/* Dekorasi khusus halaman login agar lebih cantik */}
+      <div className="absolute top-10 left-10 w-40 h-40 bg-[#54af48]/15 rounded-full blur-[60px] pointer-events-none"></div>
+      <div className="absolute bottom-10 right-10 w-48 h-48 bg-[#26544d]/15 rounded-full blur-[80px] pointer-events-none"></div>
+
+      <div className="w-full max-w-[360px] z-10 relative">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 mx-auto bg-white rounded-2xl flex items-center justify-center border border-gray-200 mb-4 rotate-3 hover:rotate-0 transition-transform duration-300 shadow-sm">
+             <BookOpen className="w-8 h-8 text-[#26544d]" />
           </div>
-          <h1 className="text-2xl font-black text-gray-800 tracking-tight">Markaz Digiport</h1>
-          <p className="text-xs text-gray-500 font-medium mt-1">Sistem Presensi & Mutaba'ah</p>
+          <h1 className="text-3xl font-black text-gray-800 tracking-tight">MARKAZ</h1>
+          <p className="text-sm text-gray-500 font-bold mt-1">Sistem Mutaba'ah & Presensi</p>
         </div>
 
-        <div className="flex bg-white/50 p-1.5 rounded-2xl mb-6 border border-gray-200">
-          <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${role === 'wali' ? 'bg-white text-gray-800 border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
-          <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
-          <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${role === 'admin' ? 'bg-white text-gray-800 border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
-        </div>
-
-        {error && (
-           <div className="mb-5 p-3.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-200 flex items-start gap-2">
-             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span>
-           </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-             <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Username</label>
-             <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><User className="w-4 h-4 text-gray-400" /></div>
-                <input required type="text" value={username} onChange={e => setUsername(e.target.value.replace(/\s+/g, ''))} className={`w-full pl-11 pr-4 py-3 text-sm ${glassInput}`} placeholder="Masukkan username" />
-             </div>
-          </div>
-          <div>
-             <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Kata Sandi</label>
-             <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="w-4 h-4 text-gray-400" /></div>
-                <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className={`w-full pl-11 pr-4 py-3 text-sm ${glassInput}`} placeholder="Masukkan kata sandi" />
-             </div>
-          </div>
+        <div className="bg-white/90 backdrop-blur-2xl border border-gray-200/80 rounded-[2rem] p-6 md:p-8 shadow-sm">
           
-          <button type="submit" disabled={loading} className={`w-full mt-4 py-3.5 rounded-xl text-sm font-bold transition-all flex justify-center items-center ${primaryBtn}`}>
-            {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk Sistem'}
-          </button>
-        </form>
+          {/* Switcher Role ala iOS */}
+          <div className="flex bg-gray-100 p-1 rounded-2xl mb-6 border border-gray-200/50">
+            <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${role === 'wali' ? 'bg-white text-gray-800 border border-gray-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
+            <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 border border-gray-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
+            <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${role === 'admin' ? 'bg-white text-gray-800 border border-gray-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
+          </div>
+
+          {error && (
+             <div className="mb-5 p-3.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-200 flex items-start gap-2">
+               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span>
+             </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+               <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5 ml-1">Username</label>
+               <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><User className="w-4 h-4 text-gray-400" /></div>
+                  <input required type="text" value={username} onChange={e => setUsername(e.target.value.replace(/\s+/g, ''))} className="w-full pl-11 pr-4 py-3.5 text-sm bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#26544d] focus:ring-4 focus:ring-[#26544d]/10 transition-all outline-none text-gray-800 font-medium placeholder-gray-400" placeholder="Masukkan username" />
+               </div>
+            </div>
+            <div>
+               <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5 ml-1">Kata Sandi</label>
+               <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="w-4 h-4 text-gray-400" /></div>
+                  <input required type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-11 pr-4 py-3.5 text-sm bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#26544d] focus:ring-4 focus:ring-[#26544d]/10 transition-all outline-none text-gray-800 font-medium placeholder-gray-400" placeholder="Masukkan sandi" />
+               </div>
+            </div>
+            
+            <button type="submit" disabled={loading} className={`w-full mt-6 py-4 rounded-xl text-sm font-bold transition-all flex justify-center items-center gap-2 ${primaryBtn}`}>
+              {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : (
+                <>Masuk Sistem <ArrowRight className="w-4 h-4 ml-1"/></>
+              )}
+            </button>
+          </form>
+        </div>
+        
+        <p className="text-center text-xs text-gray-400 mt-8 font-medium">© {new Date().getFullYear()} Markaz Tahfidz. All rights reserved.</p>
       </div>
     </div>
   );
@@ -740,7 +753,8 @@ const HarianView = ({ students, records, pengampus, user }) => {
                 const isExpanded = expandedStudent === student.id;
 
                 return (
-                  <div key={student.id} className={`transition-all duration-300 ${glassCard} ${isExpanded ? 'border-[#54af48]/50' : 'hover:border-gray-300'}`}>
+                  // overflow-hidden ditambahkan agar ujung bagian bawah child element (yg di expand) mengikuti rounded-3xl parent-nya
+                  <div key={student.id} className={`transition-all duration-300 overflow-hidden ${glassCard} ${isExpanded ? 'border-[#54af48]/50' : 'hover:border-gray-300'}`}>
                     <div className={`p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors ${!isExpanded ? 'hover:bg-white/50 cursor-pointer' : 'bg-white/60'}`} onClick={() => !todayRecord && setExpandedStudent(isExpanded ? null : student.id)}>
                       
                       <div className="flex items-center gap-4 w-full sm:w-auto" onClick={(e) => { if(todayRecord) { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); } }}>
