@@ -63,8 +63,10 @@ const theme = {
 };
 
 // UI Classes
-const glassCard = "bg-white/70 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl";
-const glassInput = "bg-white/60 backdrop-blur-md border border-white/80 text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-[#54af48]/30 focus:border-transparent transition-all rounded-xl outline-none";
+const glassCard = "bg-white/70 backdrop-blur-xl border border-gray-200 rounded-3xl";
+const glassInput = "bg-white/60 backdrop-blur-md border border-gray-200 text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-[#54af48]/30 focus:border-transparent transition-all rounded-xl outline-none";
+const primaryBtn = "bg-[#26544d] border border-[#1a3a35] hover:bg-[#1f453f] text-white";
+const outlineBtn = "bg-white border border-gray-200 hover:bg-gray-50 text-gray-700";
 
 const QURAN_SURAHS = [
   ["Al-Fatihah",7], ["Al-Baqarah",286], ["Ali 'Imran",200], ["An-Nisa'",176], ["Al-Ma'idah",120], ["Al-An'am",165], ["Al-A'raf",206], ["Al-Anfal",75], ["At-Taubah",129], ["Yunus",109],
@@ -123,16 +125,16 @@ const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
-      <div className="bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl shadow-[0_10px_40px_rgb(0,0,0,0.08)] w-full max-w-sm p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+      <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-3xl w-full max-w-sm p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center gap-3 text-red-500 mb-4">
-          <div className="p-2.5 bg-red-50 rounded-xl"><AlertTriangle className="w-6 h-6" /></div>
+          <div className="p-2.5 bg-red-50 border border-red-100 rounded-xl"><AlertTriangle className="w-6 h-6" /></div>
           <h3 className="text-lg font-bold text-gray-800 leading-tight">{title}</h3>
         </div>
         <p className="text-sm text-gray-600 mb-8 leading-relaxed">{message}</p>
         <div className="flex gap-3 justify-end">
-          <button onClick={onCancel} className="px-5 py-2.5 rounded-xl font-bold text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">Batal</button>
-          <button onClick={onConfirm} className="px-5 py-2.5 rounded-xl font-bold text-sm bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm hover:shadow-md">{confirmText}</button>
+          <button onClick={onCancel} className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors ${outlineBtn}`}>Batal</button>
+          <button onClick={onConfirm} className="px-5 py-2.5 rounded-xl font-bold text-sm bg-red-500 border border-red-600 text-white hover:bg-red-600 transition-colors">{confirmText}</button>
         </div>
       </div>
     </div>
@@ -155,14 +157,14 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
-      <div className="bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl shadow-[0_10px_40px_rgb(0,0,0,0.08)] w-full max-w-md p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+      <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-3xl w-full max-w-md p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-800 flex items-center gap-3">
-             <div className="p-2.5 bg-[#26544d]/10 rounded-xl"><Edit className="w-5 h-5 text-[#26544d]"/></div>
+             <div className="p-2.5 bg-[#26544d]/10 border border-[#26544d]/20 rounded-xl"><Edit className="w-5 h-5 text-[#26544d]"/></div>
              Edit {isStudent ? 'Data Santri' : 'Pengampu'}
           </h3>
-          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-2 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5"/></button>
+          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5"/></button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -198,7 +200,7 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
                   <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Target Tercapai</label>
                   <div className="flex">
                     <input type="number" min="0" max="30" name="juzTercapai" value={formData.juzTercapai || 0} onChange={handleChange} className={`w-full p-3 border-r-0 rounded-l-xl text-sm ${glassInput}`} />
-                    <span className="bg-white/60 p-3 border border-white/80 border-l-0 rounded-r-xl text-xs text-gray-500 font-bold flex items-center">Juz</span>
+                    <span className="bg-gray-50/50 p-3 border border-gray-200 border-l-0 rounded-r-xl text-xs text-gray-500 font-bold flex items-center">Juz</span>
                   </div>
                 </div>
               </div>
@@ -207,12 +209,12 @@ const EditModal = ({ isOpen, target, pengampus, onSave, onCancel }) => {
 
           <div>
             <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Username <span className="lowercase font-medium">(Tetap)</span></label>
-            <input type="text" name="username" value={formData.username || ''} disabled className="w-full p-3 border border-gray-200 rounded-xl text-sm bg-gray-50/50 text-gray-400 cursor-not-allowed outline-none font-medium" />
+            <input type="text" name="username" value={formData.username || ''} disabled className="w-full p-3 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-400 cursor-not-allowed outline-none font-medium" />
           </div>
 
-          <div className="flex gap-3 justify-end pt-6 mt-2 border-t border-gray-100">
-            <button type="button" onClick={onCancel} className="px-5 py-3 rounded-xl font-bold text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors w-full sm:w-auto shadow-sm">Batal</button>
-            <button type="submit" className="px-5 py-3 rounded-xl font-bold text-sm text-white bg-[#26544d] hover:bg-[#1f453f] transition-colors w-full sm:w-auto flex justify-center items-center gap-2 shadow-sm hover:shadow-md">
+          <div className="flex gap-3 justify-end pt-6 mt-2 border-t border-gray-200/50">
+            <button type="button" onClick={onCancel} className={`px-5 py-3 rounded-xl font-bold text-sm w-full sm:w-auto transition-colors ${outlineBtn}`}>Batal</button>
+            <button type="submit" className={`px-5 py-3 rounded-xl font-bold text-sm w-full sm:w-auto flex justify-center items-center gap-2 transition-all ${primaryBtn}`}>
               Simpan Data
             </button>
           </div>
@@ -244,23 +246,23 @@ const ResetAccessModal = ({ isOpen, target, onSave, onCancel }) => {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
-      <div className="bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl shadow-[0_10px_40px_rgb(0,0,0,0.08)] w-full max-w-md p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+      <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-3xl w-full max-w-md p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-gray-800 flex items-center gap-3">
-             <div className="p-2.5 bg-[#eab308]/10 rounded-xl"><Key className="w-5 h-5 text-[#eab308]"/></div>
+             <div className="p-2.5 bg-[#eab308]/10 border border-[#eab308]/20 rounded-xl"><Key className="w-5 h-5 text-[#eab308]"/></div>
              Atur Ulang Akses
           </h3>
-          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-2 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5"/></button>
+          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5"/></button>
         </div>
         
-        <div className="bg-yellow-50/50 p-4 rounded-2xl border border-yellow-100/50 mb-6">
-           <p className="text-xs text-yellow-800/80 font-medium leading-relaxed">
+        <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-200 mb-6">
+           <p className="text-xs text-yellow-800/90 font-medium leading-relaxed">
              Untuk menjaga privasi, sandi lama tidak dapat dilihat. Silakan buat <b>username baru</b> (atau tambah angka) dan sandi yang baru.
            </p>
         </div>
 
-        {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100 flex items-start gap-2 mb-4"><AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span></div>}
+        {error && <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-200 flex items-start gap-2 mb-4"><AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span></div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -272,9 +274,9 @@ const ResetAccessModal = ({ isOpen, target, onSave, onCancel }) => {
             <input required type="text" minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={`w-full p-3 text-sm ${glassInput}`} />
           </div>
 
-          <div className="flex gap-3 justify-end pt-6 mt-2 border-t border-gray-100">
-            <button type="button" onClick={onCancel} className="px-5 py-3 rounded-xl font-bold text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors w-full sm:w-auto shadow-sm">Batal</button>
-            <button type="submit" disabled={isProcessing} className="px-5 py-3 rounded-xl font-bold text-sm text-gray-800 bg-[#f9e653] hover:bg-[#e0cf4a] transition-colors w-full sm:w-auto flex justify-center items-center gap-2 shadow-sm hover:shadow-md">
+          <div className="flex gap-3 justify-end pt-6 mt-2 border-t border-gray-200/50">
+            <button type="button" onClick={onCancel} className={`px-5 py-3 rounded-xl font-bold text-sm w-full sm:w-auto transition-colors ${outlineBtn}`}>Batal</button>
+            <button type="submit" disabled={isProcessing} className="px-5 py-3 rounded-xl font-bold text-sm text-gray-800 bg-[#f9e653] border border-[#e0cf4a] hover:bg-[#e0cf4a] transition-colors w-full sm:w-auto flex justify-center items-center gap-2">
               {isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-800"></div> : <Key className="w-4 h-4"/>} 
               {isProcessing ? 'Memproses...' : 'Terapkan Akses'}
             </button>
@@ -332,21 +334,21 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
       <GlassBackground />
       <div className={`relative z-10 p-6 md:p-10 w-full max-w-sm ${glassCard}`}>
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 bg-white/80 rounded-2xl shadow-sm flex items-center justify-center border border-white">
+          <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center border border-gray-200">
              <BookOpen className="w-8 h-8" style={{ color: theme.primary }} />
           </div>
           <h1 className="text-2xl font-black text-gray-800 tracking-tight">Markaz Digiport</h1>
           <p className="text-xs text-gray-500 font-medium mt-1">Sistem Presensi & Mutaba'ah</p>
         </div>
 
-        <div className="flex bg-white/50 p-1.5 rounded-2xl mb-6 border border-white shadow-sm">
-          <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${role === 'wali' ? 'bg-white text-gray-800 shadow-sm border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
-          <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 shadow-sm border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
-          <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${role === 'admin' ? 'bg-white text-gray-800 shadow-sm border border-gray-100' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
+        <div className="flex bg-white/50 p-1.5 rounded-2xl mb-6 border border-gray-200">
+          <button type="button" onClick={() => {setRole('wali'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${role === 'wali' ? 'bg-white text-gray-800 border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>Wali</button>
+          <button type="button" onClick={() => {setRole('pengampu'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${role === 'pengampu' ? 'bg-white text-gray-800 border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>Pengampu</button>
+          <button type="button" onClick={() => {setRole('admin'); setError(''); setUsername(''); setPassword('');}} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${role === 'admin' ? 'bg-white text-gray-800 border border-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>Admin</button>
         </div>
 
         {error && (
-           <div className="mb-5 p-3.5 bg-red-50/80 text-red-600 rounded-xl text-xs font-bold border border-red-100 flex items-start gap-2 backdrop-blur-sm">
+           <div className="mb-5 p-3.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-200 flex items-start gap-2">
              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5"/> <span className="leading-relaxed">{error}</span>
            </div>
         )}
@@ -367,7 +369,7 @@ const LoginScreen = ({ onLogin, pengampus, students }) => {
              </div>
           </div>
           
-          <button type="submit" disabled={loading} className="w-full mt-4 py-3.5 rounded-xl text-white text-sm font-bold shadow-sm hover:shadow-md hover:bg-opacity-90 transition-all flex justify-center items-center bg-[#26544d]">
+          <button type="submit" disabled={loading} className={`w-full mt-4 py-3.5 rounded-xl text-sm font-bold transition-all flex justify-center items-center ${primaryBtn}`}>
             {loading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : 'Masuk Sistem'}
           </button>
         </form>
@@ -403,15 +405,15 @@ const SettingsView = () => {
      <div className="space-y-6 pb-10">
         <div className={`p-6 md:p-8 max-w-2xl ${glassCard}`}>
            <h2 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3">
-             <div className="p-2.5 bg-[#26544d]/10 rounded-xl"><Settings className="w-6 h-6 text-[#26544d]"/></div>
+             <div className="p-2.5 bg-[#26544d]/10 border border-[#26544d]/20 rounded-xl"><Settings className="w-6 h-6 text-[#26544d]"/></div>
              Pengaturan Akun
            </h2>
            <p className="text-sm text-gray-500 mt-3">Kelola kata sandi Anda secara berkala untuk menjaga keamanan akun akses sistem.</p>
            
-           <hr className="my-6 border-gray-200/50" />
+           <hr className="my-6 border-gray-200" />
 
            {status.msg && (
-              <div className={`p-4 rounded-xl mb-6 text-sm font-bold flex items-start gap-3 ${status.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+              <div className={`p-4 rounded-xl mb-6 text-sm font-bold flex items-start gap-3 ${status.type === 'error' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
                  {status.type === 'error' ? <AlertCircle className="w-5 h-5 shrink-0"/> : <Check className="w-5 h-5 shrink-0"/>}
                  <span className="leading-relaxed">{status.msg}</span>
               </div>
@@ -425,7 +427,7 @@ const SettingsView = () => {
                     <input type="text" required minLength={6} value={newPassword} onChange={e => setNewPassword(e.target.value)} className={`w-full pl-11 pr-4 py-3 rounded-xl text-sm ${glassInput}`} placeholder="Masukkan minimal 6 karakter" />
                  </div>
               </div>
-              <button type="submit" disabled={loading} className="px-6 py-3.5 rounded-xl text-white text-sm font-bold shadow-sm hover:shadow-md bg-[#26544d] hover:bg-[#1f453f] transition-all flex justify-center items-center gap-2 w-full sm:w-auto">
+              <button type="submit" disabled={loading} className={`px-6 py-3.5 rounded-xl text-sm font-bold transition-all flex justify-center items-center gap-2 w-full sm:w-auto ${primaryBtn}`}>
                  {loading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Key className="w-4 h-4"/>}
                  Perbarui Kata Sandi
               </button>
@@ -522,7 +524,7 @@ const AdminView = ({ pengampus, students }) => {
 
       <div className={`p-6 md:p-8 ${glassCard}`}>
         <div className="flex items-center gap-4 mb-6">
-           <div className="p-3 bg-white/80 rounded-2xl shadow-sm border border-white">
+           <div className="p-3 bg-white border border-gray-200 rounded-2xl">
              <UserPlus className="w-6 h-6 text-[#26544d]"/>
            </div>
            <div>
@@ -531,7 +533,7 @@ const AdminView = ({ pengampus, students }) => {
            </div>
         </div>
         
-        {formError && <div className="p-3.5 bg-red-50/80 text-red-600 rounded-xl mb-5 text-sm font-medium border border-red-100 flex items-center gap-2 backdrop-blur-sm"><AlertCircle className="w-4 h-4"/> {formError}</div>}
+        {formError && <div className="p-3.5 bg-red-50 text-red-600 rounded-xl mb-5 text-sm font-medium border border-red-200 flex items-center gap-2"><AlertCircle className="w-4 h-4"/> {formError}</div>}
         
         <form onSubmit={handleAddPengampu} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div className="w-full">
@@ -546,7 +548,7 @@ const AdminView = ({ pengampus, students }) => {
             <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Sandi (Min. 6 Karakter)</label>
             <input required type="text" value={newPengampu.password} onChange={e=>setNewPengampu({...newPengampu, password: e.target.value})} minLength={6} className={`w-full p-3 text-sm ${glassInput}`} placeholder="Minimal 6 karakter" />
           </div>
-          <button type="submit" disabled={isProcessing} className="w-full p-3 rounded-xl text-white font-bold transition-all bg-[#26544d] hover:bg-[#1f453f] flex items-center justify-center gap-2 shadow-sm hover:shadow-md text-sm" style={{ opacity: isProcessing ? 0.7 : 1 }}>
+          <button type="submit" disabled={isProcessing} className={`w-full p-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm ${primaryBtn}`} style={{ opacity: isProcessing ? 0.7 : 1 }}>
             {isProcessing ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Plus className="w-4 h-4"/>} 
             {isProcessing ? 'Memproses...' : 'Tambahkan'}
           </button>
@@ -558,7 +560,7 @@ const AdminView = ({ pengampus, students }) => {
           <h2 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2.5">
             <Users className="w-5 h-5 text-[#26544d]"/> Daftar Halaqah & Santri
           </h2>
-          <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#54af48] bg-green-50/80 backdrop-blur-sm border border-green-100 px-3 py-1.5 rounded-lg">
+          <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#54af48] bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg">
              <ShieldCheck className="w-3.5 h-3.5"/> Keamanan Aktif
           </span>
         </div>
@@ -567,41 +569,41 @@ const AdminView = ({ pengampus, students }) => {
             const isExpanded = expandedPengampuId === pengampu.id;
             const pengampuStudents = students.filter(s => s.pengampuId === pengampu.id);
             return (
-              <div key={pengampu.id} className={`transition-all duration-300 overflow-hidden ${glassCard} ${isExpanded ? 'border-[#54af48]/30 shadow-[0_10px_40px_rgb(0,0,0,0.06)]' : 'hover:border-white'}`}>
-                <div className={`p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer gap-4 transition-colors ${isExpanded ? 'bg-white/40' : 'hover:bg-white/40'}`} onClick={() => setExpandedPengampuId(isExpanded ? null : pengampu.id)}>
+              <div key={pengampu.id} className={`transition-all duration-300 overflow-hidden ${glassCard} ${isExpanded ? 'border-[#54af48]/50' : 'hover:border-gray-300'}`}>
+                <div className={`p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer gap-4 transition-colors ${isExpanded ? 'bg-white/60' : 'hover:bg-white/40'}`} onClick={() => setExpandedPengampuId(isExpanded ? null : pengampu.id)}>
                   <div className="flex items-center gap-4 flex-1 w-full">
-                     <div className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-sm shrink-0 bg-[#26544d]">{pengampu.name.charAt(0)}</div>
+                     <div className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white font-bold text-xl bg-[#26544d] border border-[#1a3a35] shrink-0">{pengampu.name.charAt(0)}</div>
                      <div>
                         <h3 className="text-base md:text-lg font-bold text-gray-800 leading-tight">{pengampu.name}</h3>
                         <div className="flex flex-wrap gap-2 text-xs text-gray-500 mt-1.5">
-                           <span className="bg-white/60 px-2.5 py-1 rounded-md border border-white shadow-sm">ID: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
+                           <span className="bg-white px-2.5 py-1 rounded-md border border-gray-200">ID: <span className="font-bold text-gray-700">{pengampu.username}</span></span>
                         </div>
                      </div>
                   </div>
-                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-gray-100 sm:border-none">
-                     <div className="text-xs font-bold text-[#26544d] bg-white/80 border border-white px-3.5 py-2 rounded-xl shadow-sm">{pengampuStudents.length} Santri</div>
+                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-gray-200 sm:border-none">
+                     <div className="text-xs font-bold text-[#26544d] bg-white border border-gray-200 px-3.5 py-2 rounded-xl">{pengampuStudents.length} Santri</div>
                      <div className="flex items-center gap-1.5 ml-2">
-                        <button onClick={(e) => { e.stopPropagation(); setResetTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#eab308] p-2 hover:bg-yellow-50 rounded-xl transition-colors bg-white/50 border border-transparent hover:border-yellow-100 shadow-sm" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4"/></button>
-                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#54af48] p-2 hover:bg-green-50 rounded-xl transition-colors bg-white/50 border border-transparent hover:border-green-100 shadow-sm" title="Edit Profil"><Edit className="w-4 h-4"/></button>
-                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-400 p-2 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors bg-white/50 border border-transparent hover:border-red-100 shadow-sm" title="Hapus Data"><Trash2 className="w-4 h-4"/></button>
-                        <div className={`p-2 transition-colors ml-1 bg-white/50 rounded-xl border border-white shadow-sm ${isExpanded ? 'text-gray-800' : 'text-gray-400'}`}>{isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</div>
+                        <button onClick={(e) => { e.stopPropagation(); setResetTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#eab308] p-2 hover:bg-yellow-50 rounded-xl transition-colors bg-white border border-gray-200 hover:border-yellow-200" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setEditTarget({ type: 'pengampu', data: pengampu }); }} className="text-[#54af48] p-2 hover:bg-green-50 rounded-xl transition-colors bg-white border border-gray-200 hover:border-green-200" title="Edit Profil"><Edit className="w-4 h-4"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: 'pengampu', id: pengampu.id, name: pengampu.name }); }} className="text-red-500 p-2 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors bg-white border border-gray-200 hover:border-red-200" title="Hapus Data"><Trash2 className="w-4 h-4"/></button>
+                        <div className={`p-2 transition-colors ml-1 bg-white rounded-xl border border-gray-200 ${isExpanded ? 'text-gray-800' : 'text-gray-400'}`}>{isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</div>
                      </div>
                   </div>
                 </div>
                 
                 {isExpanded && (
-                  <div className="border-t border-white/50 bg-white/30 p-5 md:p-6 lg:p-8 animate-in slide-in-from-top-4 duration-300">
-                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white/60 p-4 md:p-5 rounded-2xl border border-white mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end shadow-sm">
+                  <div className="border-t border-gray-200 bg-white/40 p-5 md:p-6 lg:p-8 animate-in slide-in-from-top-4 duration-300">
+                    <form onSubmit={(e) => handleAddStudent(e, pengampu.id)} className="bg-white/60 p-4 md:p-5 rounded-2xl border border-gray-200 mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
                       <div className="col-span-1 sm:col-span-2 lg:col-span-2"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Nama Santri Baru</label><input required type="text" value={newStudent.name} onChange={e=>setNewStudent({...newStudent, name: e.target.value})} className={`w-full p-2.5 rounded-xl text-sm ${glassInput}`} placeholder="Nama Lengkap" /></div>
                       <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Kls/Smt</label><div className="flex gap-2"><select value={newStudent.kelas} onChange={e=>setNewStudent({...newStudent, kelas: e.target.value})} className={`w-1/2 p-2.5 rounded-xl text-sm ${glassInput}`}><option value="IL">IL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><select value={newStudent.semester} onChange={e=>setNewStudent({...newStudent, semester: e.target.value})} className={`w-1/2 p-2.5 rounded-xl text-sm ${glassInput}`}>{[1,2,3,4,5,6].map(s => <option key={s} value={s}>{s}</option>)}</select></div></div>
-                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className={`w-full p-2.5 border-r-0 rounded-l-xl text-sm ${glassInput}`} /><span className="bg-white/50 p-2.5 border border-white/80 border-l-0 rounded-r-xl text-[10px] text-gray-500 font-bold">Juz</span></div></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Tercapai</label><div className="flex items-center"><input type="number" min="0" max="30" value={newStudent.juzTercapai} onChange={e=>setNewStudent({...newStudent, juzTercapai: e.target.value})} className={`w-full p-2.5 border-r-0 rounded-l-xl text-sm ${glassInput}`} /><span className="bg-gray-50 p-2.5 border border-gray-200 border-l-0 rounded-r-xl text-[10px] text-gray-500 font-bold">Juz</span></div></div>
                       <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Username</label><input required type="text" value={newStudent.username} onChange={e=>setNewStudent({...newStudent, username: e.target.value})} className={`w-full p-2.5 rounded-xl text-sm ${glassInput}`} placeholder="tanpaspasi" /></div>
-                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Sandi Akses</label><div className="flex gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className={`w-full p-2.5 rounded-xl text-sm ${glassInput}`} placeholder="Min. 6" /><button type="submit" disabled={isProcessing} className="p-2.5 rounded-xl text-white font-bold transition-all bg-[#54af48] hover:bg-[#46933c] shadow-sm hover:shadow-md flex items-center justify-center shrink-0" style={{ opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Plus className="w-5 h-5"/>}</button></div></div>
+                      <div className="col-span-1"><label className="text-[10px] uppercase font-bold text-gray-500 mb-1.5 block">Sandi Akses</label><div className="flex gap-2"><input required type="text" value={newStudent.password} minLength={6} onChange={e=>setNewStudent({...newStudent, password: e.target.value})} className={`w-full p-2.5 rounded-xl text-sm ${glassInput}`} placeholder="Min. 6" /><button type="submit" disabled={isProcessing} className="p-2.5 rounded-xl text-white font-bold transition-all bg-[#54af48] border border-[#46933c] hover:bg-[#46933c] flex items-center justify-center shrink-0" style={{ opacity: isProcessing ? 0.7 : 1 }}>{isProcessing ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Plus className="w-5 h-5"/>}</button></div></div>
                     </form>
                     
-                    <div className="overflow-x-auto bg-white/60 rounded-2xl border border-white shadow-sm">
+                    <div className="overflow-x-auto bg-white/80 rounded-2xl border border-gray-200">
                        <table className="w-full text-left whitespace-nowrap min-w-[650px]">
-                          <thead className="text-gray-500 border-b border-white/80 text-[11px] uppercase tracking-wider bg-white/40">
+                          <thead className="text-gray-500 border-b border-gray-200 text-[11px] uppercase tracking-wider bg-gray-50/50">
                              <tr>
                                <th className="p-4 font-bold">Nama Santri</th>
                                <th className="p-4 font-bold">Kls/Smt</th>
@@ -610,21 +612,21 @@ const AdminView = ({ pengampus, students }) => {
                                <th className="p-4 font-bold text-center">Tindakan</th>
                              </tr>
                           </thead>
-                          <tbody className="divide-y divide-white/60 text-sm">
+                          <tbody className="divide-y divide-gray-200 text-sm">
                              {pengampuStudents.length === 0 ? <tr><td colSpan="5" className="p-6 md:p-8 text-center text-gray-400 italic">Belum ada data santri yang ditambahkan.</td></tr> : pengampuStudents.map(s => (
-                                <tr key={s.id} className="hover:bg-white/70 transition-colors">
+                                <tr key={s.id} className="hover:bg-white transition-colors">
                                    <td className="p-4 font-bold text-gray-800">{s.name}</td>
                                    <td className="p-4 text-gray-600 text-xs font-medium">{s.kelas} / {s.semester}</td>
                                    <td className="p-4 font-bold text-[#54af48] text-xs bg-[#54af48]/5">{s.juzTercapai} Juz</td>
                                    <td className="p-4">
                                      <div className="flex gap-2 text-[10px]">
-                                       <span className="bg-white/80 px-2.5 py-1 rounded-md text-gray-600 border border-white shadow-sm">{s.username}</span>
+                                       <span className="bg-white px-2.5 py-1 rounded-md text-gray-600 border border-gray-200">{s.username}</span>
                                      </div>
                                    </td>
                                    <td className="p-4 text-center">
-                                      <button onClick={() => setResetTarget({ type: 'student', data: s })} className="text-[#eab308] p-2 hover:bg-yellow-50 rounded-xl transition-colors mr-1 bg-white border border-transparent hover:border-yellow-100 shadow-sm" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4"/></button>
-                                      <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-[#54af48] p-2 hover:bg-green-50 rounded-xl transition-colors mr-1 bg-white border border-transparent hover:border-green-100 shadow-sm" title="Edit Profil"><Edit className="w-4 h-4"/></button>
-                                      <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-400 p-2 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors bg-white border border-transparent hover:border-red-100 shadow-sm" title="Hapus Data"><Trash2 className="w-4 h-4"/></button>
+                                      <button onClick={() => setResetTarget({ type: 'student', data: s })} className="text-[#eab308] p-2 hover:bg-yellow-50 rounded-xl transition-colors mr-1 bg-white border border-gray-200 hover:border-yellow-300" title="Atur Ulang Akses Sandi"><Key className="w-4 h-4"/></button>
+                                      <button onClick={() => setEditTarget({ type: 'student', data: s })} className="text-[#54af48] p-2 hover:bg-green-50 rounded-xl transition-colors mr-1 bg-white border border-gray-200 hover:border-green-300" title="Edit Profil"><Edit className="w-4 h-4"/></button>
+                                      <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="text-red-500 p-2 hover:bg-red-50 hover:text-red-600 rounded-xl transition-colors bg-white border border-gray-200 hover:border-red-300" title="Hapus Data"><Trash2 className="w-4 h-4"/></button>
                                    </td>
                                 </tr>
                              ))}
@@ -704,12 +706,12 @@ const HarianView = ({ students, records, pengampus, user }) => {
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           {user.role === 'admin' && (
-            <div className="flex items-center gap-2 bg-white/60 p-2.5 rounded-xl border border-white/80 w-full sm:w-auto shadow-sm">
+            <div className="flex items-center gap-2 bg-white p-2.5 rounded-xl border border-gray-200 w-full sm:w-auto">
               <Filter className="text-[#26544d] ml-2 w-5 h-5" />
               <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-sm font-bold text-gray-700 p-1 cursor-pointer w-full"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
             </div>
           )}
-          <div className="flex items-center gap-2 bg-white/60 p-2.5 rounded-xl border border-white/80 w-full sm:w-auto shadow-sm">
+          <div className="flex items-center gap-2 bg-white p-2.5 rounded-xl border border-gray-200 w-full sm:w-auto">
              <label className="text-xs font-bold text-gray-500 px-2 uppercase tracking-wide">Tanggal:</label>
              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className={`border-none bg-transparent rounded-lg px-2 text-sm outline-none font-bold text-gray-800 w-full cursor-pointer`}/>
           </div>
@@ -718,15 +720,15 @@ const HarianView = ({ students, records, pengampus, user }) => {
 
       <div className="space-y-5">
         {groupedStudents.length === 0 ? (
-          <div className={`text-center p-8 md:p-12 rounded-3xl border-2 border-dashed border-gray-300/50 text-gray-400 text-base font-medium ${glassCard}`}>Tidak ada data santri pada filter yang Anda pilih.</div>
+          <div className={`text-center p-8 md:p-12 rounded-3xl border border-dashed border-gray-300 text-gray-400 text-base font-medium ${glassCard}`}>Tidak ada data santri pada filter yang Anda pilih.</div>
         ) : (
           groupedStudents.map(group => (
             <div key={group.pengampu.id} className="space-y-3">
               {user.role === 'admin' && selectedPengampuId === 'semua' && (
                 <div className="flex items-center gap-4 pt-4 pb-2 px-2">
-                   <div className="h-px bg-white/80 flex-1 shadow-sm"></div>
-                   <span className="font-bold text-gray-500 uppercase text-[11px] px-4 py-1.5 bg-white/60 backdrop-blur-sm rounded-full border border-white flex items-center gap-2 shadow-sm"><BookOpen className="w-4 h-4" style={{ color: theme.secondary }}/> Halaqah {group.pengampu.name}</span>
-                   <div className="h-px bg-white/80 flex-1 shadow-sm"></div>
+                   <div className="h-px bg-gray-200 flex-1"></div>
+                   <span className="font-bold text-gray-500 uppercase text-[11px] px-4 py-1.5 bg-white rounded-full border border-gray-200 flex items-center gap-2"><BookOpen className="w-4 h-4" style={{ color: theme.secondary }}/> Halaqah {group.pengampu.name}</span>
+                   <div className="h-px bg-gray-200 flex-1"></div>
                 </div>
               )}
               {group.students.map(student => {
@@ -738,11 +740,11 @@ const HarianView = ({ students, records, pengampus, user }) => {
                 const isExpanded = expandedStudent === student.id;
 
                 return (
-                  <div key={student.id} className={`transition-all duration-300 ${glassCard} ${isExpanded ? 'ring-2 ring-[#54af48]/30 shadow-[0_10px_40px_rgb(0,0,0,0.06)]' : 'hover:border-white/80'}`}>
-                    <div className={`p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors ${!isExpanded ? 'hover:bg-white/40 cursor-pointer' : 'bg-white/30'}`} onClick={() => !todayRecord && setExpandedStudent(isExpanded ? null : student.id)}>
+                  <div key={student.id} className={`transition-all duration-300 ${glassCard} ${isExpanded ? 'border-[#54af48]/50' : 'hover:border-gray-300'}`}>
+                    <div className={`p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors ${!isExpanded ? 'hover:bg-white/50 cursor-pointer' : 'bg-white/60'}`} onClick={() => !todayRecord && setExpandedStudent(isExpanded ? null : student.id)}>
                       
                       <div className="flex items-center gap-4 w-full sm:w-auto" onClick={(e) => { if(todayRecord) { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); } }}>
-                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-sm shrink-0 bg-[#26544d]">{student.name ? student.name.charAt(0) : '?'}</div>
+                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white font-bold text-xl bg-[#26544d] border border-[#1a3a35] shrink-0">{student.name ? student.name.charAt(0) : '?'}</div>
                         <div>
                            <h3 className="text-lg md:text-xl font-bold text-gray-800">{student.name || 'Unknown'}</h3>
                            <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium">Kelas {student.kelas} • Smt {student.semester}</p>
@@ -753,7 +755,7 @@ const HarianView = ({ students, records, pengampus, user }) => {
                         {todayRecord ? (
                           <div className="flex items-center gap-3 w-full justify-between sm:justify-end">
                             <div className="flex flex-col items-start sm:items-end text-left sm:text-right">
-                              <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider mb-1.5 border shadow-sm ${todayRecord.presensi === 'Hadir' ? 'bg-[#54af48]/10 text-[#54af48] border-[#54af48]/20' : todayRecord.presensi === 'Alpha' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-yellow-50 text-yellow-700 border-yellow-100'}`}>{todayRecord.presensi}</span>
+                              <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider mb-1.5 border ${todayRecord.presensi === 'Hadir' ? 'bg-[#54af48]/10 text-[#54af48] border-[#54af48]/30' : todayRecord.presensi === 'Alpha' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>{todayRecord.presensi}</span>
                               {todayRecord.presensi === 'Hadir' && (
                                 <div className="text-[11px] font-medium text-gray-600 flex flex-col gap-0.5">
                                   {todayRecord.ziyadah && (<div><span className="font-bold text-[#54af48]">Ziyadah:</span> {formatZiyadahSurahSafe(todayRecord.ziyadah)} <span className="font-bold text-[#54af48] ml-1">[{todayRecord.ziyadah.finalScore}]</span></div>)}
@@ -762,20 +764,20 @@ const HarianView = ({ students, records, pengampus, user }) => {
                               )}
                               {todayRecord.presensi !== 'Hadir' && (<div className="text-xs text-gray-500 truncate w-40"><span className="font-bold">Ket:</span> {todayRecord.keterangan || '-'}</div>)}
                             </div>
-                            <div className="flex sm:flex-col gap-2 border-l-0 sm:border-l border-white/80 pl-0 sm:pl-3 shrink-0">
-                               <button onClick={(e) => { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); }} className={`p-2 rounded-xl transition-colors shadow-sm border border-white ${isExpanded ? 'bg-blue-50 text-blue-600' : 'bg-white/60 text-gray-400 hover:bg-white hover:text-blue-600'}`} title="Ubah Laporan"><Edit className="w-4 h-4"/></button>
-                               <button onClick={(e) => { e.stopPropagation(); setRecordToDelete(todayRecord.id); }} className="p-2 rounded-xl bg-white/60 border border-white text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors shadow-sm" title="Ulangi (Kosongkan)"><RotateCcw className="w-4 h-4"/></button>
+                            <div className="flex sm:flex-col gap-2 border-l-0 sm:border-l border-gray-200 pl-0 sm:pl-3 shrink-0">
+                               <button onClick={(e) => { e.stopPropagation(); setExpandedStudent(isExpanded ? null : student.id); }} className={`p-2 rounded-xl transition-colors border ${isExpanded ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-400 hover:bg-blue-50 hover:text-blue-600 border-gray-200 hover:border-blue-200'}`} title="Ubah Laporan"><Edit className="w-4 h-4"/></button>
+                               <button onClick={(e) => { e.stopPropagation(); setRecordToDelete(todayRecord.id); }} className="p-2 rounded-xl bg-white border border-gray-200 text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors" title="Ulangi (Kosongkan)"><RotateCcw className="w-4 h-4"/></button>
                             </div>
                           </div>
                         ) : (
                           <div className="flex items-center justify-between w-full gap-4">
-                             <span className="px-4 py-2 rounded-xl text-xs font-bold bg-white/80 text-gray-500 border border-white shadow-sm">Menunggu Laporan</span>
-                             <div className={`p-2 rounded-full transition-colors bg-white/80 border border-white shadow-sm ${isExpanded ? 'bg-white' : ''}`}>{isExpanded ? <ChevronUp className="w-5 h-5 text-gray-800" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}</div>
+                             <span className="px-4 py-2 rounded-xl text-xs font-bold bg-white text-gray-500 border border-gray-200">Menunggu Laporan</span>
+                             <div className={`p-2 rounded-full transition-colors bg-white border border-gray-200 ${isExpanded ? 'bg-gray-50' : ''}`}>{isExpanded ? <ChevronUp className="w-5 h-5 text-gray-800" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}</div>
                           </div>
                         )}
                       </div>
                     </div>
-                    {isExpanded && (<div className="p-4 md:p-6 lg:p-8 border-t border-white/60 bg-white/30 animate-in slide-in-from-top-4 duration-300"><StudentDailyForm student={student} date={selectedDate} existingRecord={todayRecord} lastZiyadah={lastZiyadah} lastMurajaah={lastMurajaah} onSaveSuccess={() => setExpandedStudent(null)} /></div>)}
+                    {isExpanded && (<div className="p-4 md:p-6 lg:p-8 border-t border-gray-200 bg-white/40 animate-in slide-in-from-top-4 duration-300"><StudentDailyForm student={student} date={selectedDate} existingRecord={todayRecord} lastZiyadah={lastZiyadah} lastMurajaah={lastMurajaah} onSaveSuccess={() => setExpandedStudent(null)} /></div>)}
                   </div>
                 );
               })}
@@ -843,21 +845,21 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
 
   const ErrorRow = ({ label, penalty, value, onChange, colorTheme }) => {
      const themes = { 
-       green: { badge: 'bg-[#54af48]/10 text-[#54af48]', text: 'text-[#54af48]' }, 
-       yellow: { badge: 'bg-yellow-100/50 text-yellow-700', text: 'text-yellow-700' }, 
-       red: { badge: 'bg-red-50 text-red-600', text: 'text-red-600' } 
+       green: { badge: 'bg-[#54af48]/10 text-[#54af48] border-[#54af48]/30', text: 'text-[#54af48]' }, 
+       yellow: { badge: 'bg-yellow-100/50 text-yellow-700 border-yellow-300/50', text: 'text-yellow-700' }, 
+       red: { badge: 'bg-red-50 text-red-600 border-red-200', text: 'text-red-600' } 
      };
      const t = themes[colorTheme];
      return (
-        <div className="flex items-center justify-between py-2.5 border-b border-white/60 last:border-0">
+        <div className="flex items-center justify-between py-2.5 border-b border-gray-200 last:border-0">
            <div className="flex items-center gap-2">
               <span className="text-xs md:text-sm font-bold text-gray-700">{label}</span>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-white/50 ${t.badge}`}>{penalty}</span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${t.badge}`}>{penalty}</span>
            </div>
-           <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl border border-white shadow-sm overflow-hidden h-9">
-              <button type="button" onClick={() => onChange(Math.max(0, value - 1))} className="px-3 h-full hover:bg-gray-100 text-gray-400 transition-colors"><Minus className="w-4 h-4"/></button>
-              <div className={`w-10 text-center text-sm font-bold bg-white h-full flex items-center justify-center border-x border-gray-100 ${t.text}`}>{value}</div>
-              <button type="button" onClick={() => onChange(value + 1)} className="px-3 h-full hover:bg-gray-100 text-gray-400 transition-colors"><Plus className="w-4 h-4"/></button>
+           <div className="flex items-center bg-white rounded-xl border border-gray-300 overflow-hidden h-9">
+              <button type="button" onClick={() => onChange(Math.max(0, value - 1))} className="px-3 h-full hover:bg-gray-100 text-gray-500 border-r border-gray-200 transition-colors"><Minus className="w-4 h-4"/></button>
+              <div className={`w-10 text-center text-sm font-bold bg-white h-full flex items-center justify-center ${t.text}`}>{value}</div>
+              <button type="button" onClick={() => onChange(value + 1)} className="px-3 h-full hover:bg-gray-100 text-gray-500 border-l border-gray-200 transition-colors"><Plus className="w-4 h-4"/></button>
            </div>
         </div>
      );
@@ -865,27 +867,27 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
 
   return (
     <div className="space-y-5">
-      {errorMsg && <div className="p-4 bg-red-50/90 backdrop-blur-md text-red-600 rounded-xl text-sm font-bold border border-red-100 shadow-sm flex items-center gap-3"><AlertCircle className="w-5 h-5"/> {errorMsg}</div>}
+      {errorMsg && <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm font-bold border border-red-200 flex items-center gap-3"><AlertCircle className="w-5 h-5"/> {errorMsg}</div>}
       
-      <div className="p-5 md:p-6 rounded-3xl bg-white/60 backdrop-blur-md border border-white shadow-sm">
+      <div className="p-5 md:p-6 rounded-3xl bg-white/80 border border-gray-200">
         <label className="block text-[11px] md:text-xs font-bold text-gray-500 mb-3 md:mb-4 uppercase tracking-widest text-center md:text-left">Status Presensi</label>
         <div className="grid grid-cols-3 gap-3 md:gap-4">
           {['Hadir', 'Izin/Sakit', 'Alpha'].map(status => (
-            <button key={status} onClick={() => {setPresensi(status); setErrorMsg('');}} className={`w-full py-3 md:py-4 px-2 rounded-2xl text-xs md:text-sm font-bold transition-all shadow-sm ${presensi === status ? 'text-white border-transparent' : 'bg-white text-gray-500 hover:bg-gray-50 border border-white'}`} style={presensi === status ? { backgroundColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning } : {}}>{status}</button>
+            <button key={status} onClick={() => {setPresensi(status); setErrorMsg('');}} className={`w-full py-3 md:py-4 px-2 rounded-2xl text-xs md:text-sm font-bold transition-all border ${presensi === status ? 'text-white border-transparent' : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-300'}`} style={presensi === status ? { backgroundColor: status === 'Hadir' ? theme.secondary : status === 'Alpha' ? theme.danger : theme.warning, borderColor: status === 'Hadir' ? '#46933c' : status === 'Alpha' ? '#dc2626' : '#ca8a04' } : {}}>{status}</button>
           ))}
         </div>
       </div>
 
       {presensi === 'Hadir' && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 md:gap-6">
-          <div className={`p-5 md:p-6 rounded-3xl border transition-all ${!isZiyadahActive ? 'border-transparent bg-white/40' : 'border-white bg-white/70 shadow-sm backdrop-blur-md'}`}>
+          <div className={`p-5 md:p-6 rounded-3xl transition-all ${!isZiyadahActive ? 'border border-dashed border-gray-300 bg-white/40' : 'border border-gray-200 bg-white'}`}>
              <div className="flex justify-between items-center mb-5 md:mb-6">
                 <h4 className={`font-bold text-base md:text-lg flex items-center gap-3 ${!isZiyadahActive ? 'text-gray-400' : 'text-gray-800'}`}><BookOpen className="w-5 h-5" style={{ color: !isZiyadahActive ? '#9ca3af' : theme.primary }}/> Setoran Ziyadah</h4>
-                <button type="button" onClick={() => setIsZiyadahActive(!isZiyadahActive)} className={`w-12 h-6 md:w-14 md:h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner border border-white/50 ${isZiyadahActive ? 'bg-[#54af48]' : 'bg-gray-300'}`}><div className={`bg-white w-4 h-4 md:w-5 md:h-5 rounded-full shadow-sm transform transition-transform ${isZiyadahActive ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div></button>
+                <button type="button" onClick={() => setIsZiyadahActive(!isZiyadahActive)} className={`w-12 h-6 md:w-14 md:h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors border ${isZiyadahActive ? 'bg-[#54af48] border-[#46933c]' : 'bg-gray-200 border-gray-300'}`}><div className={`bg-white w-4 h-4 md:w-5 md:h-5 rounded-full border border-gray-200 transform transition-transform ${isZiyadahActive ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div></button>
              </div>
              {isZiyadahActive && (
                 <div className="space-y-4 animate-in fade-in duration-200">
-                   <div className="space-y-3 bg-white/60 p-4 md:p-5 rounded-2xl border border-white shadow-sm">
+                   <div className="space-y-3 bg-gray-50/80 p-4 md:p-5 rounded-2xl border border-gray-200">
                       <div className="grid grid-cols-2 gap-3">
                          <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Dari Surat</label><select value={ziyadah.fromSurah} onChange={(e) => setZiyadah({...ziyadah, fromSurah: parseInt(e.target.value), fromAyah: 1})} className={`w-full p-3 rounded-xl text-sm ${glassInput}`}>{QURAN_SURAHS.map((s, i) => <option key={i} value={i}>{s[0]}</option>)}</select></div>
                          <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Ayat</label><select value={ziyadah.fromAyah} onChange={(e) => setZiyadah({...ziyadah, fromAyah: parseInt(e.target.value)})} className={`w-full p-3 rounded-xl text-sm ${glassInput}`}>{Array.from({length: getAyahCount(ziyadah.fromSurah)}, (_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div>
@@ -896,26 +898,25 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
                       </div>
                    </div>
                    
-                   <div className="bg-white/60 rounded-2xl px-4 md:px-5 py-2 border border-white shadow-sm">
+                   <div className="bg-white rounded-2xl px-4 md:px-5 py-2 border border-gray-200">
                       <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={ziyadah.tajwid} onChange={(v) => setZiyadah({...ziyadah, tajwid: v})} colorTheme="green" />
                       <ErrorRow label="Lupa / Tersendat" penalty="-1" value={ziyadah.lupa} onChange={(v) => setZiyadah({...ziyadah, lupa: v})} colorTheme="yellow" />
                       <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={ziyadah.lupaBimbingan} onChange={(v) => setZiyadah({...ziyadah, lupaBimbingan: v})} colorTheme="red" />
                    </div>
                    
-                   {/* KOTAK NILAI BARU (Lebih terstruktur & menyatu) */}
-                   <div className="mt-4 p-4 md:p-5 rounded-2xl bg-gradient-to-br from-[#26544d]/5 to-[#26544d]/10 border border-[#26544d]/20 flex flex-row items-center justify-between shadow-sm relative overflow-hidden">
+                   <div className="mt-4 p-4 md:p-5 rounded-2xl bg-[#f4f8f7] border border-[#26544d]/30 flex flex-row items-center justify-between relative overflow-hidden">
                       <div className="relative z-10 flex-1">
-                         <p className="text-[10px] font-bold text-[#26544d]/60 uppercase tracking-widest mb-1">Skor Akhir</p>
+                         <p className="text-[10px] font-bold text-[#26544d]/80 uppercase tracking-widest mb-1">Skor Akhir</p>
                          <div className="flex items-center gap-3">
                             <span className="text-3xl md:text-4xl font-black text-[#26544d]">
                                {ziyadah.manualScore !== '' ? ziyadah.manualScore : calculateScore(ziyadah.tajwid, ziyadah.lupa, ziyadah.lupaBimbingan)}
                             </span>
-                            {ziyadah.manualScore !== '' && <span className="text-[9px] font-bold text-[#26544d] bg-[#26544d]/10 px-2 py-0.5 rounded-md border border-[#26544d]/20">Diubah Manual</span>}
+                            {ziyadah.manualScore !== '' && <span className="text-[9px] font-bold text-[#26544d] bg-white px-2 py-0.5 rounded-md border border-[#26544d]/30">Diubah Manual</span>}
                          </div>
                       </div>
                       <div className="relative z-10 text-right flex flex-col items-end">
                          <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Koreksi Manual</label>
-                         <input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="Otomatis" className="w-20 px-3 py-2 text-sm font-bold text-center text-gray-700 bg-white border border-white rounded-xl focus:ring-2 focus:ring-[#26544d]/30 outline-none transition-all shadow-sm placeholder-gray-400" />
+                         <input type="number" value={ziyadah.manualScore} onChange={(e) => setZiyadah({...ziyadah, manualScore: e.target.value})} placeholder="Otomatis" className="w-24 px-3 py-2 text-sm font-bold text-center text-gray-700 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#26544d]/30 outline-none transition-all placeholder-gray-400" />
                       </div>
                    </div>
 
@@ -923,38 +924,37 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
              )}
           </div>
           
-          <div className={`p-5 md:p-6 rounded-3xl border transition-all ${!isMurajaahActive ? 'border-transparent bg-white/40' : 'border-white bg-white/70 shadow-sm backdrop-blur-md'}`}>
+          <div className={`p-5 md:p-6 rounded-3xl transition-all ${!isMurajaahActive ? 'border border-dashed border-gray-300 bg-white/40' : 'border border-gray-200 bg-white'}`}>
              <div className="flex justify-between items-center mb-5 md:mb-6">
                 <h4 className={`font-bold text-base md:text-lg flex items-center gap-3 ${!isMurajaahActive ? 'text-gray-400' : 'text-gray-800'}`}><RotateCcw className="w-5 h-5" style={{ color: !isMurajaahActive ? '#9ca3af' : theme.secondary }}/> Setoran Muraja'ah</h4>
-                <button type="button" onClick={() => setIsMurajaahActive(!isMurajaahActive)} className={`w-12 h-6 md:w-14 md:h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors shadow-inner border border-white/50 ${isMurajaahActive ? 'bg-[#f9e653]' : 'bg-gray-300'}`}><div className={`bg-white w-4 h-4 md:w-5 md:h-5 rounded-full shadow-sm transform transition-transform ${isMurajaahActive ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div></button>
+                <button type="button" onClick={() => setIsMurajaahActive(!isMurajaahActive)} className={`w-12 h-6 md:w-14 md:h-7 flex items-center rounded-full p-1 cursor-pointer transition-colors border ${isMurajaahActive ? 'bg-[#f9e653] border-[#e0cf4a]' : 'bg-gray-200 border-gray-300'}`}><div className={`bg-white w-4 h-4 md:w-5 md:h-5 rounded-full border border-gray-200 transform transition-transform ${isMurajaahActive ? 'translate-x-6 md:translate-x-7' : 'translate-x-0'}`}></div></button>
              </div>
              {isMurajaahActive && (
                 <div className="space-y-4 animate-in fade-in duration-200">
-                   <div className="grid grid-cols-2 gap-3 bg-white/60 p-4 md:p-5 rounded-2xl border border-white shadow-sm">
+                   <div className="grid grid-cols-2 gap-3 bg-gray-50/80 p-4 md:p-5 rounded-2xl border border-gray-200">
                       <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Dari Juz</label><select value={murajaah.fromJuz} onChange={(e) => setMurajaah({...murajaah, fromJuz: parseInt(e.target.value)})} className={`w-full p-3 rounded-xl text-sm ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
                       <div><label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Sampai Juz</label><select value={murajaah.toJuz} onChange={(e) => setMurajaah({...murajaah, toJuz: parseInt(e.target.value)})} className={`w-full p-3 rounded-xl text-sm ${glassInput}`}>{JUZ_LIST.map(j => <option key={j} value={j}>Juz {j}</option>)}</select></div>
                    </div>
                    
-                   <div className="bg-white/60 rounded-2xl px-4 md:px-5 py-2 border border-white shadow-sm">
+                   <div className="bg-white rounded-2xl px-4 md:px-5 py-2 border border-gray-200">
                       <ErrorRow label="Kesalahan Tajwid" penalty="-1" value={murajaah.tajwid} onChange={(v) => setMurajaah({...murajaah, tajwid: v})} colorTheme="green" />
                       <ErrorRow label="Lupa / Tersendat" penalty="-1" value={murajaah.lupa} onChange={(v) => setMurajaah({...murajaah, lupa: v})} colorTheme="yellow" />
                       <ErrorRow label="Lupa (Dibimbing)" penalty="-2" value={murajaah.lupaBimbingan} onChange={(v) => setMurajaah({...murajaah, lupaBimbingan: v})} colorTheme="red" />
                    </div>
                    
-                   {/* KOTAK NILAI BARU (Lebih terstruktur & menyatu) */}
-                   <div className="mt-4 p-4 md:p-5 rounded-2xl bg-gradient-to-br from-[#54af48]/5 to-[#54af48]/10 border border-[#54af48]/20 flex flex-row items-center justify-between shadow-sm relative overflow-hidden">
+                   <div className="mt-4 p-4 md:p-5 rounded-2xl bg-[#f7fbf6] border border-[#54af48]/30 flex flex-row items-center justify-between relative overflow-hidden">
                       <div className="relative z-10 flex-1">
-                         <p className="text-[10px] font-bold text-[#54af48]/80 uppercase tracking-widest mb-1">Skor Akhir</p>
+                         <p className="text-[10px] font-bold text-[#54af48]/90 uppercase tracking-widest mb-1">Skor Akhir</p>
                          <div className="flex items-center gap-3">
                             <span className="text-3xl md:text-4xl font-black text-[#54af48]">
                                {murajaah.manualScore !== '' ? murajaah.manualScore : calculateScore(murajaah.tajwid, murajaah.lupa, murajaah.lupaBimbingan)}
                             </span>
-                            {murajaah.manualScore !== '' && <span className="text-[9px] font-bold text-[#54af48] bg-[#54af48]/10 px-2 py-0.5 rounded-md border border-[#54af48]/20">Diubah Manual</span>}
+                            {murajaah.manualScore !== '' && <span className="text-[9px] font-bold text-[#54af48] bg-white px-2 py-0.5 rounded-md border border-[#54af48]/30">Diubah Manual</span>}
                          </div>
                       </div>
                       <div className="relative z-10 text-right flex flex-col items-end">
                          <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Koreksi Manual</label>
-                         <input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="Otomatis" className="w-20 px-3 py-2 text-sm font-bold text-center text-gray-700 bg-white border border-white rounded-xl focus:ring-2 focus:ring-[#54af48]/40 outline-none transition-all shadow-sm placeholder-gray-400" />
+                         <input type="number" value={murajaah.manualScore} onChange={(e) => setMurajaah({...murajaah, manualScore: e.target.value})} placeholder="Otomatis" className="w-24 px-3 py-2 text-sm font-bold text-center text-gray-700 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#54af48]/40 outline-none transition-all placeholder-gray-400" />
                       </div>
                    </div>
 
@@ -965,14 +965,14 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
       )}
 
       {presensi === 'Izin/Sakit' && (
-        <div className="p-5 md:p-6 rounded-3xl bg-white/70 border border-white shadow-sm animate-in fade-in duration-200 backdrop-blur-md">
+        <div className="p-5 md:p-6 rounded-3xl bg-white border border-gray-200 animate-in fade-in duration-200">
            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-3">Keterangan Izin / Sakit</label>
            <textarea value={keterangan} onChange={(e) => setKeterangan(e.target.value)} placeholder="Tulis keterangan Ananda di sini..." className={`w-full p-4 text-sm rounded-2xl resize-none h-32 ${glassInput}`} />
         </div>
       )}
 
       <div className="flex justify-end pt-4">
-        <button onClick={handleSave} disabled={saving} className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-base text-white font-bold bg-[#26544d] hover:bg-[#1f453f] transition-colors shadow-md hover:shadow-lg">
+        <button onClick={handleSave} disabled={saving} className={`w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-base font-bold transition-all ${primaryBtn}`}>
           {saving ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Check className="w-5 h-5"/>}
           Simpan Laporan Harian
         </button>
@@ -985,7 +985,7 @@ const StudentDailyForm = ({ student, date, existingRecord, lastZiyadah, lastMura
 // 8. VIEW: REKAPITULASI (MANDIRI)
 // ==========================================
 const EditableSelectCell = ({ value, options, onSave }) => (
-  <select value={value || ''} onChange={(e) => onSave(e.target.value)} className="w-20 p-2 rounded-xl text-xs font-semibold text-gray-700 bg-white border border-gray-200 outline-none focus:ring-2 focus:ring-[#54af48]/40 shadow-sm transition-all">
+  <select value={value || ''} onChange={(e) => onSave(e.target.value)} className="w-20 p-2 rounded-xl text-xs font-semibold text-gray-700 bg-white border border-gray-300 outline-none focus:ring-2 focus:ring-[#54af48]/40 transition-all">
     <option value="">- SP -</option>{options.map(o => <option key={o} value={o}>{o}</option>)}
   </select>
 );
@@ -993,7 +993,7 @@ const EditableInputCell = ({ value, onSave, placeholder }) => {
   const [val, setVal] = useState(value || ''); 
   useEffect(() => setVal(value || ''), [value]); 
   return (
-    <input type="text" value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => onSave(val)} className="w-32 p-2 rounded-xl text-xs text-gray-700 bg-white border border-gray-200 outline-none focus:ring-2 focus:ring-[#54af48]/40 shadow-sm transition-all" placeholder={placeholder} />
+    <input type="text" value={val} onChange={(e) => setVal(e.target.value)} onBlur={() => onSave(val)} className="w-32 p-2 rounded-xl text-xs text-gray-700 bg-white border border-gray-300 outline-none focus:ring-2 focus:ring-[#54af48]/40 transition-all" placeholder={placeholder} />
   );
 };
 
@@ -1078,16 +1078,16 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
           {userRole === 'admin' && (
-            <div className="flex items-center gap-2 bg-white/60 p-2.5 rounded-xl border border-gray-100 w-full sm:w-auto shadow-sm">
+            <div className="flex items-center gap-2 bg-white p-2.5 rounded-xl border border-gray-200 w-full sm:w-auto">
               <Filter className="text-[#26544d] w-5 h-5 ml-2" />
               <select value={selectedPengampuId} onChange={(e) => setSelectedPengampuId(e.target.value)} className="border-none bg-transparent outline-none text-sm font-bold text-gray-700 p-1 w-full sm:w-40 cursor-pointer"><option value="semua">Semua Halaqah</option>{pengampus.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
             </div>
           )}
           <div className="flex items-center gap-3 w-full sm:w-auto">
-             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className={`w-full sm:w-auto rounded-xl p-3 px-4 text-sm outline-none font-bold text-gray-700 shadow-sm ${glassInput}`} />
+             <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className={`w-full sm:w-auto rounded-xl p-3 px-4 text-sm outline-none font-bold text-gray-700 ${glassInput}`} />
              <div className="flex gap-2">
-                 <button onClick={handleDownloadExcel} className="p-3 bg-[#54af48] text-white rounded-xl shadow-sm hover:shadow-md hover:bg-[#46933c] transition-all" title="Unduh Excel"><Download className="w-5 h-5"/></button>
-                 <button onClick={() => window.print()} className="p-3 bg-gray-800 text-white rounded-xl shadow-sm hover:shadow-md hover:bg-gray-700 transition-all" title="Cetak"><Printer className="w-5 h-5"/></button>
+                 <button onClick={handleDownloadExcel} className="p-3 bg-[#54af48] text-white rounded-xl border border-[#46933c] hover:bg-[#46933c] transition-all" title="Unduh Excel"><Download className="w-5 h-5"/></button>
+                 <button onClick={() => window.print()} className="p-3 bg-gray-800 text-white rounded-xl border border-gray-900 hover:bg-gray-700 transition-all" title="Cetak"><Printer className="w-5 h-5"/></button>
              </div>
           </div>
         </div>
@@ -1096,55 +1096,55 @@ const RekapView = ({ students, records, pengampus, userRole, recapNotes }) => {
       <div className={`${glassCard} overflow-hidden`}>
         <div className="overflow-x-auto w-full">
           <table className="w-full text-left whitespace-nowrap min-w-[1000px]">
-            <thead className="bg-white/80 border-b border-gray-200/60 backdrop-blur-md">
+            <thead className="bg-white border-b border-gray-200">
               <tr className="text-[11px] text-gray-500 uppercase tracking-wider">
                 <th className="p-4 md:p-5 font-bold">Nama Santri</th>
                 <th className="p-4 md:p-5 font-bold">Kls/Smt</th>
                 <th className="p-4 md:p-5 font-bold">Kehadiran</th>
                 <th className="p-4 md:p-5 font-bold">Target</th>
-                <th className="p-4 md:p-5 font-bold border-l border-gray-100">Ziyadah</th>
+                <th className="p-4 md:p-5 font-bold border-l border-gray-200">Ziyadah</th>
                 <th className="p-4 md:p-5 font-bold text-[#26544d]">Rata Z</th>
-                <th className="p-4 md:p-5 font-bold border-l border-gray-100">Muraja'ah</th>
+                <th className="p-4 md:p-5 font-bold border-l border-gray-200">Muraja'ah</th>
                 <th className="p-4 md:p-5 font-bold text-[#54af48]">Rata M</th>
-                <th className="p-4 md:p-5 font-bold border-l border-gray-100">SP</th>
+                <th className="p-4 md:p-5 font-bold border-l border-gray-200">SP</th>
                 <th className="p-4 md:p-5 font-bold">Catatan</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100/50 text-sm bg-white/30">
+            <tbody className="divide-y divide-gray-200 text-sm bg-white/50">
               {groupedRecap.length === 0 ? (
-                <tr><td colSpan="10" className="p-8 md:p-12 text-center text-gray-500 italic bg-white/50">Data belum tersedia.</td></tr>
+                <tr><td colSpan="10" className="p-8 md:p-12 text-center text-gray-500 italic bg-white/80">Data belum tersedia.</td></tr>
               ) : (
                 groupedRecap.map(group => (
                   <React.Fragment key={group.pengampu.id}>
                     {userRole === 'admin' && selectedPengampuId === 'semua' && (
-                      <tr className="bg-gray-50/80">
+                      <tr className="bg-gray-100/80 border-b border-gray-200">
                         <td colSpan="10" className="p-3 px-5 font-bold text-gray-700 text-[10px] uppercase tracking-widest"><Users className="w-3.5 h-3.5 inline mr-2 text-gray-400"/> Halaqah {group.pengampu.name}</td>
                       </tr>
                     )}
                     {group.data.map(row => {
                         const sn = recapNotes.find(n => n.studentId === row.id && n.month === selectedMonth) || {};
                         return (
-                          <tr key={row.id} className="hover:bg-white/80 transition-colors">
+                          <tr key={row.id} className="hover:bg-white transition-colors">
                             <td className="p-4 md:p-5 font-bold text-gray-800">{row.name || 'Unknown'}</td>
                             <td className="p-4 md:p-5 text-gray-600 text-xs font-medium">{row.kelas} / {row.semester}</td>
-                            <td className="p-4 md:p-5"><span className="font-bold text-[#26544d] bg-[#26544d]/5 px-2 py-1 rounded-md">{row.kehadiran}</span><span className="text-xs text-gray-400 ml-1.5">/ {row.totalHari}</span></td>
+                            <td className="p-4 md:p-5"><span className="font-bold text-[#26544d] bg-[#26544d]/5 border border-[#26544d]/20 px-2 py-1 rounded-md">{row.kehadiran}</span><span className="text-xs text-gray-400 ml-1.5">/ {row.totalHari}</span></td>
                             <td className="p-4 md:p-5">
                                <div className="flex items-center gap-2.5 w-24">
-                                  <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden shadow-inner"><div className="h-full" style={{ width: `${row.persentase}%`, backgroundColor: row.persentase >= 100 ? theme.secondary : theme.accent }}></div></div>
+                                  <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden border border-gray-300"><div className="h-full" style={{ width: `${row.persentase}%`, backgroundColor: row.persentase >= 100 ? theme.secondary : theme.accent }}></div></div>
                                   <span className="font-bold text-[10px] text-gray-600">{row.persentase}%</span>
                                </div>
                             </td>
-                            <td className="p-4 md:p-5 text-[10px] text-gray-600 space-y-1.5 border-l border-gray-100/50">
+                            <td className="p-4 md:p-5 text-[10px] text-gray-600 space-y-1.5 border-l border-gray-200">
                                <div><span className="font-bold text-gray-400 inline-block w-8">Awl:</span> {row.zStart ? formatZiyadahSurahSafe(row.zStart) : '-'}</div>
                                <div><span className="font-bold text-gray-400 inline-block w-8">Akh:</span> {row.zEnd ? formatZiyadahSurahSafe(row.zEnd) : '-'}</div>
                             </td>
                             <td className="p-4 md:p-5 font-black text-lg text-[#26544d]">{row.avgZiyadah}</td>
-                            <td className="p-4 md:p-5 text-[10px] text-gray-600 space-y-1.5 border-l border-gray-100/50">
+                            <td className="p-4 md:p-5 text-[10px] text-gray-600 space-y-1.5 border-l border-gray-200">
                                <div><span className="font-bold text-gray-400 inline-block w-8">Awl:</span> {row.mStart ? `Juz ${row.mStart.fromJuz}` : '-'}</div>
                                <div><span className="font-bold text-gray-400 inline-block w-8">Akh:</span> {row.mEnd ? `Juz ${row.mEnd.toJuz}` : '-'}</div>
                             </td>
                             <td className="p-4 md:p-5 font-black text-lg text-[#54af48]">{row.avgMurajaah}</td>
-                            <td className="p-3 border-l border-gray-100/50"><EditableSelectCell value={sn.sp} options={SP_OPTIONS} onSave={(val) => handleSaveNote(row.id, 'sp', val)} /></td>
+                            <td className="p-3 border-l border-gray-200"><EditableSelectCell value={sn.sp} options={SP_OPTIONS} onSave={(val) => handleSaveNote(row.id, 'sp', val)} /></td>
                             <td className="p-3"><EditableInputCell value={sn.keterangan} placeholder="Catatan opsional..." onSave={(val) => handleSaveNote(row.id, 'keterangan', val)} /></td>
                           </tr>
                         )
@@ -1199,18 +1199,18 @@ const WaliDashboardView = ({ students, records, user }) => {
         <div className="lg:col-span-4 space-y-6">
            <div className={`p-6 md:p-8 rounded-3xl ${glassCard}`}>
               <div className="flex items-center gap-4 mb-8">
-                 <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl bg-[#26544d] shadow-sm">{student.name ? student.name.charAt(0) : '?'}</div>
+                 <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl bg-[#26544d] border border-[#1a3a35]">{student.name ? student.name.charAt(0) : '?'}</div>
                  <div>
                     <h3 className="font-bold text-xl text-gray-800 leading-tight">{student.name || 'Unknown'}</h3>
                     <p className="text-sm text-gray-500 mt-1 font-medium">Kls {student.kelas} • Smt {student.semester}</p>
                  </div>
               </div>
-              <div className="bg-gray-50/60 p-5 rounded-2xl border border-gray-100/50">
+              <div className="bg-white p-5 rounded-2xl border border-gray-200">
                  <div className="flex justify-between items-end text-sm mb-3">
                     <span className="font-bold text-gray-500 text-xs uppercase tracking-wider">Hafalan</span>
                     <span className="font-black text-xl text-[#26544d]">{persentase}%</span>
                  </div>
-                 <div className="w-full h-3 bg-gray-200/80 rounded-full overflow-hidden shadow-inner">
+                 <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
                     <div className="h-full transition-all duration-1000" style={{ width: `${persentase}%`, backgroundColor: persentase >= 100 ? theme.secondary : theme.accent }}></div>
                  </div>
                  <p className="text-[11px] font-medium text-gray-400 mt-3 text-right">Tercapai {student.juzTercapai || 0} Juz dari target {targetJuz} Juz</p>
@@ -1222,10 +1222,10 @@ const WaliDashboardView = ({ students, records, user }) => {
            <div className={`p-5 md:p-8 rounded-3xl h-full flex flex-col ${glassCard}`}>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
                  <h3 className="font-bold text-lg md:text-xl text-gray-800 flex items-center gap-3"><Calendar className="w-6 h-6 text-[#26544d]"/> Mutaba'ah</h3>
-                 <div className="flex items-center justify-between gap-3 bg-white/60 p-2 rounded-xl border border-gray-100 w-full sm:w-auto shadow-sm">
-                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-white rounded-lg transition-colors"><ChevronDown className="rotate-90 text-gray-500 w-5 h-5" /></button>
+                 <div className="flex items-center justify-between gap-3 bg-white p-2 rounded-xl border border-gray-200 w-full sm:w-auto">
+                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 rounded-lg transition-colors"><ChevronDown className="rotate-90 text-gray-500 w-5 h-5" /></button>
                     <span className="font-bold text-sm md:text-base w-32 md:w-36 text-center text-gray-700">{["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][currentMonth.getMonth()]} {currentMonth.getFullYear()}</span>
-                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-2 hover:bg-white rounded-lg transition-colors"><ChevronDown className="-rotate-90 text-gray-500 w-5 h-5" /></button>
+                    <button onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-2 hover:bg-gray-50 border border-transparent hover:border-gray-200 rounded-lg transition-colors"><ChevronDown className="-rotate-90 text-gray-500 w-5 h-5" /></button>
                  </div>
               </div>
             
@@ -1239,18 +1239,18 @@ const WaliDashboardView = ({ students, records, user }) => {
                 const record = records.find(r => r.studentId === student.id && r.date === dateStr);
                 const isToday = dateStr === getLocalYYYYMMDD(new Date());
                 
-                let statusColor = "bg-white/40 border-transparent text-gray-400"; 
+                let statusColor = "bg-white/40 border-gray-200 text-gray-400"; 
                 if (record) { 
-                   if (record.presensi === 'Hadir') statusColor = "bg-[#54af48]/10 border-[#54af48]/20 text-[#26544d] font-bold shadow-sm"; 
-                   else if (record.presensi === 'Alpha') statusColor = "bg-red-50 border-red-100 text-red-600 font-bold shadow-sm"; 
-                   else statusColor = "bg-yellow-50 border-yellow-100 text-yellow-700 font-bold shadow-sm"; 
+                   if (record.presensi === 'Hadir') statusColor = "bg-[#f4fbf4] border-[#54af48] text-[#26544d] font-bold"; 
+                   else if (record.presensi === 'Alpha') statusColor = "bg-[#fef2f2] border-red-500 text-red-600 font-bold"; 
+                   else statusColor = "bg-[#fefce8] border-yellow-400 text-yellow-700 font-bold"; 
                 }
 
                 return (
                   <div 
                      key={day} 
                      onClick={() => { if(record) { setSelectedRecord(record); setSelectedDateStr(dateStr); setDetailModalOpen(true); } }}
-                     className={`relative flex items-center justify-center aspect-square w-full rounded-2xl border ${statusColor} ${isToday ? 'ring-2 ring-[#26544d]/30 font-black' : ''} ${record ? 'cursor-pointer hover:bg-white hover:shadow-md transition-all' : ''}`}
+                     className={`relative flex items-center justify-center aspect-square w-full rounded-2xl border ${statusColor} ${isToday ? 'ring-2 ring-[#26544d]/30 font-black' : ''} ${record ? 'cursor-pointer hover:bg-white transition-all' : ''}`}
                   >
                     <span className="text-sm md:text-lg">{day}</span>
                   </div>
@@ -1263,19 +1263,19 @@ const WaliDashboardView = ({ students, records, user }) => {
 
       {detailModalOpen && selectedRecord && (
          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
-            <div className="bg-white/90 backdrop-blur-xl border border-white/80 rounded-3xl shadow-[0_10px_40px_rgb(0,0,0,0.08)] w-full max-w-sm p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
+            <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-3xl w-full max-w-sm p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
                
                <div className="flex justify-between items-start mb-6">
                   <div>
                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tanggal Mutaba'ah</p>
                      <h3 className="text-lg font-black text-gray-800">{formatIndoDate(selectedDateStr)}</h3>
                   </div>
-                  <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-full transition-colors"><X className="w-5 h-5"/></button>
+                  <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-500 rounded-full transition-colors"><X className="w-5 h-5"/></button>
                </div>
                
-               <div className="mb-6 bg-gray-50/80 rounded-2xl p-4 text-center border border-gray-100">
-                  <span className={`inline-block px-5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest shadow-sm ${selectedRecord.presensi === 'Hadir' ? 'bg-[#54af48]/10 text-[#54af48] border border-[#54af48]/20' : selectedRecord.presensi === 'Alpha' ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-yellow-100 text-yellow-700 border border-yellow-200'}`}>
+               <div className="mb-6 bg-gray-50 rounded-2xl p-4 text-center border border-gray-200">
+                  <span className={`inline-block px-5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest border ${selectedRecord.presensi === 'Hadir' ? 'bg-[#f4fbf4] text-[#54af48] border-[#54af48]/30' : selectedRecord.presensi === 'Alpha' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
                      {selectedRecord.presensi}
                   </span>
                </div>
@@ -1283,7 +1283,7 @@ const WaliDashboardView = ({ students, records, user }) => {
                {selectedRecord.presensi === 'Hadir' && (
                   <div className="space-y-4">
                      {selectedRecord.ziyadah ? (
-                        <div className="bg-white p-5 rounded-2xl border border-gray-100 flex items-center justify-between shadow-sm">
+                        <div className="bg-white p-5 rounded-2xl border border-gray-200 flex items-center justify-between">
                            <div>
                               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ziyadah</p>
                               <p className="text-sm font-bold text-gray-800">{formatZiyadahSurahSafe(selectedRecord.ziyadah)}</p>
@@ -1291,11 +1291,11 @@ const WaliDashboardView = ({ students, records, user }) => {
                            <span className="text-2xl font-black text-[#26544d]">{selectedRecord.ziyadah.finalScore}</span>
                         </div>
                      ) : (
-                        <div className="bg-gray-50/80 p-4 rounded-2xl text-center text-xs font-medium text-gray-400 border border-gray-100">Ziyadah belum tercatat</div>
+                        <div className="bg-gray-50 p-4 rounded-2xl text-center text-xs font-medium text-gray-400 border border-gray-200">Ziyadah belum tercatat</div>
                      )}
                      
                      {selectedRecord.murajaah ? (
-                        <div className="bg-white p-5 rounded-2xl border border-gray-100 flex items-center justify-between shadow-sm">
+                        <div className="bg-white p-5 rounded-2xl border border-gray-200 flex items-center justify-between">
                            <div>
                               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Muraja'ah</p>
                               <p className="text-sm font-bold text-gray-800">Juz {selectedRecord.murajaah.fromJuz} - Juz {selectedRecord.murajaah.toJuz}</p>
@@ -1303,26 +1303,26 @@ const WaliDashboardView = ({ students, records, user }) => {
                            <span className="text-2xl font-black text-[#54af48]">{selectedRecord.murajaah.finalScore}</span>
                         </div>
                      ) : (
-                        <div className="bg-gray-50/80 p-4 rounded-2xl text-center text-xs font-medium text-gray-400 border border-gray-100">Muraja'ah belum tercatat</div>
+                        <div className="bg-gray-50 p-4 rounded-2xl text-center text-xs font-medium text-gray-400 border border-gray-200">Muraja'ah belum tercatat</div>
                      )}
                   </div>
                )}
 
                {selectedRecord.presensi === 'Izin/Sakit' && (
-                  <div className="bg-yellow-50 p-5 rounded-2xl border border-yellow-100 text-center">
+                  <div className="bg-yellow-50 p-5 rounded-2xl border border-yellow-200 text-center">
                      <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-1.5">Keterangan</p>
                      <p className="text-sm font-medium text-gray-800">{selectedRecord.keterangan || '-'}</p>
                   </div>
                )}
 
                {selectedRecord.presensi === 'Alpha' && (
-                  <div className="bg-red-50 p-5 rounded-2xl border border-red-100 text-center">
+                  <div className="bg-red-50 p-5 rounded-2xl border border-red-200 text-center">
                      <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1.5">Sistem</p>
                      <p className="text-sm font-medium text-gray-800">{selectedRecord.keterangan || 'Tanpa keterangan'}</p>
                   </div>
                )}
 
-               <button onClick={() => setDetailModalOpen(false)} className="mt-8 w-full py-3 rounded-xl font-bold text-sm text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">Tutup Laporan</button>
+               <button onClick={() => setDetailModalOpen(false)} className={`mt-8 w-full py-3 rounded-xl font-bold text-sm transition-colors ${outlineBtn}`}>Tutup Laporan</button>
             </div>
          </div>
       )}
@@ -1379,9 +1379,9 @@ const MainApp = () => {
       <GlassBackground />
 
       {/* Header Mobile */}
-      <div className="md:hidden bg-white/60 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-white/60 fixed top-0 w-full z-40 shadow-sm">
+      <div className="md:hidden bg-white/80 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-gray-200 fixed top-0 w-full z-40">
         <div className="flex items-center gap-3">
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-700 bg-white/50 rounded-lg hover:bg-white transition-colors">
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
             {isMobileMenuOpen ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5"/>}
           </button>
         </div>
@@ -1394,10 +1394,10 @@ const MainApp = () => {
       )}
 
       {/* Sidebar - Solid Sleek Dark Green */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out flex flex-col md:translate-x-0 md:static md:flex-shrink-0 bg-[#26544d] shadow-[4px_0_24px_rgba(0,0,0,0.05)] ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out flex flex-col md:translate-x-0 md:static md:flex-shrink-0 bg-[#26544d] border-r border-[#1a3a35] ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         
         <div className="p-6 flex items-center gap-3 border-b border-white/10">
-          <div className="bg-white/10 p-2 rounded-xl"><BookOpen className="w-6 h-6 text-[#f9e653]" /></div>
+          <div className="bg-white/10 p-2 border border-white/10 rounded-xl"><BookOpen className="w-6 h-6 text-[#f9e653]" /></div>
           <div>
             <h1 className="font-black text-lg text-white tracking-tight leading-none">MARKAZ</h1>
             <span className="text-[9px] font-bold text-[#54af48] tracking-widest uppercase">Digiport</span>
@@ -1405,8 +1405,8 @@ const MainApp = () => {
         </div>
         
         <div className="px-4 py-6 flex-1 overflow-y-auto">
-           <div className="bg-[#1f453f] p-3 rounded-2xl mb-6 flex items-center gap-3 shadow-inner border border-white/5">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#26544d] font-bold bg-[#f9e653]">{user.name ? user.name.charAt(0) : 'U'}</div>
+           <div className="bg-[#1f453f] p-3 rounded-2xl mb-6 flex items-center gap-3 border border-white/5">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#26544d] font-bold bg-[#f9e653] border border-[#e0cf4a]">{user.name ? user.name.charAt(0) : 'U'}</div>
               <div className="overflow-hidden">
                  <p className="text-[9px] font-bold text-[#54af48] uppercase tracking-wider">{user.role}</p>
                  <p className="text-sm font-bold text-white truncate">{user.name}</p>
@@ -1419,7 +1419,7 @@ const MainApp = () => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
-                  <button key={item.id} onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-sm font-medium ${isActive ? 'bg-[#54af48] text-white shadow-md' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}>
+                  <button key={item.id} onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-sm font-medium border ${isActive ? 'bg-[#54af48] border-[#46933c] text-white' : 'border-transparent text-white/60 hover:bg-white/10 hover:text-white'}`}>
                     <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/50'}`}/> {item.label}
                   </button>
                 );
@@ -1428,7 +1428,7 @@ const MainApp = () => {
         </div>
         
         <div className="p-4 border-t border-white/10">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-300 hover:bg-red-500/20 transition-colors text-sm font-medium">
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-300 hover:bg-red-500/20 border border-transparent hover:border-red-500/30 transition-colors text-sm font-medium">
              <LogOut className="w-4 h-4"/> Keluar Aplikasi
           </button>
         </div>
@@ -1468,11 +1468,11 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-[#f4f7f6] p-6 flex items-center justify-center font-sans">
-          <div className="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+          <div className="bg-white p-8 rounded-3xl max-w-sm w-full text-center border border-gray-200">
             <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h1 className="text-lg font-bold text-gray-800">Sistem Mengalami Kendala</h1>
             <p className="text-sm text-gray-500 mt-2 mb-6">Silakan segarkan halaman ini.</p>
-            <button onClick={() => window.location.reload()} className="px-5 py-3 bg-[#26544d] text-white font-bold rounded-xl text-sm w-full shadow-sm hover:shadow-md transition-shadow">Muat Ulang</button>
+            <button onClick={() => window.location.reload()} className={`px-5 py-3 rounded-xl font-bold text-sm w-full ${primaryBtn}`}>Muat Ulang</button>
           </div>
         </div>
       );
@@ -1487,11 +1487,11 @@ function AppStarter() {
   if (!isConfigValid) {
     return (
       <div className="min-h-screen bg-[#f4f7f6] flex items-center justify-center p-6 font-sans">
-         <div className="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+         <div className="bg-white p-8 rounded-3xl max-w-sm w-full text-center border border-gray-200">
              <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
              <h1 className="text-lg font-bold text-gray-800 mb-2">Konfigurasi Tertunda</h1>
              <p className="text-sm text-gray-500 mb-6">Sistem sedang memuat kunci keamanan Firebase.</p>
-             <button onClick={() => window.location.reload()} className="px-5 py-3 bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200 font-bold rounded-xl text-sm w-full transition-colors shadow-sm">Coba Lagi</button>
+             <button onClick={() => window.location.reload()} className={`px-5 py-3 rounded-xl font-bold text-sm w-full transition-colors ${outlineBtn}`}>Coba Lagi</button>
          </div>
       </div>
     );
