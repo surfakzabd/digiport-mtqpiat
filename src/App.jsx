@@ -33,7 +33,7 @@ try {
     storageBucket: envStorageBucket,
     messagingSenderId: envSenderId,
     appId: envAppId,
-    measuerementId: envMeasurementId
+    measurementId: envMeasurementId
   };
   
   if (firebaseConfig.apiKey && firebaseConfig.apiKey.length > 5) {
@@ -62,7 +62,7 @@ const theme = {
   warning: '#eab308'
 };
 
-// UI Classes
+// UI Classes: Hapus shadow sepenuhnya, ganti dengan BORDER TEGAS abu-abu/warna kontras
 const glassCard = "bg-white/70 backdrop-blur-xl border border-gray-200 rounded-3xl";
 const glassInput = "bg-white/60 backdrop-blur-md border border-gray-200 text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-[#54af48]/30 focus:border-transparent transition-all rounded-xl outline-none";
 const primaryBtn = "bg-[#26544d] border border-[#1a3a35] hover:bg-[#1f453f] text-white";
@@ -1288,10 +1288,14 @@ const WaliDashboardView = ({ students, records, user }) => {
                   <button onClick={() => setDetailModalOpen(false)} className="p-2 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-500 rounded-full transition-colors"><X className="w-5 h-5"/></button>
                </div>
                
-               <div className="mb-6 bg-gray-50 rounded-2xl p-4 text-center border border-gray-200">
-                  <span className={`inline-block px-5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest border ${selectedRecord.presensi === 'Hadir' ? 'bg-[#f4fbf4] text-[#54af48] border-[#54af48]/30' : selectedRecord.presensi === 'Alpha' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
-                     {selectedRecord.presensi}
-                  </span>
+               <div 
+                 className="mb-6 w-full py-3.5 rounded-2xl text-sm font-bold text-center text-white border uppercase tracking-widest"
+                 style={{ 
+                   backgroundColor: selectedRecord.presensi === 'Hadir' ? theme.secondary : selectedRecord.presensi === 'Alpha' ? theme.danger : theme.warning, 
+                   borderColor: selectedRecord.presensi === 'Hadir' ? '#46933c' : selectedRecord.presensi === 'Alpha' ? '#dc2626' : '#ca8a04' 
+                 }}
+               >
+                 {selectedRecord.presensi}
                </div>
 
                {selectedRecord.presensi === 'Hadir' && (
