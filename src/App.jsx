@@ -1277,8 +1277,8 @@ const WaliDashboardView = ({ students, records, user }) => {
 
       {detailModalOpen && selectedRecord && (
          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
-            <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-3xl w-full max-w-sm p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
+         <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-3xl w-full max-w-sm p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
                
                <div className="flex justify-between items-start mb-6">
                   <div>
@@ -1340,7 +1340,6 @@ const WaliDashboardView = ({ students, records, user }) => {
                   </div>
                )}
 
-               <button onClick={() => setDetailModalOpen(false)} className={`mt-8 w-full py-3 rounded-xl font-bold text-sm transition-colors ${outlineBtn}`}>Tutup Laporan</button>
             </div>
          </div>
       )}
