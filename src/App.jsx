@@ -62,7 +62,7 @@ const theme = {
   warning: '#eab308'
 };
 
-// UI Classes: Hapus shadow sepenuhnya, ganti dengan BORDER TEGAS abu-abu/warna kontras
+// UI Classes:
 const glassCard = "bg-white/70 backdrop-blur-xl border border-gray-200 rounded-3xl";
 const glassInput = "bg-white/60 backdrop-blur-md border border-gray-200 text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-[#54af48]/30 focus:border-transparent transition-all rounded-xl outline-none";
 const primaryBtn = "bg-[#26544d] border border-[#1a3a35] hover:bg-[#1f453f] text-white";
@@ -112,7 +112,7 @@ const formatZiyadahSurahSafe = (z) => {
 // BACKGROUND GLASSMORPHISM (MINIMALIST)
 // ==========================================
 const GlassBackground = () => (
-  <div className="fixed inset-0 pointer-events-none z-0 bg-[#f4f7f6]">
+  <div className="fixed inset-0 pointer-events-none -z-10 bg-[#f4f7f6]">
     <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-gradient-to-br from-[#54af48]/10 to-transparent rounded-full blur-[100px]"></div>
     <div className="absolute bottom-[-10%] right-[-5%] w-[60vw] h-[60vw] bg-gradient-to-tl from-[#26544d]/10 to-transparent rounded-full blur-[100px]"></div>
   </div>
@@ -287,9 +287,9 @@ const ResetAccessModal = ({ isOpen, target, onSave, onCancel }) => {
   );
 };
 
-// ===============================
-// 4. TAMPILAN LOGIN (AUTENTIKASI)
-// ===============================
+// ==========================================
+// 4. TAMPILAN LOGIN (AUTENTIKASI) DENGAN REDESIGN BARU
+// ==========================================
 const LoginScreen = ({ onLogin, pengampus, students }) => {
   const [role, setRole] = useState('wali');
   const [username, setUsername] = useState('');
@@ -1454,7 +1454,7 @@ const MainApp = () => {
 
       {/* Konten Utama */}
       <div className="flex-1 flex flex-col min-h-screen relative w-full overflow-hidden pt-[56px] md:pt-0">
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 z-10">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <div className="max-w-6xl mx-auto">
             {activeTab === 'admin' && user.role === 'admin' && <AdminView pengampus={pengampus} students={students} />}
             {activeTab === 'dashboard' && user.role === 'wali' && <WaliDashboardView students={students} records={records} user={user} />}
