@@ -17,7 +17,7 @@ let isConfigValid = false;
 let app, auth, db;
 let firebaseConfig = {};
 
-try { 
+try {
   const envApiKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) || "";
   const envAuthDomain = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "";
   const envProjectId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_PROJECT_ID) || "";
@@ -27,15 +27,15 @@ try {
   const envMeasurementId = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MEASUREMENT_ID) || "";
 
   firebaseConfig = {
-    apiKey: envApiKey,
-    authDomain: envAuthDomain,
-    projectId: envProjectId,
-    storageBucket: envStorageBucket,
-    messagingSenderId: envSenderId,
-    appId: envAppId,
-    measurementId: envMeasurementId
+  apiKey: envApiKey,
+  authDomain: envAuthDomain,
+  projectId: envProjectId,
+  storageBucket: envStorageBucket,
+  messagingSenderId: envSenderId,
+  appId: envAppId,
+  measurementId: envMeasurementId
   };
-  
+
   if (firebaseConfig.apiKey && firebaseConfig.apiKey.length > 5) {
     isConfigValid = true;
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
@@ -62,7 +62,7 @@ const theme = {
   warning: '#eab308'
 };
 
-// UI Classes:
+// UI Classes: Hapus shadow sepenuhnya, ganti dengan BORDER TEGAS abu-abu/warna kontras
 const glassCard = "bg-white/70 backdrop-blur-xl border border-gray-200 rounded-3xl";
 const glassInput = "bg-white/60 backdrop-blur-md border border-gray-200 text-gray-800 placeholder-gray-400 focus:bg-white focus:ring-2 focus:ring-[#54af48]/30 focus:border-transparent transition-all rounded-xl outline-none";
 const primaryBtn = "bg-[#26544d] border border-[#1a3a35] hover:bg-[#1f453f] text-white";
@@ -1277,8 +1277,8 @@ const WaliDashboardView = ({ students, records, user }) => {
 
       {detailModalOpen && selectedRecord && (
          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onCancel}></div>
-         <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-3xl w-full max-w-sm p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={() => setDetailModalOpen(false)}></div>
+            <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-3xl w-full max-w-sm p-6 md:p-8 relative z-10 animate-in fade-in zoom-in-95 duration-200">
                
                <div className="flex justify-between items-start mb-6">
                   <div>
@@ -1340,6 +1340,7 @@ const WaliDashboardView = ({ students, records, user }) => {
                   </div>
                )}
 
+               <button onClick={() => setDetailModalOpen(false)} className={`mt-8 w-full py-3 rounded-xl font-bold text-sm transition-colors ${outlineBtn}`}>Tutup Laporan</button>
             </div>
          </div>
       )}
